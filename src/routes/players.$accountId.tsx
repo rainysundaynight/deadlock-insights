@@ -66,7 +66,7 @@ function PlayerPage() {
           </div>
         </div>
         <div className="md:text-right">
-          <RankBadge badge={rank.data?.badge} size={64} />
+          {rank.data?.badge ? <RankBadge badge={rank.data.badge} size={64} /> : rank.isLoading ? null : <PotentialRank accountId={id} history={history.data ?? []} />}
         </div>
       </div>
 
