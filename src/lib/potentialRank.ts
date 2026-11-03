@@ -14,7 +14,8 @@ export function potentialBadge(lobbyBadges: number[], winrate: number): number |
   const valid = lobbyBadges.filter((b) => b >= 11 && b % 10 >= 1 && b % 10 <= 6);
   if (valid.length < 5) return null;
   const idx = valid.map(badgeToIdx).sort((a, b) => a - b);
-  const mid = idx.length % 2 ? idx[(idx.length - 1) / 2] : (idx[idx.length / 2 - 1] + idx[idx.length / 2]) / 2;
+  const at = (i: number) => idx[i] ?? 0;
+  const mid = idx.length % 2 ? at((idx.length - 1) / 2) : (at(idx.length / 2 - 1) + at(idx.length / 2)) / 2;
   const shift = Math.max(-3, Math.min(3, Math.round((winrate - 0.5) / 0.05)));
   return idxToBadge(mid + shift);
 }

@@ -22,7 +22,7 @@ interface MapData {
   objective_positions: Record<string, Rel>;
   zipline_paths: { origin: number[]; color: string; P0_points: number[][] }[];
   neutral_camps: (Rel & { kind: string; name: string })[];
-  entities: Record<string, (Rel & { kind?: string; team?: number })[]>;
+  entities: Partial<Record<"shops" | "bridge_buffs" | "unstable_rifts" | "soul_urn_pads" | "teleporters", (Rel & { kind?: string; team?: number })[]>>;
 }
 const mapQuery = { queryKey: ["map-assets"], queryFn: () => api<MapData>("/v1/assets/map"), staleTime: Infinity };
 
@@ -35,7 +35,7 @@ const LAYERS: [Layer, string][] = [["obj", "Башни"], ["zip", "Зиплай�
 
 export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   paths?: MatchPaths | undefined; players: P[]; names?: Map<number, { personaname: string }> | undefined;
-  objectives?: MatchObjective[]; midBoss?: { team_killed: number; destroyed_time_s: number }[];
+  objectives?: MatchObjective[] | undefined; midBoss?: { team_killed: number; destroyed_time_s: number }[] | undefined;
 }) {
   const heroes = useHeroMap();
   const map = useQuery(mapQuery);
