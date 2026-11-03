@@ -217,9 +217,6 @@ interface LiveMatch {
 }
 
 function LiveView({ m }: { m: LiveMatch }) {
-  const profiles = useSteamProfiles(m.players.map((p) => p.account_id));
-  const heroes = useHeroMap();
-  const total = m.net_worth_team_0 + m.net_worth_team_1 || 1;
   return (
     <div className="space-y-8">
       <div>
@@ -232,37 +229,12 @@ function LiveView({ m }: { m: LiveMatch }) {
         <p className="mt-2 text-muted-foreground">Статистика игроков обновляется в реальном времени. Полный разбор, линии и советы появятся после окончания матча.</p>
         <div className="deco-line mt-6" />
       </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <Stat label="Начался" value={<span className="text-lg">{fmtDate(m.start_time)}</span>} />
         <Stat label="Зрители" value={m.spectators} />
-        <Stat label="Души Амбер" value={fmtK(m.net_worth_team_0)} tone="brass" />
-        <Stat label="Души Сапфир" value={fmtK(m.net_worth_team_1)} tone="brass" />
-      </div>
-      <div className="flex h-2 overflow-hidden rounded-full">
-        <div className="bg-amber-team" style={{ width: `${(m.net_worth_team_0 / total) * 100}%` }} />
-        <div className="flex-1 bg-sapphire-team" />
+        <Stat label="Режим" value={<span className="text-lg">{MATCH_MODES[m.match_mode] ?? "—"} · {GAME_MODES[m.game_mode] ?? "—"}</span>} />
       </div>
       <LiveScoreboard matchId={m.match_id} roster={m.players} ranked={m.match_mode === 4} />
-      <div className="grid gap-4 md:grid-cols-2">
-        {[0, 1].map((t) => (
-          <section key={t} className="panel p-4">
-            <h2 className={cn("mb-3 font-display text-lg uppercase tracking-wider", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{TEAMS[t]}</h2>
-            <div className="space-y-2">
-              {m.players.filter((p) => p.team === t).map((p) => (
-                <div key={p.account_id} className="flex items-center gap-3">
-                  <HeroIcon heroId={p.hero_id} size={36} />
-                  <div className="min-w-0">
-                    <Link to="/players/$accountId" params={{ accountId: String(p.account_id) }} className="block truncate font-medium hover:text-primary">
-                      {profiles.data?.get(p.account_id)?.personaname ?? `#${p.account_id}`}
-                    </Link>
-                    <p className="text-xs text-muted-foreground">{heroes.get(p.hero_id)?.name}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
     </div>
   );
 }
