@@ -108,10 +108,13 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
                   <XAxis dataKey="t" type="number" domain={["dataMin", "dataMax"]} tickFormatter={(v) => fmtDuration(v)} stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis domain={[-maxAbs, maxAbs]} tickFormatter={(v) => fmtK(Math.abs(v))} stroke="var(--muted-foreground)" fontSize={11} width={44} tickLine={false} axisLine={false} />
                   <ReferenceLine y={0} stroke="var(--muted-foreground)" strokeOpacity={0.5} />
-                  <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 12 }} labelFormatter={(v) => fmtDuration(Number(v))} formatter={(v: number) => [`${v >= 0 ? TEAMS[0] : TEAMS[1]} +${fmtK(Math.abs(v))}`, "Перевес"]} />
-                  <Area dataKey="a" stroke="var(--team-amber)" strokeWidth={2} fill="url(#gA)" isAnimationActive={false} baseValue={0} tooltipType="none" />
-                  <Area dataKey="s" stroke="var(--team-sapphire)" strokeWidth={2} fill="url(#gS)" isAnimationActive={false} baseValue={0} tooltipType="none" />
-                  <Area dataKey="diff" stroke="transparent" fill="transparent" isAnimationActive={false} />
+                  <Tooltip cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }} content={({ active, payload }) => {
+                    const d = payload?.[0]?.payload as { t: number; diff: number } | undefined;
+                    if (!active || !d) return null;
+                    return <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs"><p className="tabular text-muted-foreground">{fmtDuration(d.t)}</p><p className={cn("font-semibold", d.diff >= 0 ? "text-amber-team" : "text-sapphire-team")}>{d.diff >= 0 ? TEAMS[0] : TEAMS[1]} +{fmtK(Math.abs(d.diff))}</p></div>;
+                  }} />
+                  <Area dataKey="a" stroke="var(--team-amber)" strokeWidth={2} fill="url(#gA)" isAnimationActive={false} baseValue={0} />
+                  <Area dataKey="s" stroke="var(--team-sapphire)" strokeWidth={2} fill="url(#gS)" isAnimationActive={false} baseValue={0} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : <p className="grid h-full place-items-center text-sm text-muted-foreground">Собираем данные для графика…</p>}
