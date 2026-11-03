@@ -67,3 +67,16 @@ export const MATCH_MODES: Record<number, string> = {
   4: "Рейтинговый",
   6: "Тренировка",
 };
+
+export const stripHtml = (s: string) =>
+  s
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\{[^}]*\}/g, "")
+    .trim();

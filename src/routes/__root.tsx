@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteHeader } from "@/components/SiteHeader";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -115,6 +116,7 @@ function RootComponent() {
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
         Данные: deadlock-api.com · Неофициальный фан-проект, не связан с Valve
       </footer>
+      <Toaster />
     </QueryClientProvider>
   );
 }
