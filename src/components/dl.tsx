@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 
-import { heroesQuery, itemsQuery, ranksQuery, type Hero, type Item } from "@/lib/api";
+import { api, heroesQuery, itemsQuery, ranksQuery, type Hero, type Item, type SteamProfile } from "@/lib/api";
 import { splitBadge } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -177,3 +177,22 @@ export const selectClass =
   "h-10 rounded-md border border-input bg-secondary px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
 export const inputClass =
   "h-10 w-full rounded-md border border-input bg-secondary px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+
+export function useSteamProfiles(ids: number[]) {
+  const key = [...ids].sort().join(",");
+  return useQuery({
+    queryKey: ["steam", key],
+    queryFn: async () => {
+      const out = new Map<number, SteamProfile>();
+      for (let i = 0; i < ids.length; i += 100) {
+        const chunk = ids.slice(i, i + 100);
+        const res = await api<SteamProfile[]>("/v1/players/steam", { account_ids: chunk.join(",") }).catch(() => []);
+        res.forEach((p) => out.set(p.account_id, p));
+      }
+      return out;
+    },
+    enabled: ids.length > 0,
+    staleTime: 1000 * 60 * 30,
+  });
+}
+

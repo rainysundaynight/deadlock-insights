@@ -3,9 +3,9 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { Empty, ErrorBox, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
+import { Empty, ErrorBox, useSteamProfiles, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api, type MatchHistoryEntry, type PlayerHeroStat, type SteamProfile } from "@/lib/api";
+import { api, type MatchHistoryEntry, type PlayerHeroStat } from "@/lib/api";
 import { fmtAgo, fmtDuration, fmtHours, fmtInt, fmtK, kda, winrate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -23,24 +23,6 @@ export const Route = createFileRoute("/players/$accountId")({
 
 interface RankResp { badge: number | null }
 interface MateStat { mate_id?: number; enemy_id?: number; wins: number; matches_played: number }
-
-export function useSteamProfiles(ids: number[]) {
-  const key = [...ids].sort().join(",");
-  return useQuery({
-    queryKey: ["steam", key],
-    queryFn: async () => {
-      const out = new Map<number, SteamProfile>();
-      for (let i = 0; i < ids.length; i += 100) {
-        const chunk = ids.slice(i, i + 100);
-        const res = await api<SteamProfile[]>("/v1/players/steam", { account_ids: chunk.join(",") }).catch(() => []);
-        res.forEach((p) => out.set(p.account_id, p));
-      }
-      return out;
-    },
-    enabled: ids.length > 0,
-    staleTime: 1000 * 60 * 30,
-  });
-}
 
 function PlayerPage() {
   const { accountId } = Route.useParams();

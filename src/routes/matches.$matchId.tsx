@@ -1,11 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { ErrorBox, HeroIcon, Loading, RankBadge, Stat, useHeroMap, useItemMap } from "@/components/dl";
+import { ErrorBox, HeroIcon, Loading, RankBadge, Stat, useHeroMap, useItemMap, useSteamProfiles } from "@/components/dl";
 import { api } from "@/lib/api";
 import { fmtDate, fmtDuration, fmtK, GAME_MODES, MATCH_MODES } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useSteamProfiles } from "./players.$accountId";
 
 export const Route = createFileRoute("/matches/$matchId")({
   head: ({ params }) => ({
