@@ -202,6 +202,7 @@ interface LiveMatch {
   start_time: number;
   spectators: number;
   game_mode_parsed?: string;
+  match_mode?: number;
   net_worth_team_0: number;
   net_worth_team_1: number;
   players: { account_id: number; team: number; hero_id: number }[];
@@ -233,7 +234,7 @@ function LiveView({ m }: { m: LiveMatch }) {
         <div className="bg-amber-team" style={{ width: `${(m.net_worth_team_0 / total) * 100}%` }} />
         <div className="flex-1 bg-sapphire-team" />
       </div>
-      <LiveScoreboard matchId={m.match_id} />
+      <LiveScoreboard matchId={m.match_id} roster={m.players} ranked={m.match_mode === 4} />
       <div className="grid gap-4 md:grid-cols-2">
         {[0, 1].map((t) => (
           <section key={t} className="panel p-4">
