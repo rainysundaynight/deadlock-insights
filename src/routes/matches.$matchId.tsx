@@ -9,6 +9,7 @@ import { useState } from "react";
 import { MatchAnalysis } from "@/components/MatchAnalysis";
 import { DamageView, ItemsTimeline } from "@/components/MatchDeep";
 import { LaneMinutes } from "@/components/LaneMinutes";
+import { gradeInMatch, gradeTone } from "@/lib/grade";
 import { LiveScoreboard } from "@/components/LiveScoreboard";
 import { MatchReplay, type MatchPaths } from "@/components/MatchReplay";
 import { MatchActions, SpectateButton } from "@/components/ShareCard";
@@ -117,6 +118,8 @@ function MatchPage() {
       {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} />}
       {tab === "table" && [0, 1].map((team) => (
         <TeamTable
+          lobby={players}
+          winner={m.winning_team}
           key={team}
           team={team}
           won={m.winning_team === team}
@@ -128,7 +131,7 @@ function MatchPage() {
   );
 }
 
-function TeamTable({ team, won, players, names }: { team: number; won: boolean; players: MatchPlayer[]; names?: Map<number, { personaname: string }> | undefined }) {
+function TeamTable({ team, won, players, names, lobby, winner }: { team: number; won: boolean; players: MatchPlayer[]; lobby: MatchPlayer[]; winner: number; names?: Map<number, { personaname: string }> | undefined }) {
   const heroes = useHeroMap();
   const items = useItemMap();
   return (
@@ -141,7 +144,7 @@ function TeamTable({ team, won, players, names }: { team: number; won: boolean; 
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground">
             <tr className="border-b border-border">
-              <th className="p-3">Игрок</th><th className="p-3">K/D/A</th><th className="p-3">Души</th><th className="p-3">Крипы</th><th className="p-3">Урон</th><th className="p-3">Лечение</th><th className="p-3">Предметы</th>
+              <th className="p-3">Игрок</th><th className="p-3" title="Оценка относительно лобби">Оценка</th><th className="p-3">K/D/A</th><th className="p-3">Души</th><th className="p-3">Крипы</th><th className="p-3">Урон</th><th className="p-3">Лечение</th><th className="p-3">Предметы</th>
             </tr>
           </thead>
           <tbody>
@@ -161,6 +164,7 @@ function TeamTable({ team, won, players, names }: { team: number; won: boolean; 
                       </div>
                     </div>
                   </td>
+                  <td className="p-3">{(() => { const g = gradeInMatch(p, lobby, winner); return <span title={`${g.score.toFixed(0)}/100`} className={cn("inline-grid h-8 w-9 place-items-center rounded-md border border-border bg-secondary font-display text-sm font-extrabold", gradeTone(g.grade))}>{g.grade}</span>; })()}</td>
                   <td className="tabular p-3">{p.kills}/<span className="text-loss">{p.deaths}</span>/{p.assists}</td>
                   <td className="tabular p-3 text-primary">{fmtK(p.net_worth)}</td>
                   <td className="tabular p-3">{p.last_hits}<span className="text-muted-foreground">/{p.denies}</span></td>

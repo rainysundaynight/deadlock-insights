@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
 import { Chip, Empty, ErrorBox, HeroIcon, HeroSelect, Loading, PageHeader, RankBadge, inputClass } from "@/components/dl";
-import { api } from "@/lib/api";
+import { api, type SteamProfile } from "@/lib/api";
 import { REGIONS } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -57,7 +57,7 @@ function LeaderboardPage() {
               <div key={`${e.rank}-${e.account_name}`} className="flex items-center gap-4 px-4 py-3 hover:bg-accent/30">
                 <span className={cn("tabular w-12 font-display text-xl", e.rank <= 3 ? "text-brass" : "text-muted-foreground")}>{e.rank}</span>
                 <div className="min-w-0 flex-1">
-                  {pid ? <Link to="/players/$accountId" params={{ accountId: String(pid) }} className="hover:text-primary">{name}</Link> : name}
+                  {pid ? <Link to="/players/$accountId" params={{ accountId: String(pid) }} className="hover:text-primary">{name}</Link> : <ResolveName name={e.account_name} ids={e.possible_account_ids} />}
                 </div>
                 {e.badge_level != null && <RankBadge badge={e.badge_level} size={28} showName={false} />}
                 <div className="flex gap-1">
@@ -69,5 +69,39 @@ function LeaderboardPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function ResolveName({ name, ids }: { name: string; ids: number[] }) {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [cands, setCands] = useState<SteamProfile[] | null>(null);
+  const go = (id: number) => navigate({ to: "/players/$accountId", params: { accountId: String(id) } });
+  const resolve = async () => {
+    if (cands) return setOpen((o) => !o);
+    setBusy(true);
+    try {
+      const list = await api<SteamProfile[]>("/v1/players/steam", { account_ids: ids.slice(0, 50).join(",") });
+      const exact = list.filter((p) => p.personaname.trim().toLowerCase() === name.trim().toLowerCase());
+      if (exact.length === 1) return go(exact[0]!.account_id);
+      setCands(exact.length ? exact : list); setOpen(true);
+    } catch { setCands([]); setOpen(true); } finally { setBusy(false); }
+  };
+  return (
+    <span className="relative">
+      <button onClick={resolve} className="truncate font-medium hover:text-primary">{name}{busy && <span className="ml-2 text-xs text-muted-foreground">ищем…</span>}</button>
+      {open && cands && (
+        <span className="absolute left-0 top-7 z-20 w-72 rounded-lg border border-border bg-popover p-2 shadow-lg">
+          <span className="mb-1 block text-xs text-muted-foreground">Несколько аккаунтов с таким ником — выберите:</span>
+          {cands.map((c) => (
+            <button key={c.account_id} onClick={() => go(c.account_id)} className="flex w-full items-center gap-2 rounded-md p-1.5 text-left text-sm hover:bg-accent">
+              {c.avatar && <img src={c.avatar} alt="" className="h-6 w-6 rounded" />}<span className="truncate">{c.personaname}</span><span className="ml-auto text-xs text-muted-foreground">#{c.account_id}</span>
+            </button>
+          ))}
+          {!cands.length && <span className="block p-1.5 text-sm text-muted-foreground">Профиль не найден.</span>}
+        </span>
+      )}
+    </span>
   );
 }
