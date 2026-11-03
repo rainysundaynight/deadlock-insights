@@ -31,8 +31,8 @@ export function PlayerInsights({ history }: { history: MatchHistoryEntry[] }) {
   const graded = useMemo(() => {
     if (!g.data) return [];
     const ga = globalAverages(g.data);
-    return last30.map((m) => ({ m, ...gradeHistory(m, ga, s.dur) }));
-  }, [g.data, last30, s.dur]);
+    return last30.map((m) => ({ m, ...gradeHistory(m, ga) }));
+  }, [g.data, last30]);
   const avgScore = graded.length ? graded.reduce((a, x) => a + x.score, 0) / graded.length : 0;
   const sw = useMemo(() => (g.data ? strengthsWeaknesses(playstyle(s30, globalAverages(g.data))) : { good: [], bad: [] }), [g.data, s30]);
   const trend = graded.length >= 20 ? graded.slice(0, 10).reduce((a, x) => a + x.score, 0) / 10 - graded.slice(10, 30).reduce((a, x) => a + x.score, 0) / (graded.length - 10) : 0;

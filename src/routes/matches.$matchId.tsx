@@ -9,7 +9,9 @@ import { useState } from "react";
 import { MatchAnalysis } from "@/components/MatchAnalysis";
 import { DamageView, ItemsTimeline } from "@/components/MatchDeep";
 import { LaneMinutes } from "@/components/LaneMinutes";
-import { gradeInMatch, gradeTone } from "@/lib/grade";
+import { gradeVsGlobal, gradeTone } from "@/lib/grade";
+import { globalAvgQuery } from "@/components/PlayerInsights";
+import { globalAverages } from "@/lib/playerStats";
 import { LiveScoreboard } from "@/components/LiveScoreboard";
 import { MatchDetails } from "@/components/MatchDetails";
 import { MatchReplay, type MatchObjective, type MatchPaths } from "@/components/MatchReplay";
@@ -124,6 +126,7 @@ function MatchPage() {
         <TeamTable
           lobby={players}
           winner={m.winning_team}
+          durationS={m.duration_s}
           key={team}
           team={team}
           won={m.winning_team === team}
@@ -135,9 +138,11 @@ function MatchPage() {
   );
 }
 
-function TeamTable({ team, won, players, names, lobby, winner }: { team: number; won: boolean; players: MatchPlayer[]; lobby: MatchPlayer[]; winner: number; names?: Map<number, { personaname: string }> | undefined }) {
+function TeamTable({ team, won, players, names, lobby, winner, durationS }: { durationS: number; team: number; won: boolean; players: MatchPlayer[]; lobby: MatchPlayer[]; winner: number; names?: Map<number, { personaname: string }> | undefined }) {
   const heroes = useHeroMap();
   const items = useItemMap();
+  const gq = useQuery(globalAvgQuery);
+  const ga = gq.data ? globalAverages(gq.data) : null;
   return (
     <section className="panel overflow-hidden">
       <div className={cn("flex items-center justify-between border-b border-border px-4 py-3", team === 0 ? "text-amber-team" : "text-sapphire-team")}>
@@ -148,7 +153,7 @@ function TeamTable({ team, won, players, names, lobby, winner }: { team: number;
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground">
             <tr className="border-b border-border">
-              <th className="p-3">Игрок</th><th className="p-3" title="Оценка относительно лобби">Оценка</th><th className="p-3">K/D/A</th><th className="p-3">Души</th><th className="p-3">Крипы</th><th className="p-3">Урон</th><th className="p-3">Лечение</th><th className="p-3">Предметы</th>
+              <th className="p-3">Игрок</th><th className="p-3" title="Оценка относительно среднего игрока (как в профиле)">Оценка</th><th className="p-3">K/D/A</th><th className="p-3">Души</th><th className="p-3">Крипы</th><th className="p-3">Урон</th><th className="p-3">Лечение</th><th className="p-3">Предметы</th>
             </tr>
           </thead>
           <tbody>
@@ -168,7 +173,7 @@ function TeamTable({ team, won, players, names, lobby, winner }: { team: number;
                       </div>
                     </div>
                   </td>
-                  <td className="p-3">{(() => { const g = gradeInMatch(p, lobby, winner); return <span title={`${g.score.toFixed(0)}/100`} className={cn("inline-grid h-8 w-9 place-items-center rounded-md border border-border bg-secondary font-display text-sm font-extrabold", gradeTone(g.grade))}>{g.grade}</span>; })()}</td>
+                  <td className="p-3">{ga && (() => { const g = gradeVsGlobal({ k: p.kills, d: p.deaths, a: p.assists, nw: p.net_worth, lh: p.last_hits, won: p.team === winner }, ga, durationS); return <span title={`${g.score.toFixed(0)}/100`} className={cn("inline-grid h-8 w-9 place-items-center rounded-md border border-border bg-secondary font-display text-sm font-extrabold", gradeTone(g.grade))}>{g.grade}</span>; })()}</td>
                   <td className="tabular p-3">{p.kills}/<span className="text-loss">{p.deaths}</span>/{p.assists}</td>
                   <td className="tabular p-3 text-primary">{fmtK(p.net_worth)}</td>
                   <td className="tabular p-3">{p.last_hits}<span className="text-muted-foreground">/{p.denies}</span></td>

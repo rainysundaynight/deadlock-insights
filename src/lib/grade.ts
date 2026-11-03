@@ -45,14 +45,20 @@ export function gradeInMatch<T extends { kills: number; deaths: number; assists:
   return { score, grade: gradeFromScore(score) };
 }
 
-/** Grade of a match-history entry vs. the global average, normalised by duration. */
-export function gradeHistory(m: MatchHistoryEntry, g: { k: number; d: number; a: number; nw: number; lh: number }, avgDur: number) {
-  const f = (m.match_duration_s || avgDur) / (avgDur || 1);
-  const score = perfScore(
-    { k: m.player_kills, d: m.player_deaths, a: m.player_assists, nw: m.net_worth, lh: m.last_hits, won: m.match_result === m.player_team },
-    { k: g.k * f, d: g.d * f, a: g.a * f, nw: g.nw * f, lh: g.lh * f },
-  );
+/** Typical match length used to scale global per-match averages. */
+export const AVG_MATCH_S = 1950;
+type Global = { k: number; d: number; a: number; nw: number; lh: number };
+
+/** One shared grade formula: player's numbers vs. the global average, scaled to match length. Used by profile AND match page so they agree. */
+export function gradeVsGlobal(p: { k: number; d: number; a: number; nw: number; lh: number; won: boolean }, g: Global, durationS: number) {
+  const f = (durationS || AVG_MATCH_S) / AVG_MATCH_S;
+  const score = perfScore(p, { k: g.k * f, d: g.d * f, a: g.a * f, nw: g.nw * f, lh: g.lh * f });
   return { score, grade: gradeFromScore(score) };
+}
+
+/** Grade of a match-history entry. */
+export function gradeHistory(m: MatchHistoryEntry, g: Global) {
+  return gradeVsGlobal({ k: m.player_kills, d: m.player_deaths, a: m.player_assists, nw: m.net_worth, lh: m.last_hits, won: m.match_result === m.player_team }, g, m.match_duration_s);
 }
 
 export const gradeTone = (g: Grade) => (g === "S+" || g === "S" ? "text-primary" : g === "A" ? "text-win" : g === "B" ? "text-foreground" : "text-loss");
