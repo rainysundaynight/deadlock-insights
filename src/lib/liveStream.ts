@@ -7,7 +7,7 @@ export interface LivePlayer {
   nw: number; k: number; d: number; a: number; lh: number; dn: number; dmg: number; heal: number; obj: number; streak: number;
 }
 export type LiveStatus = "idle" | "connecting" | "streaming" | "ended" | "error";
-export type LiveEventKind = "kill" | "death" | "level" | "streak" | "lead";
+export type LiveEventKind = "kill" | "death" | "level" | "streak" | "lead" | "sync";
 export interface LiveEvent { id: number; t: number; kind: LiveEventKind; team: number; hero: number; name: string; text: string }
 
 const TICK_RATE = 60;
@@ -62,7 +62,10 @@ export function useLiveScoreboard(matchId: number, enabled: boolean) {
       const cur = { ...r, team: r.team - 2 };
       const t = Math.round(r.tick / TICK_RATE);
       // Diff every message (incl. replay catch-up from match start) so the feed covers the whole game.
-      for (const ev of diffEvents(prevSnap.get(r.entity_index), cur, t)) pending.push({ ...ev, id: seq++ });
+      const prev = prevSnap.get(r.entity_index);
+      // The broadcast only keeps the last few minutes, so summarise what happened before we joined.
+      if (!prev && cur.k + cur.d + cur.a > 0) pending.push({ id: seq++, t, kind: "sync", team: cur.team, hero: cur.hero, name: cur.name, text: `до начала записи: ${cur.k}/${cur.d}/${cur.a}${cur.streak >= 2 ? `, серия ${cur.streak}` : ""}` });
+      for (const ev of diffEvents(prev, cur, t)) pending.push({ ...ev, id: seq++ });
       prevSnap.set(r.entity_index, cur);
       latest.current.set(r.entity_index, cur);
       tick.current = r.tick;

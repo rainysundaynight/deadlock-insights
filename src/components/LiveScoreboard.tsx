@@ -1,5 +1,5 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { Crown, Flame, Radio, Skull, Swords, TrendingUp } from "lucide-react";
+import { Crown, Flame, History, Radio, Skull, Swords, TrendingUp } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useMemo, useState } from "react";
 
@@ -29,7 +29,7 @@ function useRanks(roster: Roster[], ranked: boolean) {
   return { badge: (i: number) => ranks[i]?.data?.badge, lb: lb.data ?? [] };
 }
 
-const EV_ICON: Record<LiveEvent["kind"], typeof Swords> = { kill: Swords, death: Skull, level: TrendingUp, streak: Flame, lead: Crown };
+const EV_ICON: Record<LiveEvent["kind"], typeof Swords> = { kill: Swords, death: Skull, level: TrendingUp, streak: Flame, lead: Crown, sync: History };
 
 export function LiveScoreboard({ matchId, roster = [], ranked = false }: { matchId: number; roster?: Roster[]; ranked?: boolean }) {
   const [on, setOn] = useState(true);
@@ -146,12 +146,12 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
             </div>
           )}
           <div className="-mr-2 flex-1 space-y-1 overflow-y-auto pr-2">
-            {shownEvents.map((e) => {
+            {shownEvents.map((e, idx) => {
               const Icon = EV_ICON[e.kind];
               return (
-                <div key={e.id} className="flex items-center gap-2 rounded-md px-1.5 py-1 text-sm hover:bg-accent/50">
+                <div key={e.id} className={cn("flex items-center gap-2 rounded-md px-1.5 py-1 text-sm hover:bg-accent/50", e.kind === "sync" && "opacity-70", e.kind === "sync" && shownEvents[idx - 1]?.kind !== "sync" && "mt-2 border-t border-border pt-2")}>
                   <span className="tabular w-11 text-xs text-muted-foreground">{fmtDuration(e.t)}</span>
-                  <Icon className={cn("h-3.5 w-3.5 shrink-0", e.kind === "death" ? "text-loss" : e.kind === "streak" ? "text-primary" : e.team === 0 ? "text-amber-team" : "text-sapphire-team")} />
+                  <Icon className={cn("h-3.5 w-3.5 shrink-0", e.kind === "death" ? "text-loss" : e.kind === "streak" ? "text-primary" : e.kind === "sync" ? "text-muted-foreground" : e.team === 0 ? "text-amber-team" : "text-sapphire-team")} />
                   {e.hero > 0 && <HeroIcon heroId={e.hero} size={20} />}
                   <span className="min-w-0 truncate"><span className={e.team === 0 ? "text-amber-team" : "text-sapphire-team"}>{e.name}</span> <span className="text-muted-foreground">{e.text}</span></span>
                 </div>
