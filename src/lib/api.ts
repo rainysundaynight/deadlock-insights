@@ -31,6 +31,7 @@ export interface Hero {
   images: Record<string, string | undefined>;
   colors?: { style_hex?: string };
   tags?: string[];
+  items?: Record<string, string>;
 }
 export interface Item {
   id: number;
