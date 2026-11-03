@@ -194,6 +194,7 @@ interface LiveMatch {
   match_id: number;
   start_time: number;
   spectators: number;
+  game_mode_parsed?: string;
   net_worth_team_0: number;
   net_worth_team_1: number;
   players: { account_id: number; team: number; hero_id: number }[];
@@ -210,6 +211,7 @@ function LiveView({ m }: { m: LiveMatch }) {
         <h1 className="inline-flex items-center gap-3 font-display text-4xl font-semibold uppercase">
           <span className="h-3 w-3 animate-pulse rounded-full bg-loss" /> Матч идёт
         </h1>
+        {m.game_mode_parsed?.includes("StreetBrawl") && <p className="mt-2 inline-flex rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs text-primary">Режим Street Brawl · 4 на 4, души общие на команду</p>}
         <p className="mt-2 text-muted-foreground">Подключитесь к трансляции, чтобы видеть статистику каждого игрока. Полный разбор, линии и советы появятся после окончания матча.</p>
         <div className="deco-line mt-6" />
       </div>
