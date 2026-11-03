@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { MatchAnalysis } from "@/components/MatchAnalysis";
 import { DamageView, ItemsTimeline } from "@/components/MatchDeep";
+import { LaneMinutes } from "@/components/LaneMinutes";
 import { LiveScoreboard } from "@/components/LiveScoreboard";
 
 export const Route = createFileRoute("/matches/$matchId")({
@@ -105,6 +106,7 @@ function MatchPage() {
       </div>
       {tab === "damage" && <DamageView players={players} names={profiles.data} />}
       {tab === "items" && <ItemsTimeline players={players} names={profiles.data} />}
+      {tab === "lanes" && <LaneMinutes players={players} names={profiles.data} />}
       {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} />}
       {tab === "table" && [0, 1].map((team) => (
         <TeamTable
