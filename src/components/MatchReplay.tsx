@@ -53,7 +53,7 @@ export function MatchReplay({ paths, players, names }: { paths?: MatchPaths | un
     <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
       <div className="panel p-3">
         <svg viewBox={`0 0 ${S} ${S}`} className="aspect-square w-full rounded-lg bg-background">
-          {bg.map(([x, y], i) => <rect key={i} x={x} y={y} width={3} height={3} fill="var(--muted-foreground)" opacity={0.08} />)}
+          {bg.map(([x, y], i) => <rect key={i} x={x} y={y} width={3} height={3} fill="var(--muted-foreground)" opacity={0.2} />)}
           {deaths.map((d, i) => { const [x, y] = toSvg(d.death_pos.x, d.death_pos.y); return <text key={i} x={x} y={y} fontSize={22} textAnchor="middle" fill="var(--loss)">✕</text>; })}
           {world.map((w) => {
             const p = bySlot.get(w.slot); if (!p) return null;
