@@ -53,13 +53,24 @@ const TEAMS = ["Амбер (Amber)", "Сапфир (Sapphire)"];
 
 function MatchPage() {
   const { matchId } = Route.useParams();
-  const q = useQuery({ queryKey: ["match", matchId], queryFn: () => api<MatchMeta>(`/v1/matches/${matchId}/metadata`), staleTime: Infinity });
+  const q = useQuery({ queryKey: ["match", matchId], queryFn: () => api<MatchMeta>(`/v1/matches/${matchId}/metadata`), staleTime: Infinity, retry: false });
+  const live = useQuery({
+    queryKey: ["active"],
+    queryFn: () => api<LiveMatch[]>("/v1/matches/active"),
+    enabled: !!q.error,
+    refetchInterval: 60_000,
+    select: (d) => d.find((x) => String(x.match_id) === matchId),
+  });
   const players = q.data?.match_info.players ?? [];
   const profiles = useSteamProfiles(players.map((p) => p.account_id));
   const [tab, setTab] = useState<"table" | "lanes" | "tips">("table");
 
   if (q.isLoading) return <Loading label="Загружаем матч…" />;
-  if (q.error) return <ErrorBox error={q.error} />;
+  if (q.error) {
+    if (live.isLoading) return <Loading label="Проверяем, идёт ли матч сейчас…" />;
+    if (live.data) return <LiveView m={live.data} />;
+    return <ErrorBox error={new Error("Данные матча пока недоступны. Если матч только что закончился, попробуйте через несколько минут.")} />;
+  }
   const m = q.data!.match_info;
 
   return (
@@ -170,5 +181,62 @@ function TeamTable({ team, won, players, names }: { team: number; won: boolean; 
         </table>
       </div>
     </section>
+  );
+}
+
+interface LiveMatch {
+  match_id: number;
+  start_time: number;
+  spectators: number;
+  net_worth_team_0: number;
+  net_worth_team_1: number;
+  players: { account_id: number; team: number; hero_id: number }[];
+}
+
+function LiveView({ m }: { m: LiveMatch }) {
+  const profiles = useSteamProfiles(m.players.map((p) => p.account_id));
+  const heroes = useHeroMap();
+  const total = m.net_worth_team_0 + m.net_worth_team_1 || 1;
+  return (
+    <div className="space-y-8">
+      <div>
+        <p className="text-xs uppercase tracking-[0.3em] text-primary">Матч #{m.match_id}</p>
+        <h1 className="inline-flex items-center gap-3 font-display text-4xl font-semibold uppercase">
+          <span className="h-3 w-3 animate-pulse rounded-full bg-loss" /> Матч идёт
+        </h1>
+        <p className="mt-2 text-muted-foreground">Полная статистика, линии и советы появятся после окончания матча. Данные обновляются каждую минуту.</p>
+        <div className="deco-line mt-6" />
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Stat label="Начался" value={<span className="text-lg">{fmtDate(m.start_time)}</span>} />
+        <Stat label="Зрители" value={m.spectators} />
+        <Stat label="Души Амбер" value={fmtK(m.net_worth_team_0)} tone="brass" />
+        <Stat label="Души Сапфир" value={fmtK(m.net_worth_team_1)} tone="brass" />
+      </div>
+      <div className="flex h-2 overflow-hidden rounded-full">
+        <div className="bg-amber-team" style={{ width: `${(m.net_worth_team_0 / total) * 100}%` }} />
+        <div className="flex-1 bg-sapphire-team" />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {[0, 1].map((t) => (
+          <section key={t} className="panel p-4">
+            <h2 className={cn("mb-3 font-display text-lg uppercase tracking-wider", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{TEAMS[t]}</h2>
+            <div className="space-y-2">
+              {m.players.filter((p) => p.team === t).map((p) => (
+                <div key={p.account_id} className="flex items-center gap-3">
+                  <HeroIcon heroId={p.hero_id} size={36} />
+                  <div className="min-w-0">
+                    <Link to="/players/$accountId" params={{ accountId: String(p.account_id) }} className="block truncate font-medium hover:text-primary">
+                      {profiles.data?.get(p.account_id)?.personaname ?? `#${p.account_id}`}
+                    </Link>
+                    <p className="text-xs text-muted-foreground">{heroes.get(p.hero_id)?.name}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
   );
 }
