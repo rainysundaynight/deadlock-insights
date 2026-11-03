@@ -84,7 +84,6 @@ export interface MatchHistoryEntry {
   match_result: number;
   game_mode: number;
   match_mode: number;
-  hero_level?: number;
   ranked_display_badge?: number | null;
   ranked_delta?: number | null;
 }

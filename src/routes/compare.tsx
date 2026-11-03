@@ -12,12 +12,12 @@ import { fmtDuration, fmtK, kda } from "@/lib/format";
 import { globalAverages, playstyle, summarize, type PlayerSummary } from "@/lib/playerStats";
 import { cn } from "@/lib/utils";
 
-interface Search { a?: number; b?: number }
+interface Search { a?: number | undefined; b?: number | undefined }
 
 export const Route = createFileRoute("/compare")({
   validateSearch: (s: Record<string, unknown>): Search => ({
-    a: s.a ? Number(s.a) : undefined,
-    b: s.b ? Number(s.b) : undefined,
+    a: s["a"] ? Number(s["a"]) : undefined,
+    b: s["b"] ? Number(s["b"]) : undefined,
   }),
   head: () => ({
     meta: [

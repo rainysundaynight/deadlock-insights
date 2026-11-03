@@ -18,7 +18,7 @@ const METRICS = [
   { key: "net_worth", label: "Души" },
 ] as const;
 
-export function DamageView({ players, names }: { players: DeepPlayer[]; names?: Map<number, { personaname: string }> }) {
+export function DamageView({ players, names }: { players: DeepPlayer[]; names?: Map<number, { personaname: string }> | undefined }) {
   const heroes = useHeroMap();
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -47,7 +47,7 @@ export function DamageView({ players, names }: { players: DeepPlayer[]; names?: 
   );
 }
 
-function AccuracyView({ players, names }: { players: DeepPlayer[]; names?: Map<number, { personaname: string }> }) {
+function AccuracyView({ players, names }: { players: DeepPlayer[]; names?: Map<number, { personaname: string }> | undefined }) {
   const heroes = useHeroMap();
   const rows = players.map((p) => {
     const l = p.stats.at(-1);
@@ -70,7 +70,7 @@ function AccuracyView({ players, names }: { players: DeepPlayer[]; names?: Map<n
   );
 }
 
-export function ItemsTimeline({ players, names }: { players: DeepPlayer[]; names?: Map<number, { personaname: string }> }) {
+export function ItemsTimeline({ players, names }: { players: DeepPlayer[]; names?: Map<number, { personaname: string }> | undefined }) {
   const items = useItemMap();
   const heroes = useHeroMap();
   const [sel, setSel] = useState(players[0]?.account_id);
