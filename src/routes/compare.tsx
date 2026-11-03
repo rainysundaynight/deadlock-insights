@@ -77,7 +77,8 @@ function ComparePage() {
         {slot("b", b, pb)}
       </div>
       {(pa.loading || pb.loading) && <Loading />}
-      {pa.s && pb.s && (
+      {[pa.s, pb.s].some((x) => x && x.n === 0) && <p className="panel mt-6 p-5 text-sm text-muted-foreground">У одного из игроков нет открытой истории матчей — выберите другого.</p>}
+      {pa.s && pb.s && pa.s.n > 0 && pb.s.n > 0 && (
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <section className="panel p-5">
             <SectionTitle>Показатели</SectionTitle>
