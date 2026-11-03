@@ -46,7 +46,7 @@ interface MatchMeta {
   };
 }
 
-const TEAMS = ["Хайд-Райт (Amber)", "Сапфир (Sapphire)"];
+const TEAMS = ["Амбер (Amber)", "Сапфир (Sapphire)"];
 
 function MatchPage() {
   const { matchId } = Route.useParams();
