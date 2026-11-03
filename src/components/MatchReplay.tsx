@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { HeroIcon, useHeroMap } from "@/components/dl";
 import { PlayerMatchModal, type ModalPlayer } from "@/components/PlayerMatchModal";
 import { api } from "@/lib/api";
-import { fmtDuration } from "@/lib/format";
+import { fmtDuration, fmtK } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export interface MatchPath {
