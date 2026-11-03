@@ -64,7 +64,7 @@ function ItemsPage() {
             if (!row.length) return null;
             return (
               <section key={t}>
-                <h2 className="mb-3 font-display text-lg uppercase tracking-wider text-primary">Тир {t} · {fmtInt(row[0].cost)} душ</h2>
+                <h2 className="mb-3 font-display text-lg uppercase tracking-wider text-primary">Тир {t} · {fmtInt(row[0]?.cost)} душ</h2>
                 <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9">
                   {row.map((i) => {
                     const s = statMap.get(i.id);

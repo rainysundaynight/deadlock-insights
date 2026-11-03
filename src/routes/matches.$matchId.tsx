@@ -94,7 +94,7 @@ function MatchPage() {
   );
 }
 
-function TeamTable({ team, won, players, names }: { team: number; won: boolean; players: MatchPlayer[]; names?: Map<number, { personaname: string }> }) {
+function TeamTable({ team, won, players, names }: { team: number; won: boolean; players: MatchPlayer[]; names?: Map<number, { personaname: string }> | undefined }) {
   const heroes = useHeroMap();
   const items = useItemMap();
   return (

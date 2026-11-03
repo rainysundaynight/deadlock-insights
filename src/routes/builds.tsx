@@ -24,7 +24,7 @@ export interface BuildEntry {
 }
 
 export const Route = createFileRoute("/builds")({
-  validateSearch: (s: Record<string, unknown>): { hero?: number } => ({ hero: s.hero ? Number(s.hero) : undefined }),
+  validateSearch: (s: Record<string, unknown>): { hero?: number | undefined } => ({ hero: s["hero"] ? Number(s["hero"]) : undefined }),
   head: () => ({
     meta: [
       { title: "Билды Deadlock — популярные сборки героев" },

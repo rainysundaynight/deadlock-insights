@@ -8,7 +8,7 @@ import { REGIONS } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/leaderboard")({
-  validateSearch: (s: Record<string, unknown>): { hero?: number } => ({ hero: s.hero ? Number(s.hero) : undefined }),
+  validateSearch: (s: Record<string, unknown>): { hero?: number | undefined } => ({ hero: s["hero"] ? Number(s["hero"]) : undefined }),
   head: () => ({
     meta: [
       { title: "Лидерборд Deadlock — лучшие игроки по регионам" },
