@@ -10,7 +10,7 @@ export interface ModalPlayer {
   account_id?: number; player_slot: number; team: number; hero_id: number;
   kills?: number; deaths?: number; assists?: number; net_worth?: number; level?: number; last_hits?: number; denies?: number;
   items?: { game_time_s: number; item_id: number; sold_time_s: number }[];
-  stats?: { time_stamp_s: number; net_worth: number; kills: number; deaths: number; assists: number; level: number; player_damage: number; player_healing: number; creep_kills: number; denies: number }[];
+  stats?: ({ time_stamp_s: number } & Partial<Record<"net_worth" | "kills" | "deaths" | "assists" | "level" | "player_damage" | "player_healing" | "creep_kills" | "denies", number>>)[];
 }
 
 const SLOT_STYLE: Record<string, string> = {
@@ -61,12 +61,12 @@ export function PlayerMatchModal({ player, name, sec, hp, onClose }: { player: M
         <div className="space-y-5 p-5 pt-2">
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
             {[
-              ["K/D/A", snap ? `${snap.kills}/${snap.deaths}/${snap.assists}` : "—"],
-              ["Души", snap ? fmtK(snap.net_worth) : "—"],
-              ["Урон", snap ? fmtK(snap.player_damage) : "—"],
-              ["Лечение", snap ? fmtK(snap.player_healing) : "—"],
-              ["Крипы", snap ? String(snap.creep_kills) : "—"],
-              ["Денаи", snap ? String(snap.denies) : "—"],
+              ["K/D/A", snap ? `${snap.kills ?? 0}/${snap.deaths ?? 0}/${snap.assists ?? 0}` : "—"],
+              ["Души", snap ? fmtK(snap.net_worth ?? 0) : "—"],
+              ["Урон", snap ? fmtK(snap.player_damage ?? 0) : "—"],
+              ["Лечение", snap ? fmtK(snap.player_healing ?? 0) : "—"],
+              ["Крипы", snap ? String(snap.creep_kills ?? 0) : "—"],
+              ["Денаи", snap ? String(snap.denies ?? 0) : "—"],
             ].map(([l, v]) => (
               <div key={l} className="rounded-lg bg-secondary/60 p-2 text-center">
                 <div className="tabular font-display text-base">{v}</div>
