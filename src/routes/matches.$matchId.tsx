@@ -9,7 +9,7 @@ import { useState } from "react";
 import { MatchAnalysis } from "@/components/MatchAnalysis";
 import { DamageView, ItemsTimeline } from "@/components/MatchDeep";
 import { LaneMinutes } from "@/components/LaneMinutes";
-import { gradeVsGlobal, gradeTone } from "@/lib/grade";
+import { explainVsGlobal, gradeVsGlobal, gradeTone } from "@/lib/grade";
 import { globalAvgQuery } from "@/components/PlayerInsights";
 import { globalAverages } from "@/lib/playerStats";
 import { LiveScoreboard } from "@/components/LiveScoreboard";
@@ -120,8 +120,8 @@ function MatchPage() {
       {tab === "details" && <MatchDetails players={players} names={profiles.data} durationS={m.duration_s} />}
       {tab === "damage" && <DamageView players={players} names={profiles.data} />}
       {tab === "items" && <ItemsTimeline players={players} names={profiles.data} />}
-      {tab === "lanes" && <LaneMinutes players={players} names={profiles.data} />}
       {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} />}
+      {tab === "lanes" && <LaneMinutes players={players} names={profiles.data} />}
       {tab === "table" && [0, 1].map((team) => (
         <TeamTable
           lobby={players}
@@ -173,7 +173,20 @@ function TeamTable({ team, won, players, names, lobby, winner, durationS }: { du
                       </div>
                     </div>
                   </td>
-                  <td className="p-3">{ga && (() => { const g = gradeVsGlobal({ k: p.kills, d: p.deaths, a: p.assists, nw: p.net_worth, lh: p.last_hits, won: p.team === winner }, ga, durationS); return <span title={`${g.score.toFixed(0)}/100`} className={cn("inline-grid h-8 w-9 place-items-center rounded-md border border-border bg-secondary font-display text-sm font-extrabold", gradeTone(g.grade))}>{g.grade}</span>; })()}</td>
+                  <td className="p-3">{ga && (() => {
+                    const inp = { k: p.kills, d: p.deaths, a: p.assists, nw: p.net_worth, lh: p.last_hits, won: p.team === winner };
+                    const g = gradeVsGlobal(inp, ga, durationS);
+                    const why = explainVsGlobal(inp, ga, durationS);
+                    return (
+                      <span className="group relative inline-block">
+                        <span className={cn("inline-grid h-8 w-9 cursor-help place-items-center rounded-md border border-border bg-secondary font-display text-sm font-extrabold", gradeTone(g.grade))}>{g.grade}</span>
+                        <span className="pointer-events-none absolute left-full top-0 z-20 ml-2 hidden w-60 rounded-lg border border-border bg-popover p-3 text-xs font-normal shadow-lg group-hover:block">
+                          <span className="mb-1 block font-semibold">Почему {g.grade} · {g.score.toFixed(0)}/100</span>
+                          {why.map((w) => <span key={w} className="block text-muted-foreground">{w}</span>)}
+                        </span>
+                      </span>
+                    );
+                  })()}</td>
                   <td className="tabular p-3">{p.kills}/<span className="text-loss">{p.deaths}</span>/{p.assists}</td>
                   <td className="tabular p-3 text-primary">{fmtK(p.net_worth)}</td>
                   <td className="tabular p-3">{p.last_hits}<span className="text-muted-foreground">/{p.denies}</span></td>

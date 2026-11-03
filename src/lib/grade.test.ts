@@ -21,3 +21,12 @@ describe("grades", () => {
     expect(gradeFromScore(perfScore({ k: 10, d: 2, a: 20, nw: 60000, lh: 200, dmg: 40000, won: true }, b))).toBe("S+");
   });
 });
+
+import { explainGrade as _eg } from "./grade";
+describe("explainGrade", () => {
+  it("shows ratios vs average and the win bonus", () => {
+    const l = _eg({ k: 10, d: 2, a: 10, nw: 40000, lh: 200, won: true }, { k: 5, d: 5, a: 8, nw: 20000, lh: 200 });
+    expect(l).toContain("Крипы: 100% от среднего");
+    expect(l.at(-1)).toBe("Победа: +10 баллов");
+  });
+});
