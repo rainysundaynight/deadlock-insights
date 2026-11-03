@@ -60,7 +60,7 @@ export function MatchReplay({ paths, players, names }: { paths?: MatchPaths; pla
             const pt = w.pts[Math.min(t, w.pts.length - 1)]; if (!pt) return null;
             const hp = w.health?.[Math.min(t, w.pts.length - 1)] ?? 100;
             const img = heroes.get(p.hero_id)?.images.icon_image_small_webp ?? heroes.get(p.hero_id)?.images.icon_image_small;
-            const col = p.team === 0 ? "var(--amber-team)" : "var(--sapphire-team)";
+            const col = p.team === 0 ? "var(--team-amber)" : "var(--team-sapphire)";
             return (
               <g key={w.slot} opacity={hp <= 0 ? 0.25 : 1} style={{ transition: "transform 100ms linear" }} transform={`translate(${pt[0]},${pt[1]})`}>
                 <circle r={22} fill="var(--card)" stroke={col} strokeWidth={4} />
