@@ -10,3 +10,5 @@
 <!-- LOVABLE:END -->
 
 - Deadlock data is fetched client-side from https://api.deadlock-api.com via `src/lib/api.ts` + TanStack Query (API allows CORS, no key); shared UI helpers live in `src/components/dl.tsx`.
+- Live per-player match stats stream via browser EventSource from `/v1/matches/demo/live/query` (SQL over the broadcast, quoted camelCase columns) in `src/lib/liveStream.ts`; it's opt-in per click because spectating is rate-limited per IP.
+- App layout is a left sidebar shell (`AppShell` in `src/components/SiteHeader.tsx`); add new pages to its NAV groups.

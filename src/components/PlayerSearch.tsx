@@ -17,7 +17,7 @@ function toAccountId(q: string): number | null {
   return Number(n);
 }
 
-export function PlayerSearch({ autoFocus }: { autoFocus?: boolean }) {
+export function PlayerSearch({ autoFocus, compact, onPick, placeholder }: { autoFocus?: boolean; compact?: boolean; onPick?: (p: { account_id: number; personaname?: string }) => void; placeholder?: string }) {
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
   const navigate = useNavigate();
@@ -35,6 +35,12 @@ export function PlayerSearch({ autoFocus }: { autoFocus?: boolean }) {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const id = toAccountId(q);
+    if (onPick) {
+      if (id) onPick({ account_id: id });
+      else if (data?.[0]) onPick(data[0]);
+      setQ("");
+      return;
+    }
     if (id) navigate({ to: "/players/$accountId", params: { accountId: String(id) } });
     else if (data?.[0]) navigate({ to: "/players/$accountId", params: { accountId: String(data[0].account_id) } });
   };
@@ -42,13 +48,13 @@ export function PlayerSearch({ autoFocus }: { autoFocus?: boolean }) {
   return (
     <div className="relative w-full">
       <form onSubmit={onSubmit} className="relative">
-        <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+        <Search className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-muted-foreground ${compact ? "left-3 h-4 w-4" : "left-4 h-5 w-5"}`} />
         <input
           autoFocus={autoFocus}
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Ник в Steam, Steam ID или ссылка на профиль"
-          className={`${inputClass} h-14 pl-12 text-base`}
+          placeholder={placeholder ?? (compact ? "Найти игрока…" : "Ник в Steam, Steam ID или ссылка на профиль")}
+          className={compact ? `${inputClass} h-10 rounded-full pl-9` : `${inputClass} h-14 rounded-xl pl-12 text-base`}
         />
       </form>
       {debounced.length >= 2 && (
@@ -60,6 +66,10 @@ export function PlayerSearch({ autoFocus }: { autoFocus?: boolean }) {
               key={p.account_id}
               to="/players/$accountId"
               params={{ accountId: String(p.account_id) }}
+              onClick={(e) => {
+                if (onPick) { e.preventDefault(); onPick(p); }
+                setQ("");
+              }}
               className="flex items-center gap-3 border-b border-border px-4 py-3 last:border-0 hover:bg-accent"
             >
               <img src={p.avatarmedium ?? p.avatar} alt="" className="h-9 w-9 rounded" />

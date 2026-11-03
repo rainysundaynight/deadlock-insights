@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Empty, ErrorBox, useSteamProfiles, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
+import { PlayerInsights } from "@/components/PlayerInsights";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, type MatchHistoryEntry, type PlayerHeroStat } from "@/lib/api";
 import { fmtAgo, fmtDuration, fmtHours, fmtInt, fmtK, kda, winrate } from "@/lib/format";
@@ -54,6 +55,7 @@ function PlayerPage() {
           <h1 className="font-display text-4xl font-semibold">{profile?.personaname ?? `Игрок #${id}`}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <span>ID {id}</span>
+            <Link to="/compare" search={{ a: id }} className="hover:text-primary">Сравнить →</Link>
             {profile?.profileurl && (
               <a href={profile.profileurl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
                 Steam <ExternalLink className="h-3 w-3" />
@@ -79,13 +81,17 @@ function PlayerPage() {
         </div>
       )}
 
-      <Tabs defaultValue="matches">
+      <Tabs defaultValue="overview">
         <TabsList className="bg-secondary">
+          <TabsTrigger value="overview">Обзор</TabsTrigger>
           <TabsTrigger value="matches">Матчи</TabsTrigger>
           <TabsTrigger value="heroes">Герои</TabsTrigger>
           <TabsTrigger value="mates">Тиммейты</TabsTrigger>
           <TabsTrigger value="enemies">Соперники</TabsTrigger>
         </TabsList>
+        <TabsContent value="overview" className="mt-4">
+          <PlayerInsights history={history.data ?? []} />
+        </TabsContent>
         <TabsContent value="matches" className="mt-4">
           <MatchList matches={history.data ?? []} />
         </TabsContent>

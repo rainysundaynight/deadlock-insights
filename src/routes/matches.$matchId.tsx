@@ -7,6 +7,8 @@ import { fmtDate, fmtDuration, fmtK, GAME_MODES, MATCH_MODES } from "@/lib/forma
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { MatchAnalysis } from "@/components/MatchAnalysis";
+import { DamageView, ItemsTimeline } from "@/components/MatchDeep";
+import { LiveScoreboard } from "@/components/LiveScoreboard";
 
 export const Route = createFileRoute("/matches/$matchId")({
   head: ({ params }) => ({
@@ -63,7 +65,7 @@ function MatchPage() {
   });
   const players = q.data?.match_info.players ?? [];
   const profiles = useSteamProfiles(players.map((p) => p.account_id));
-  const [tab, setTab] = useState<"table" | "lanes" | "tips">("table");
+  const [tab, setTab] = useState<"table" | "lanes" | "damage" | "items" | "tips">("table");
 
   if (q.isLoading) return <Loading label="Загружаем матч…" />;
   if (q.error) {
@@ -77,7 +79,7 @@ function MatchPage() {
     <div className="space-y-8">
       <div>
         <p className="text-xs uppercase tracking-[0.3em] text-primary">Матч #{m.match_id}</p>
-        <h1 className="font-display text-4xl font-semibold uppercase">
+        <h1 className="font-display text-3xl font-bold md:text-4xl">
           Победа: <span className={m.winning_team === 0 ? "text-amber-team" : "text-sapphire-team"}>{TEAMS[m.winning_team]}</span>
         </h1>
         <div className="deco-line mt-6" />
@@ -96,12 +98,14 @@ function MatchPage() {
           }
         />
       </div>
-      <div className="flex gap-2">
-        {([["table", "Таблица"], ["lanes", "Линии и график"], ["tips", "Советы"]] as const).map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)} className={cn("rounded-md border px-4 py-2 font-display text-sm uppercase tracking-wider", tab === k ? "border-primary bg-primary text-primary-foreground" : "border-border bg-secondary hover:border-primary/60")}>{l}</button>
+      <div className="flex flex-wrap gap-2">
+        {([["table", "Таблица"], ["lanes", "Линии и график"], ["damage", "Урон"], ["items", "Предметы"], ["tips", "Советы"]] as const).map(([k, l]) => (
+          <button key={k} onClick={() => setTab(k)} className={cn("rounded-full border px-4 py-2 text-sm font-medium", tab === k ? "border-primary/60 bg-primary/15 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground")}>{l}</button>
         ))}
       </div>
-      {tab !== "table" && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} />}
+      {tab === "damage" && <DamageView players={players} names={profiles.data} />}
+      {tab === "items" && <ItemsTimeline players={players} names={profiles.data} />}
+      {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} />}
       {tab === "table" && [0, 1].map((team) => (
         <TeamTable
           key={team}
@@ -204,7 +208,7 @@ function LiveView({ m }: { m: LiveMatch }) {
         <h1 className="inline-flex items-center gap-3 font-display text-4xl font-semibold uppercase">
           <span className="h-3 w-3 animate-pulse rounded-full bg-loss" /> Матч идёт
         </h1>
-        <p className="mt-2 text-muted-foreground">Полная статистика, линии и советы появятся после окончания матча. Данные обновляются каждую минуту.</p>
+        <p className="mt-2 text-muted-foreground">Подключитесь к трансляции, чтобы видеть статистику каждого игрока. Полный разбор, линии и советы появятся после окончания матча.</p>
         <div className="deco-line mt-6" />
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -217,6 +221,7 @@ function LiveView({ m }: { m: LiveMatch }) {
         <div className="bg-amber-team" style={{ width: `${(m.net_worth_team_0 / total) * 100}%` }} />
         <div className="flex-1 bg-sapphire-team" />
       </div>
+      <LiveScoreboard matchId={m.match_id} />
       <div className="grid gap-4 md:grid-cols-2">
         {[0, 1].map((t) => (
           <section key={t} className="panel p-4">
