@@ -14,7 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      followed_players: {
+        Row: {
+          account_id: number
+          created_at: string
+          id: string
+          name: string | null
+          user_id: string
+        }
+        Insert: {
+          account_id: number
+          created_at?: string
+          id?: string
+          name?: string | null
+          user_id: string
+        }
+        Update: {
+          account_id?: number
+          created_at?: string
+          id?: string
+          name?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          created_at: string
+          id: string
+          metric: string
+          op: string
+          target: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metric: string
+          op?: string
+          target: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metric?: string
+          op?: string
+          target?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          persona_name: string | null
+          steam_account_id: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          persona_name?: string | null
+          steam_account_id?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          persona_name?: string | null
+          steam_account_id?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
