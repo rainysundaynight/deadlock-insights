@@ -51,7 +51,7 @@ export function playstyle(s: PlayerSummary, g: ReturnType<typeof globalAverages>
     { axis: "Помощь", v: r(s.a, g.a) },
     { axis: "Фарм", v: r(s.lh, g.lh) },
     { axis: "Души", v: r(s.nw, g.nw) },
-    { axis: "Добивания своих", v: r(s.dn, g.dn) },
+    { axis: "Денаи", v: r(s.dn, g.dn) },
   ];
 }
 
