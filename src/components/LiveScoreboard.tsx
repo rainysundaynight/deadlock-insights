@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import { Link } from "@tanstack/react-router";
 import { HeroIcon, Loading, RankBadge, useHeroMap, useSteamProfiles } from "@/components/dl";
+import { LiveMap } from "@/components/LiveMap";
 import { api } from "@/lib/api";
 import { fmtDuration, fmtK, REGIONS } from "@/lib/format";
 import { useLiveScoreboard, type LiveEvent } from "@/lib/liveStream";
