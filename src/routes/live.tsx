@@ -35,13 +35,19 @@ interface ActiveMatch {
 
 const REGION_RU: Record<string, string> = { europe: "Европа", row: "Америка", south_america: "Юж. Америка", russia: "Россия", oceania: "Океания", asia: "Азия" };
 
+type Kind = "all" | "ranked" | "brawl" | "unranked";
+const KINDS: [Kind, string][] = [["all", "Все типы"], ["ranked", "Рейтинговые"], ["unranked", "Обычные"], ["brawl", "Street Brawl"]];
+export const kindOf = (m: { match_mode_parsed: string; game_mode_parsed: string }): Exclude<Kind, "all"> =>
+  m.game_mode_parsed.includes("StreetBrawl") ? "brawl" : m.match_mode_parsed === "Ranked" ? "ranked" : "unranked";
+
 function LivePage() {
   const [region, setRegion] = useState<string | null>(null);
+  const [kind, setKind] = useState<Kind>("all");
   const q = useQuery({ queryKey: ["active"], queryFn: () => api<ActiveMatch[]>("/v1/matches/active"), refetchInterval: 60_000 });
   const regions = useMemo(() => [...new Set((q.data ?? []).map((m) => m.region_mode_parsed))], [q.data]);
   const list = useMemo(
-    () => (q.data ?? []).filter((m) => !region || m.region_mode_parsed === region).sort((a, b) => b.match_score - a.match_score).slice(0, 60),
-    [q.data, region],
+    () => (q.data ?? []).filter((m) => (!region || m.region_mode_parsed === region) && (kind === "all" || kindOf(m) === kind)).sort((a, b) => b.match_score - a.match_score).slice(0, 60),
+    [q.data, region, kind],
   );
 
   return (
@@ -49,6 +55,9 @@ function LivePage() {
       <PageHeader eyebrow="Прямо сейчас" title={<span className="inline-flex items-center gap-3"><span className="h-3 w-3 animate-pulse rounded-full bg-loss" /> Live матчи</span>}>
         Топ матчей по рейтингу, которые идут прямо сейчас. Обновляется каждую минуту.
       </PageHeader>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        {KINDS.map(([k, l]) => <Chip key={k} active={kind === k} onClick={() => setKind(k)}>{l} {k !== "all" && <span className="text-muted-foreground">{(q.data ?? []).filter((m) => kindOf(m) === k).length}</span>}</Chip>)}
+      </div>
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <Chip active={!region} onClick={() => setRegion(null)}>Все регионы</Chip>
         {regions.map((r) => <Chip key={r} active={region === r} onClick={() => setRegion(r)}>{REGION_RU[r] ?? r}</Chip>)}
@@ -63,7 +72,7 @@ function LivePage() {
             return (
               <Link key={m.match_id} to="/matches/$matchId" params={{ matchId: String(m.match_id) }} className="panel panel-hover block p-4">
                 <div className="mb-3 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>#{m.match_id} · {REGION_RU[m.region_mode_parsed] ?? m.region_mode_parsed} · начался {fmtAgo(m.start_time)}</span>
+                  <span>#{m.match_id} · {KINDS.find(([k]) => k === kindOf(m))?.[1]} · {REGION_RU[m.region_mode_parsed] ?? m.region_mode_parsed} · начался {fmtAgo(m.start_time)}</span>
                   <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" />{m.spectators}</span>
                 </div>
                 {[0, 1].map((t) => (

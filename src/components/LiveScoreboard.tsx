@@ -37,7 +37,8 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
   const heroes = useHeroMap();
   const profiles = useSteamProfiles(roster.map((r) => r.account_id));
   const { badge, lb } = useRanks(roster, ranked);
-  const [filter, setFilter] = useState<"all" | "kill" | "streak">("all");
+  const [filter, setFilter] = useState<"all" | LiveEvent["kind"]>("all");
+  const [teamF, setTeamF] = useState<-1 | 0 | 1>(-1);
 
   const info = useMemo(() => {
     const m = new Map<string, { id: number; badge?: number | null | undefined; place?: number }>();
@@ -85,7 +86,7 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
   const maxAbs = Math.max(1000, ...history.map((h) => Math.abs(h.diff)));
   const totalDmg = Math.max(1, ...players.map((p) => p.dmg));
   const mvp = [...players].sort((a, b) => (b.k * 2 + b.a) / Math.max(1, b.d) + b.nw / 8000 - ((a.k * 2 + a.a) / Math.max(1, a.d) + a.nw / 8000))[0];
-  const shownEvents = events.filter((e) => filter === "all" || e.kind === filter);
+  const shownEvents = events.filter((e) => (filter === "all" || e.kind === filter) && (teamF === -1 || e.team === teamF));
 
   const compare: [string, number, number, (n: number) => string][] = [
     ["Души", sum(0, (p) => p.nw), sum(1, (p) => p.nw), fmtK],
@@ -146,13 +147,16 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
         </div>
 
         <div className="panel flex max-h-[520px] flex-col p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Лента событий</p>
-            <div className="flex gap-1 text-xs">
-              {([["all", "Все"], ["kill", "Убийства"], ["streak", "Серии"]] as const).map(([k, l]) => (
-                <button key={k} onClick={() => setFilter(k)} className={cn("rounded-full px-2 py-0.5", filter === k ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground")}>{l}</button>
-              ))}
-            </div>
+          <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Лента событий</p>
+          <div className="mb-2 flex flex-wrap gap-1 text-xs">
+            {([["all", "Все"], ["kill", "Убийства"], ["death", "Смерти"], ["streak", "Серии"], ["level", "Уровни"], ["lead", "Перевес"], ["sync", "До записи"]] as const).map(([k, l]) => (
+              <button key={k} onClick={() => setFilter(k)} className={cn("rounded-full px-2 py-0.5", filter === k ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground")}>{l}</button>
+            ))}
+          </div>
+          <div className="mb-3 flex gap-1 text-xs">
+            {([[-1, "Обе команды"], [0, "Амбер"], [1, "Сапфир"]] as const).map(([k, l]) => (
+              <button key={k} onClick={() => setTeamF(k)} className={cn("rounded-full px-2 py-0.5", teamF === k ? (k === 0 ? "bg-amber-team/20 text-amber-team" : k === 1 ? "bg-sapphire-team/20 text-sapphire-team" : "bg-primary/15 text-primary") : "text-muted-foreground hover:text-foreground")}>{l}</button>
+            ))}
           </div>
           {mvp && (
             <div className="mb-3 flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 p-2 text-sm">
