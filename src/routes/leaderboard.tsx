@@ -3,7 +3,7 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
 import { Chip, Empty, ErrorBox, HeroIcon, HeroSelect, Loading, PageHeader, RankBadge, inputClass } from "@/components/dl";
-import { api } from "@/lib/api";
+import { api, type SteamProfile } from "@/lib/api";
 import { REGIONS } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
