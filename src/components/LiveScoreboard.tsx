@@ -32,7 +32,7 @@ function useRanks(roster: Roster[], ranked: boolean) {
 const EV_ICON: Record<LiveEvent["kind"], typeof Swords> = { kill: Swords, death: Skull, level: TrendingUp, streak: Flame, lead: Crown };
 
 export function LiveScoreboard({ matchId, roster = [], ranked = false }: { matchId: number; roster?: Roster[]; ranked?: boolean }) {
-  const [on, setOn] = useState(false);
+  const [on, setOn] = useState(true);
   const { players, history, events, gameTime, status, message } = useLiveScoreboard(matchId, on);
   const heroes = useHeroMap();
   const { badge, lb } = useRanks(roster, ranked);
