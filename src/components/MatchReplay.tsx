@@ -121,16 +121,21 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
               {(md.entities.teleporters ?? []).map((b, i) => { const [x, y] = rel(b); return <Marker key={`t${i}`} x={x} y={y} c="oklch(0.7 0.12 250)" label="Телепорт" short="T" small />; })}
               <g opacity={bossDead.length ? 0.45 : 1}><Marker x={S / 2} y={S / 2} c="oklch(0.6 0.22 20)" label="Мид-босс" short="M" big /></g>
             </>}
-            {md && on("obj") && Object.entries(md.objective_positions).map(([k, r]) => {
-              const [x, y] = rel(r);
-              const team = k.startsWith("team0") ? 0 : 1;
-              const dt = destroyed.get(k);
-              const dead = dt != null && dt <= sec;
-              const size = k.includes("core") ? 14 : k.includes("titan") ? 12 : k.includes("tier2") ? 10 : 8;
-              return <g key={k} opacity={dead ? 0.35 : 1}>
-                <polygon points={`${x},${y - size} ${x + size},${y} ${x},${y + size} ${x - size},${y}`} fill={dead ? "var(--muted)" : teamCol(team)} stroke="black" strokeWidth={2} />
-                {dead && <text x={x} y={y + 5} fontSize={14} textAnchor="middle" fill="var(--loss)" fontWeight={700}>✕</text>}
-                <title>{objName(k.replace(/^team\d_/, ""))}{dt ? ` · разрушена ${fmtDuration(dt)}` : ""}</title>
+            {md && on("buffs") && timed.map((m, i) => (
+              <g key={`tm${i}`} transform={`translate(${m.x},${m.y})`}>
+                {m.active && <circle r={20} fill="none" stroke={m.c} strokeWidth={3}><animate attributeName="r" values="12;26;12" dur="1.6s" repeatCount="indefinite" /><animate attributeName="opacity" values="1;0.2;1" dur="1.6s" repeatCount="indefinite" /></circle>}
+                <circle r={m.active ? 13 : 9} fill={m.active ? m.c : "var(--muted)"} stroke="black" strokeWidth={2} opacity={m.active ? 1 : 0.7} />
+                <text y={m.active ? 5 : 4} fontSize={m.active ? 13 : 10} textAnchor="middle" fill="black" fontWeight={800}>{m.short}</text>
+                {!m.active && m.next != null && <text y={24} fontSize={11} textAnchor="middle" fill="white" stroke="black" strokeWidth={3} paintOrder="stroke" fontWeight={700}>{fmtDuration(m.next)}</text>}
+                <title>{m.label}{m.active ? " · активно" : m.next != null ? ` · через ${fmtDuration(m.next)}` : ""}</title>
+              </g>
+            ))}
+            {md && on("obj") && structures.map((s) => {
+              const dead = s.dt != null && s.dt <= sec;
+              return <g key={s.key} transform={`translate(${s.x},${s.y})`} opacity={dead ? 0.4 : 1}>
+                <StructIcon kind={s.kind} fill={dead ? "var(--muted)" : teamCol(s.team)} />
+                {dead && <text y={6} fontSize={16} textAnchor="middle" fill="var(--loss)" fontWeight={800} stroke="black" strokeWidth={0.8}>✕</text>}
+                <title>{STRUCT_NAME[s.kind]} · {s.team === 0 ? "Амбер" : "Сапфир"}{s.dt ? ` · разрушен ${fmtDuration(s.dt)}` : ""}</title>
               </g>;
             })}
             {deaths.map((d, i) => { const [x, y] = toSvg(d.death_pos.x, d.death_pos.y); return <text key={i} x={x} y={y} fontSize={26} textAnchor="middle" fill="var(--loss)" stroke="black" strokeWidth={1}>✕</text>; })}
