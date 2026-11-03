@@ -11,7 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BuildsRouteImport } from './routes/builds'
+import { Route as ItemsRouteImport } from './routes/items'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as LiveRouteImport } from './routes/live'
+import { Route as PatchesRouteImport } from './routes/patches'
+import { Route as RanksRouteImport } from './routes/ranks'
 import { Route as HeroesIndexRouteImport } from './routes/heroes.index'
 import { Route as HeroesHeroIdRouteImport } from './routes/heroes.$heroId'
 import { Route as MatchesMatchIdRouteImport } from './routes/matches.$matchId'
@@ -27,9 +31,29 @@ const BuildsRoute = BuildsRouteImport.update({
   path: '/builds',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ItemsRoute = ItemsRouteImport.update({
+  id: '/items',
+  path: '/items',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LeaderboardRoute = LeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveRoute = LiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PatchesRoute = PatchesRouteImport.update({
+  id: '/patches',
+  path: '/patches',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RanksRoute = RanksRouteImport.update({
+  id: '/ranks',
+  path: '/ranks',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HeroesIndexRoute = HeroesIndexRouteImport.update({
@@ -56,7 +80,11 @@ const PlayersAccountIdRoute = PlayersAccountIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/builds': typeof BuildsRoute
+  '/items': typeof ItemsRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/live': typeof LiveRoute
+  '/patches': typeof PatchesRoute
+  '/ranks': typeof RanksRoute
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/players/$accountId': typeof PlayersAccountIdRoute
@@ -65,7 +93,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/builds': typeof BuildsRoute
+  '/items': typeof ItemsRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/live': typeof LiveRoute
+  '/patches': typeof PatchesRoute
+  '/ranks': typeof RanksRoute
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/players/$accountId': typeof PlayersAccountIdRoute
@@ -75,7 +107,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/builds': typeof BuildsRoute
+  '/items': typeof ItemsRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/live': typeof LiveRoute
+  '/patches': typeof PatchesRoute
+  '/ranks': typeof RanksRoute
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/players/$accountId': typeof PlayersAccountIdRoute
@@ -86,7 +122,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/builds'
+    | '/items'
     | '/leaderboard'
+    | '/live'
+    | '/patches'
+    | '/ranks'
     | '/heroes/$heroId'
     | '/matches/$matchId'
     | '/players/$accountId'
@@ -95,7 +135,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/builds'
+    | '/items'
     | '/leaderboard'
+    | '/live'
+    | '/patches'
+    | '/ranks'
     | '/heroes/$heroId'
     | '/matches/$matchId'
     | '/players/$accountId'
@@ -104,7 +148,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/builds'
+    | '/items'
     | '/leaderboard'
+    | '/live'
+    | '/patches'
+    | '/ranks'
     | '/heroes/$heroId'
     | '/matches/$matchId'
     | '/players/$accountId'
@@ -114,7 +162,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BuildsRoute: typeof BuildsRoute
+  ItemsRoute: typeof ItemsRoute
   LeaderboardRoute: typeof LeaderboardRoute
+  LiveRoute: typeof LiveRoute
+  PatchesRoute: typeof PatchesRoute
+  RanksRoute: typeof RanksRoute
   HeroesHeroIdRoute: typeof HeroesHeroIdRoute
   MatchesMatchIdRoute: typeof MatchesMatchIdRoute
   PlayersAccountIdRoute: typeof PlayersAccountIdRoute
@@ -137,11 +189,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BuildsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/items': {
+      id: '/items'
+      path: '/items'
+      fullPath: '/items'
+      preLoaderRoute: typeof ItemsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/leaderboard': {
       id: '/leaderboard'
       path: '/leaderboard'
       fullPath: '/leaderboard'
       preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live': {
+      id: '/live'
+      path: '/live'
+      fullPath: '/live'
+      preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/patches': {
+      id: '/patches'
+      path: '/patches'
+      fullPath: '/patches'
+      preLoaderRoute: typeof PatchesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ranks': {
+      id: '/ranks'
+      path: '/ranks'
+      fullPath: '/ranks'
+      preLoaderRoute: typeof RanksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/heroes/': {
@@ -178,7 +258,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BuildsRoute: BuildsRoute,
+  ItemsRoute: ItemsRoute,
   LeaderboardRoute: LeaderboardRoute,
+  LiveRoute: LiveRoute,
+  PatchesRoute: PatchesRoute,
+  RanksRoute: RanksRoute,
   HeroesHeroIdRoute: HeroesHeroIdRoute,
   MatchesMatchIdRoute: MatchesMatchIdRoute,
   PlayersAccountIdRoute: PlayersAccountIdRoute,
