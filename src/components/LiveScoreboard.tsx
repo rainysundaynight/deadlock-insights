@@ -4,7 +4,7 @@ import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Too
 import { useMemo, useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { HeroIcon, Loading, RankBadge, useHeroMap } from "@/components/dl";
+import { HeroIcon, Loading, RankBadge, useHeroMap, useSteamProfiles } from "@/components/dl";
 import { api } from "@/lib/api";
 import { fmtDuration, fmtK, REGIONS } from "@/lib/format";
 import { useLiveScoreboard, type LiveEvent } from "@/lib/liveStream";
@@ -35,6 +35,7 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
   const [on, setOn] = useState(true);
   const { players, history, events, gameTime, status, message } = useLiveScoreboard(matchId, on);
   const heroes = useHeroMap();
+  const profiles = useSteamProfiles(roster.map((r) => r.account_id));
   const { badge, lb } = useRanks(roster, ranked);
   const [filter, setFilter] = useState<"all" | "kill" | "streak">("all");
 
@@ -61,8 +62,22 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
       </div>
     );
   if (status === "error" && !players.length)
-    return <div className="panel p-6 text-sm"><p className="font-semibold">Не удалось подключиться к трансляции</p><p className="mt-1 text-muted-foreground">{message.includes("429") || message.includes("limit") ? "Достигнут лимит подключений — попробуйте позже." : message || "Попробуйте позже."}</p></div>;
-  if (!players.length) return <Loading label={message ? `Подключаемся к трансляции… ${message.slice(0, 80)}` : "Подключаемся к трансляции…"} />;
+    return (
+      <div className="space-y-4">
+        <div className="panel p-6 text-sm">
+          <p className="font-semibold">Не удалось подключиться к трансляции</p>
+          <p className="mt-1 text-muted-foreground">{message.includes("429") || message.includes("limit") ? "Достигнут лимит подключений — попробуйте позже." : message || "Попробуйте позже."}</p>
+        </div>
+        {roster.length > 0 && <TeamRosters roster={roster} names={profiles.data} />}
+      </div>
+    );
+  if (!players.length)
+    return (
+      <div className="space-y-4">
+        <Loading label={message ? `Подключаемся к трансляции… ${message.slice(0, 80)}` : "Подключаемся к трансляции…"} />
+        {roster.length > 0 && <TeamRosters roster={roster} names={profiles.data} />}
+      </div>
+    );
 
   const team = (t: number) => players.filter((p) => p.team === t).sort((a, b) => b.nw - a.nw);
   const sum = (t: number, f: (p: (typeof players)[number]) => number) => team(t).reduce((s, p) => s + f(p), 0);
@@ -204,6 +219,32 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
               })}
             </tbody>
           </table>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function TeamRosters({ roster, names }: { roster: Roster[]; names?: Map<number, { personaname: string }> | undefined }) {
+  const heroes = useHeroMap();
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {[0, 1].map((t) => (
+        <section key={t} className="panel p-4">
+          <h3 className={cn("mb-3 font-display text-sm font-semibold uppercase tracking-wider", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{TEAMS[t]}</h3>
+          <div className="space-y-2">
+            {roster.filter((r) => r.team === t).map((r) => (
+              <div key={r.account_id} className="flex items-center gap-3">
+                <HeroIcon heroId={r.hero_id} size={32} />
+                <div className="min-w-0">
+                  <Link to="/players/$accountId" params={{ accountId: String(r.account_id) }} className="block truncate text-sm font-medium hover:text-primary">
+                    {names?.get(r.account_id)?.personaname ?? `#${r.account_id}`}
+                  </Link>
+                  <p className="text-xs text-muted-foreground">{heroes.get(r.hero_id)?.name}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
       ))}
     </div>
