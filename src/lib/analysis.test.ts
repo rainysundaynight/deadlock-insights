@@ -9,11 +9,11 @@ const mk = (team: number, lane: number, nw9: number): APlayer => ({
 describe("laneResults", () => {
   it("picks the team with more souls at 9 minutes as lane winner", () => {
     const r = laneResults([mk(0, 1, 5000), mk(0, 1, 5000), mk(1, 1, 4000), mk(1, 1, 4000)]);
-    expect(r[0].winner).toBe(0);
-    expect(r[0].diff).toBe(2000);
+    expect(r[0]!.winner).toBe(0);
+    expect(r[0]!.diff).toBe(2000);
   });
   it("calls a lane even when the gap is under 3%", () => {
     const r = laneResults([mk(0, 4, 5000), mk(1, 4, 4900)]);
-    expect(r[0].winner).toBeNull();
+    expect(r[0]!.winner).toBeNull();
   });
 });
