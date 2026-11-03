@@ -183,8 +183,6 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             })}
             {md && on("shops") && (md.entities.shops ?? []).map((s, i) => { const [x, y] = rel(s); return <g key={i}><rect x={x - 8} y={y - 8} width={16} height={16} rx={3} fill={s.kind === "secret" ? "oklch(0.7 0.2 300)" : "oklch(0.8 0.14 160)"} stroke="black" strokeWidth={1.5} /><text x={x} y={y + 4} fontSize={11} textAnchor="middle" fill="black" fontWeight={700}>$</text><title>{s.kind === "secret" ? "Тайный магазин" : "Магазин"}</title></g>; })}
             {md && on("buffs") && <>
-              {(md.entities.bridge_buffs ?? []).map((b, i) => { const [x, y] = rel(b); return <Marker key={`b${i}`} x={x} y={y} c="oklch(0.85 0.17 95)" label="Бафф моста" short="B" />; })}
-              {(md.entities.unstable_rifts ?? []).map((b, i) => { const [x, y] = rel(b); return <Marker key={`r${i}`} x={x} y={y} c="oklch(0.65 0.25 310)" label="Нестабильный рифт" short="R" />; })}
               {(md.entities.soul_urn_pads ?? []).map((b, i) => { const [x, y] = rel(b); return <Marker key={`u${i}`} x={x} y={y} c="oklch(0.75 0.15 200)" label="Урна душ (точка сдачи)" short="U" />; })}
               {(md.entities.teleporters ?? []).map((b, i) => { const [x, y] = rel(b); return <Marker key={`t${i}`} x={x} y={y} c="oklch(0.7 0.12 250)" label="Телепорт" short="T" small />; })}
               <g opacity={bossDead.length ? 0.45 : 1}><Marker x={S / 2} y={S / 2} c="oklch(0.6 0.22 20)" label="Мид-босс" short="M" big /></g>
