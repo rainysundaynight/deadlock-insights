@@ -4,7 +4,8 @@ import { HeroIcon, useHeroMap } from "@/components/dl";
 import { fmtK } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
-type Snap = Record<string, number | unknown>;
+type K = "gold_lane_creep"|"gold_lane_creep_orbs"|"gold_neutral_creep"|"gold_neutral_creep_orbs"|"gold_player"|"gold_player_orbs"|"gold_boss"|"gold_boss_orb"|"gold_treasure"|"shots_hit"|"shots_missed"|"net_worth"|"hero_bullets_hit"|"hero_bullets_hit_crit"|"player_damage_taken"|"player_healing"|"gold_death_loss"|"gold_denied"|"boss_damage"|"weapon_power"|"tech_power";
+type Snap = Partial<Record<K, number>>;
 interface P { account_id: number; player_slot: number; team: number; hero_id: number; stats: unknown[] }
 
 const SOURCES = [
