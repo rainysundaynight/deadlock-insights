@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Empty, ErrorBox, useSteamProfiles, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
+import { FollowButton } from "@/components/FollowButton";
 import { PlayerInsights } from "@/components/PlayerInsights";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, type MatchHistoryEntry, type PlayerHeroStat } from "@/lib/api";
@@ -55,6 +56,7 @@ function PlayerPage() {
           <h1 className="font-display text-4xl font-semibold">{profile?.personaname ?? `Игрок #${id}`}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <span>ID {id}</span>
+            <FollowButton accountId={id} name={profile?.personaname} />
             <Link to="/compare" search={{ a: id }} className="hover:text-primary">Сравнить →</Link>
             {profile?.profileurl && (
               <a href={profile.profileurl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
