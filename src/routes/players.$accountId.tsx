@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 
 import { Empty, ErrorBox, useSteamProfiles, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
 import { FollowButton } from "@/components/FollowButton";
+import { PotentialRank } from "@/components/PotentialRank";
 import { PlayerInsights } from "@/components/PlayerInsights";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, type MatchHistoryEntry, type PlayerHeroStat } from "@/lib/api";
