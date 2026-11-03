@@ -79,7 +79,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   const teamCol = (team: number) => (team === 0 ? "var(--team-amber)" : "var(--team-sapphire)");
 
   const objEvents = [
-    ...(objectives ?? []).filter((o) => OBJ_KEY[o.team_objective_id] && o.destroyed_time_s).map((o) => ({ t: o.destroyed_time_s, team: o.team, text: `${o.team === 0 ? "Амбер" : "Сапфир"} теряет ${objName(OBJ_KEY[o.team_objective_id])}` })),
+    ...(objectives ?? []).filter((o) => OBJ_KEY[o.team_objective_id] && o.destroyed_time_s).map((o) => ({ t: o.destroyed_time_s, team: o.team, text: `${o.team === 0 ? "Амбер" : "Сапфир"} теряет ${objName(OBJ_KEY[o.team_objective_id] ?? "")}` })),
     ...(midBoss ?? []).map((b) => ({ t: b.destroyed_time_s, team: b.team_killed, text: `${b.team_killed === 0 ? "Амбер" : "Сапфир"} убивает Мид-босса` })),
   ].sort((a, b) => a.t - b.t);
 
@@ -100,7 +100,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
               return <polyline key={w.slot} points={w.pts.slice(0, t + 1).filter((_, i) => i % 3 === 0).map((q) => q.join(",")).join(" ")} fill="none" stroke={p ? teamCol(p.team) : "white"} strokeOpacity={0.35} strokeWidth={2} />;
             })}
             {md && on("zip") && md.zipline_paths.map((z, i) => (
-              <polyline key={i} points={z.P0_points.map((pt) => toSvg(z.origin[0] + pt[0], z.origin[1] + pt[1]).join(",")).join(" ")}
+              <polyline key={i} points={z.P0_points.map((pt) => toSvg((z.origin[0] ?? 0) + (pt[0] ?? 0), (z.origin[1] ?? 0) + (pt[1] ?? 0)).join(",")).join(" ")}
                 fill="none" stroke={z.color} strokeWidth={3} strokeOpacity={0.85} strokeDasharray="10 5" />
             ))}
             {md && on("camps") && md.neutral_camps.map((c, i) => {

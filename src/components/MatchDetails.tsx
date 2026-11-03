@@ -61,10 +61,10 @@ export function MatchDetails({ players, names, durationS }: { players: P[]; name
                   </td>
                   <td><Bar v={r.spm} max={mx.spm} label={r.spm.toFixed(0)} cls="bg-primary" /></td>
                   <td>
-                    <div className="flex h-3 overflow-hidden rounded-full bg-muted" title={SOURCES.map((s, i) => `${s.l}: ${fmtK(r.src[i])}`).join(" · ")}>
-                      {r.src.map((v, i) => <div key={i} style={{ width: `${(v / r.total) * 100}%`, background: SOURCES[i].c }} />)}
+                    <div className="flex h-3 overflow-hidden rounded-full bg-muted" title={SOURCES.map((s, i) => `${s.l}: ${fmtK(r.src[i] ?? 0)}`).join(" · ")}>
+                      {r.src.map((v, i) => <div key={i} style={{ width: `${(v / r.total) * 100}%`, background: SOURCES[i]?.c }} />)}
                     </div>
-                    <p className="tabular mt-1 text-[11px] text-muted-foreground">линия {Math.round((r.src[0] / r.total) * 100)}% · лагеря {Math.round((r.src[1] / r.total) * 100)}% · герои {Math.round((r.src[2] / r.total) * 100)}%</p>
+                    <p className="tabular mt-1 text-[11px] text-muted-foreground">линия {Math.round(((r.src[0] ?? 0) / r.total) * 100)}% · лагеря {Math.round(((r.src[1] ?? 0) / r.total) * 100)}% · герои {Math.round(((r.src[2] ?? 0) / r.total) * 100)}%</p>
                   </td>
                   <td className="tabular">{(r.acc * 100).toFixed(0)}%</td>
                   <td className="tabular">{(r.crit * 100).toFixed(0)}%</td>
