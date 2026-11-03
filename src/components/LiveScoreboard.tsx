@@ -98,6 +98,7 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
 
   return (
     <div className="space-y-4">
+      <LiveMap matchId={matchId} players={players} />
       <div className="panel grid items-center gap-4 p-5 md:grid-cols-[1fr_auto_1fr]">
         <div className="text-amber-team"><p className="text-xs uppercase tracking-wider">{TEAMS[0]}</p><p className="tabular font-display text-3xl font-bold">{fmtK(sum(0, (p) => p.nw))}</p></div>
         <div className="text-center">
