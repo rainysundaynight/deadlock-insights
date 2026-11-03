@@ -7,6 +7,7 @@ const NAV = [
   { to: "/items", label: "Предметы" },
   { to: "/leaderboard", label: "Лидерборд" },
   { to: "/builds", label: "Билды" },
+  { to: "/meta", label: "Мета" },
   { to: "/live", label: "Live" },
   { to: "/ranks", label: "Ранги" },
   { to: "/patches", label: "Патчи" },
