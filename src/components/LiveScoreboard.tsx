@@ -3,6 +3,7 @@ import { Crown, Flame, Radio, Skull, Swords, TrendingUp } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useMemo, useState } from "react";
 
+import { Link } from "@tanstack/react-router";
 import { HeroIcon, Loading, RankBadge, useHeroMap } from "@/components/dl";
 import { api } from "@/lib/api";
 import { fmtDuration, fmtK, REGIONS } from "@/lib/format";
@@ -38,14 +39,14 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
   const [filter, setFilter] = useState<"all" | "kill" | "streak">("all");
 
   const info = useMemo(() => {
-    const m = new Map<string, { badge?: number | null | undefined; place?: number }>();
+    const m = new Map<string, { id: number; badge?: number | null | undefined; place?: number }>();
     for (const p of players) {
       const i = roster.findIndex((r) => r.hero_id === p.hero && r.team === p.team);
       if (i < 0) continue;
       const id = roster[i]!.account_id;
       const cands = lb.filter((e) => e.possible_account_ids.includes(id));
       const hit = cands.find((e) => e.possible_account_ids.length === 1 || e.account_name === p.name) ?? (cands.length === 1 ? cands[0] : undefined);
-      m.set(`${p.team}-${p.hero}`, { badge: badge(i), ...(hit ? { place: hit.rank } : {}) });
+      m.set(`${p.team}-${p.hero}`, { id, badge: badge(i), ...(hit ? { place: hit.rank } : {}) });
     }
     return m;
   }, [players, roster, lb, badge]);
@@ -178,7 +179,7 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
                         <HeroIcon heroId={p.hero} size={34} />
                         <div className="min-w-0">
                           <p className="flex items-center gap-2 font-medium">
-                            <span className="max-w-40 truncate">{p.name}</span>
+                            {r ? <Link to="/players/$accountId" params={{ accountId: String(r.id) }} className="max-w-40 truncate hover:text-primary">{p.name}</Link> : <span className="max-w-40 truncate">{p.name}</span>}
                             {p.streak >= 2 && <span title={`Серия ${p.streak}`} className="inline-flex items-center gap-0.5 rounded-full bg-primary/15 px-1.5 py-0.5 text-[11px] font-bold text-primary"><Flame className="h-3 w-3 fill-current" />{p.streak}</span>}
                           </p>
                           <p className="text-xs text-muted-foreground">{heroes.get(p.hero)?.name}</p>
