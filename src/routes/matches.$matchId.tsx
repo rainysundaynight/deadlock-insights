@@ -11,7 +11,8 @@ import { DamageView, ItemsTimeline } from "@/components/MatchDeep";
 import { LaneMinutes } from "@/components/LaneMinutes";
 import { gradeInMatch, gradeTone } from "@/lib/grade";
 import { LiveScoreboard } from "@/components/LiveScoreboard";
-import { MatchReplay, type MatchPaths } from "@/components/MatchReplay";
+import { MatchDetails } from "@/components/MatchDetails";
+import { MatchReplay, type MatchObjective, type MatchPaths } from "@/components/MatchReplay";
 import { MatchActions, SpectateButton } from "@/components/ShareCard";
 
 export const Route = createFileRoute("/matches/$matchId")({
@@ -54,6 +55,8 @@ interface MatchMeta {
     average_badge_team0?: number;
     average_badge_team1?: number;
     match_paths?: MatchPaths;
+    objectives?: MatchObjective[];
+    mid_boss?: { team_killed: number; destroyed_time_s: number }[];
     players: MatchPlayer[];
   };
 }
@@ -72,7 +75,7 @@ function MatchPage() {
   });
   const players = q.data?.match_info.players ?? [];
   const profiles = useSteamProfiles(players.map((p) => p.account_id));
-  const [tab, setTab] = useState<"table" | "map" | "lanes" | "damage" | "items" | "tips">("table");
+  const [tab, setTab] = useState<"table" | "details" | "map" | "lanes" | "damage" | "items" | "tips">("table");
 
   if (q.isLoading) return <Loading label="Загружаем матч…" />;
   if (q.error) {
@@ -107,11 +110,12 @@ function MatchPage() {
       </div>
       <MatchActions matchId={m.match_id} players={players} winner={m.winning_team} duration={m.duration_s} names={profiles.data} />
       <div className="flex flex-wrap gap-2">
-        {([["table", "Таблица"], ["map", "Карта"], ["lanes", "Линии и график"], ["damage", "Урон"], ["items", "Предметы"], ["tips", "Советы"]] as const).map(([k, l]) => (
+        {([["table", "Таблица"], ["details", "Экономика"], ["map", "Карта"], ["lanes", "Линии и график"], ["damage", "Урон"], ["items", "Предметы"], ["tips", "Советы"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)} className={cn("rounded-full border px-4 py-2 text-sm font-medium", tab === k ? "border-primary/60 bg-primary/15 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground")}>{l}</button>
         ))}
       </div>
-      {tab === "map" && <MatchReplay paths={m.match_paths} players={players} names={profiles.data} />}
+      {tab === "map" && <MatchReplay paths={m.match_paths} players={players} names={profiles.data} objectives={m.objectives} midBoss={m.mid_boss} />}
+      {tab === "details" && <MatchDetails players={players} names={profiles.data} durationS={m.duration_s} />}
       {tab === "damage" && <DamageView players={players} names={profiles.data} />}
       {tab === "items" && <ItemsTimeline players={players} names={profiles.data} />}
       {tab === "lanes" && <LaneMinutes players={players} names={profiles.data} />}

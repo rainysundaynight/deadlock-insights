@@ -202,6 +202,5 @@ function objName(k: string) {
   if (k === "core") return "Патрон (базу)";
   if (k === "titan") return "Титана";
   const [tier, lane] = k.split("_").length === 2 ? k.split("_") : [k, ""];
-  const laneName = { "1": "жёлтой", "3": "синей", "4": "зелёной" }[lane] ?? "";
-  return `${tier === "tier1" ? "Стража" : "Хранителя"} на ${laneName} линии`;
+  return `${tier === "tier1" ? "Стража" : "Хранителя"} (линия ${lane})`;
 }
