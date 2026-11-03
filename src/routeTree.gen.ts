@@ -17,6 +17,7 @@ import { Route as LiveRouteImport } from './routes/live'
 import { Route as MetaRouteImport } from './routes/meta'
 import { Route as PatchesRouteImport } from './routes/patches'
 import { Route as RanksRouteImport } from './routes/ranks'
+import { Route as TierlistRouteImport } from './routes/tierlist'
 import { Route as HeroesIndexRouteImport } from './routes/heroes.index'
 import { Route as HeroesHeroIdRouteImport } from './routes/heroes.$heroId'
 import { Route as MatchesMatchIdRouteImport } from './routes/matches.$matchId'
@@ -62,6 +63,11 @@ const RanksRoute = RanksRouteImport.update({
   path: '/ranks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TierlistRoute = TierlistRouteImport.update({
+  id: '/tierlist',
+  path: '/tierlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HeroesIndexRoute = HeroesIndexRouteImport.update({
   id: '/heroes/',
   path: '/heroes/',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/meta': typeof MetaRoute
   '/patches': typeof PatchesRoute
   '/ranks': typeof RanksRoute
+  '/tierlist': typeof TierlistRoute
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/players/$accountId': typeof PlayersAccountIdRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/meta': typeof MetaRoute
   '/patches': typeof PatchesRoute
   '/ranks': typeof RanksRoute
+  '/tierlist': typeof TierlistRoute
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/players/$accountId': typeof PlayersAccountIdRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/meta': typeof MetaRoute
   '/patches': typeof PatchesRoute
   '/ranks': typeof RanksRoute
+  '/tierlist': typeof TierlistRoute
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/players/$accountId': typeof PlayersAccountIdRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/meta'
     | '/patches'
     | '/ranks'
+    | '/tierlist'
     | '/heroes/$heroId'
     | '/matches/$matchId'
     | '/players/$accountId'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/meta'
     | '/patches'
     | '/ranks'
+    | '/tierlist'
     | '/heroes/$heroId'
     | '/matches/$matchId'
     | '/players/$accountId'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/meta'
     | '/patches'
     | '/ranks'
+    | '/tierlist'
     | '/heroes/$heroId'
     | '/matches/$matchId'
     | '/players/$accountId'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   MetaRoute: typeof MetaRoute
   PatchesRoute: typeof PatchesRoute
   RanksRoute: typeof RanksRoute
+  TierlistRoute: typeof TierlistRoute
   HeroesHeroIdRoute: typeof HeroesHeroIdRoute
   MatchesMatchIdRoute: typeof MatchesMatchIdRoute
   PlayersAccountIdRoute: typeof PlayersAccountIdRoute
@@ -244,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RanksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tierlist': {
+      id: '/tierlist'
+      path: '/tierlist'
+      fullPath: '/tierlist'
+      preLoaderRoute: typeof TierlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/heroes/': {
       id: '/heroes/'
       path: '/heroes'
@@ -284,6 +304,7 @@ const rootRouteChildren: RootRouteChildren = {
   MetaRoute: MetaRoute,
   PatchesRoute: PatchesRoute,
   RanksRoute: RanksRoute,
+  TierlistRoute: TierlistRoute,
   HeroesHeroIdRoute: HeroesHeroIdRoute,
   MatchesMatchIdRoute: MatchesMatchIdRoute,
   PlayersAccountIdRoute: PlayersAccountIdRoute,
