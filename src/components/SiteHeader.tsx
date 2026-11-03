@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import {
-  Activity, BarChart3, Crown, GitCompare, Hammer, Home, LayoutGrid, Menu, Package, ScrollText, Swords, Trophy, Users, X,
+  Activity, BarChart3, Calculator, Crown, GitCompare, Hammer, Home, LayoutGrid, Menu, Package, ScrollText, Swords, TrendingUp, Trophy, Tv, Users, X,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
@@ -26,13 +26,17 @@ const GROUPS = [
       { to: "/tierlist", label: "Тир-лист", icon: Crown },
       { to: "/heroes", label: "Герои", icon: Swords },
       { to: "/meta", label: "Контрпики", icon: LayoutGrid },
+      { to: "/duos", label: "Дуо-линии", icon: Users },
+      { to: "/trends", label: "Тренды", icon: TrendingUp },
       { to: "/items", label: "Предметы", icon: Package },
       { to: "/builds", label: "Билды", icon: Hammer },
+      { to: "/calculator", label: "Калькулятор", icon: Calculator },
     ],
   },
   {
     title: "Сообщество",
     items: [
+      { to: "/streams", label: "Стримы", icon: Tv },
       { to: "/leaderboard", label: "Лидерборд", icon: Trophy },
       { to: "/ranks", label: "Ранги", icon: BarChart3 },
       { to: "/patches", label: "Патчи", icon: ScrollText },

@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BuildsRouteImport } from './routes/builds'
+import { Route as CalculatorRouteImport } from './routes/calculator'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as DuosRouteImport } from './routes/duos'
 import { Route as ItemsRouteImport } from './routes/items'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as LiveRouteImport } from './routes/live'
@@ -19,7 +21,9 @@ import { Route as MeRouteImport } from './routes/me'
 import { Route as MetaRouteImport } from './routes/meta'
 import { Route as PatchesRouteImport } from './routes/patches'
 import { Route as RanksRouteImport } from './routes/ranks'
+import { Route as StreamsRouteImport } from './routes/streams'
 import { Route as TierlistRouteImport } from './routes/tierlist'
+import { Route as TrendsRouteImport } from './routes/trends'
 import { Route as AuthSteamRouteImport } from './routes/auth.steam'
 import { Route as HeroesIndexRouteImport } from './routes/heroes.index'
 import { Route as HeroesHeroIdRouteImport } from './routes/heroes.$heroId'
@@ -38,9 +42,19 @@ const BuildsRoute = BuildsRouteImport.update({
   path: '/builds',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalculatorRoute = CalculatorRouteImport.update({
+  id: '/calculator',
+  path: '/calculator',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DuosRoute = DuosRouteImport.update({
+  id: '/duos',
+  path: '/duos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ItemsRoute = ItemsRouteImport.update({
@@ -78,9 +92,19 @@ const RanksRoute = RanksRouteImport.update({
   path: '/ranks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StreamsRoute = StreamsRouteImport.update({
+  id: '/streams',
+  path: '/streams',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TierlistRoute = TierlistRouteImport.update({
   id: '/tierlist',
   path: '/tierlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrendsRoute = TrendsRouteImport.update({
+  id: '/trends',
+  path: '/trends',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSteamRoute = AuthSteamRouteImport.update({
@@ -122,7 +146,9 @@ const ApiPublicSteamLoginRoute = ApiPublicSteamLoginRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/builds': typeof BuildsRoute
+  '/calculator': typeof CalculatorRoute
   '/compare': typeof CompareRoute
+  '/duos': typeof DuosRoute
   '/items': typeof ItemsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/live': typeof LiveRoute
@@ -130,7 +156,9 @@ export interface FileRoutesByFullPath {
   '/meta': typeof MetaRoute
   '/patches': typeof PatchesRoute
   '/ranks': typeof RanksRoute
+  '/streams': typeof StreamsRoute
   '/tierlist': typeof TierlistRoute
+  '/trends': typeof TrendsRoute
   '/auth/steam': typeof AuthSteamRoute
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
@@ -142,7 +170,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/builds': typeof BuildsRoute
+  '/calculator': typeof CalculatorRoute
   '/compare': typeof CompareRoute
+  '/duos': typeof DuosRoute
   '/items': typeof ItemsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/live': typeof LiveRoute
@@ -150,7 +180,9 @@ export interface FileRoutesByTo {
   '/meta': typeof MetaRoute
   '/patches': typeof PatchesRoute
   '/ranks': typeof RanksRoute
+  '/streams': typeof StreamsRoute
   '/tierlist': typeof TierlistRoute
+  '/trends': typeof TrendsRoute
   '/auth/steam': typeof AuthSteamRoute
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
@@ -163,7 +195,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/builds': typeof BuildsRoute
+  '/calculator': typeof CalculatorRoute
   '/compare': typeof CompareRoute
+  '/duos': typeof DuosRoute
   '/items': typeof ItemsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/live': typeof LiveRoute
@@ -171,7 +205,9 @@ export interface FileRoutesById {
   '/meta': typeof MetaRoute
   '/patches': typeof PatchesRoute
   '/ranks': typeof RanksRoute
+  '/streams': typeof StreamsRoute
   '/tierlist': typeof TierlistRoute
+  '/trends': typeof TrendsRoute
   '/auth/steam': typeof AuthSteamRoute
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
@@ -185,7 +221,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/builds'
+    | '/calculator'
     | '/compare'
+    | '/duos'
     | '/items'
     | '/leaderboard'
     | '/live'
@@ -193,7 +231,9 @@ export interface FileRouteTypes {
     | '/meta'
     | '/patches'
     | '/ranks'
+    | '/streams'
     | '/tierlist'
+    | '/trends'
     | '/auth/steam'
     | '/heroes/$heroId'
     | '/matches/$matchId'
@@ -205,7 +245,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/builds'
+    | '/calculator'
     | '/compare'
+    | '/duos'
     | '/items'
     | '/leaderboard'
     | '/live'
@@ -213,7 +255,9 @@ export interface FileRouteTypes {
     | '/meta'
     | '/patches'
     | '/ranks'
+    | '/streams'
     | '/tierlist'
+    | '/trends'
     | '/auth/steam'
     | '/heroes/$heroId'
     | '/matches/$matchId'
@@ -225,7 +269,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/builds'
+    | '/calculator'
     | '/compare'
+    | '/duos'
     | '/items'
     | '/leaderboard'
     | '/live'
@@ -233,7 +279,9 @@ export interface FileRouteTypes {
     | '/meta'
     | '/patches'
     | '/ranks'
+    | '/streams'
     | '/tierlist'
+    | '/trends'
     | '/auth/steam'
     | '/heroes/$heroId'
     | '/matches/$matchId'
@@ -246,7 +294,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BuildsRoute: typeof BuildsRoute
+  CalculatorRoute: typeof CalculatorRoute
   CompareRoute: typeof CompareRoute
+  DuosRoute: typeof DuosRoute
   ItemsRoute: typeof ItemsRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LiveRoute: typeof LiveRoute
@@ -254,7 +304,9 @@ export interface RootRouteChildren {
   MetaRoute: typeof MetaRoute
   PatchesRoute: typeof PatchesRoute
   RanksRoute: typeof RanksRoute
+  StreamsRoute: typeof StreamsRoute
   TierlistRoute: typeof TierlistRoute
+  TrendsRoute: typeof TrendsRoute
   AuthSteamRoute: typeof AuthSteamRoute
   HeroesHeroIdRoute: typeof HeroesHeroIdRoute
   MatchesMatchIdRoute: typeof MatchesMatchIdRoute
@@ -280,11 +332,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BuildsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calculator': {
+      id: '/calculator'
+      path: '/calculator'
+      fullPath: '/calculator'
+      preLoaderRoute: typeof CalculatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/compare': {
       id: '/compare'
       path: '/compare'
       fullPath: '/compare'
       preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/duos': {
+      id: '/duos'
+      path: '/duos'
+      fullPath: '/duos'
+      preLoaderRoute: typeof DuosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/items': {
@@ -336,11 +402,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RanksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/streams': {
+      id: '/streams'
+      path: '/streams'
+      fullPath: '/streams'
+      preLoaderRoute: typeof StreamsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tierlist': {
       id: '/tierlist'
       path: '/tierlist'
       fullPath: '/tierlist'
       preLoaderRoute: typeof TierlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trends': {
+      id: '/trends'
+      path: '/trends'
+      fullPath: '/trends'
+      preLoaderRoute: typeof TrendsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/steam': {
@@ -398,7 +478,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BuildsRoute: BuildsRoute,
+  CalculatorRoute: CalculatorRoute,
   CompareRoute: CompareRoute,
+  DuosRoute: DuosRoute,
   ItemsRoute: ItemsRoute,
   LeaderboardRoute: LeaderboardRoute,
   LiveRoute: LiveRoute,
@@ -406,7 +488,9 @@ const rootRouteChildren: RootRouteChildren = {
   MetaRoute: MetaRoute,
   PatchesRoute: PatchesRoute,
   RanksRoute: RanksRoute,
+  StreamsRoute: StreamsRoute,
   TierlistRoute: TierlistRoute,
+  TrendsRoute: TrendsRoute,
   AuthSteamRoute: AuthSteamRoute,
   HeroesHeroIdRoute: HeroesHeroIdRoute,
   MatchesMatchIdRoute: MatchesMatchIdRoute,

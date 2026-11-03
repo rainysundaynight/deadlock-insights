@@ -10,6 +10,8 @@ import { MatchAnalysis } from "@/components/MatchAnalysis";
 import { DamageView, ItemsTimeline } from "@/components/MatchDeep";
 import { LaneMinutes } from "@/components/LaneMinutes";
 import { LiveScoreboard } from "@/components/LiveScoreboard";
+import { MatchReplay, type MatchPaths } from "@/components/MatchReplay";
+import { MatchActions, SpectateButton } from "@/components/ShareCard";
 
 export const Route = createFileRoute("/matches/$matchId")({
   head: ({ params }) => ({
@@ -34,6 +36,8 @@ interface MatchPlayer {
   last_hits: number;
   denies: number;
   level: number;
+  player_slot: number;
+  death_details?: { game_time_s: number; death_pos: { x: number; y: number } }[];
   assigned_lane: number;
   items: { game_time_s: number; item_id: number; sold_time_s: number }[];
   stats: import("@/lib/analysis").StatSnap[];
@@ -48,6 +52,7 @@ interface MatchMeta {
     match_mode: number;
     average_badge_team0?: number;
     average_badge_team1?: number;
+    match_paths?: MatchPaths;
     players: MatchPlayer[];
   };
 }
@@ -66,7 +71,7 @@ function MatchPage() {
   });
   const players = q.data?.match_info.players ?? [];
   const profiles = useSteamProfiles(players.map((p) => p.account_id));
-  const [tab, setTab] = useState<"table" | "lanes" | "damage" | "items" | "tips">("table");
+  const [tab, setTab] = useState<"table" | "map" | "lanes" | "damage" | "items" | "tips">("table");
 
   if (q.isLoading) return <Loading label="Загружаем матч…" />;
   if (q.error) {
@@ -99,11 +104,13 @@ function MatchPage() {
           }
         />
       </div>
+      <MatchActions matchId={m.match_id} players={players} winner={m.winning_team} duration={m.duration_s} names={profiles.data} />
       <div className="flex flex-wrap gap-2">
-        {([["table", "Таблица"], ["lanes", "Линии и график"], ["damage", "Урон"], ["items", "Предметы"], ["tips", "Советы"]] as const).map(([k, l]) => (
+        {([["table", "Таблица"], ["map", "Карта"], ["lanes", "Линии и график"], ["damage", "Урон"], ["items", "Предметы"], ["tips", "Советы"]] as const).map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)} className={cn("rounded-full border px-4 py-2 text-sm font-medium", tab === k ? "border-primary/60 bg-primary/15 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground")}>{l}</button>
         ))}
       </div>
+      {tab === "map" && <MatchReplay paths={m.match_paths} players={players} names={profiles.data} />}
       {tab === "damage" && <DamageView players={players} names={profiles.data} />}
       {tab === "items" && <ItemsTimeline players={players} names={profiles.data} />}
       {tab === "lanes" && <LaneMinutes players={players} names={profiles.data} />}
@@ -212,6 +219,7 @@ function LiveView({ m }: { m: LiveMatch }) {
           <span className="h-3 w-3 animate-pulse rounded-full bg-loss" /> Матч идёт
         </h1>
         {m.game_mode_parsed?.includes("StreetBrawl") && <p className="mt-2 inline-flex rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs text-primary">Режим Street Brawl · 4 на 4, души общие на команду</p>}
+        <div className="mt-3"><SpectateButton matchId={m.match_id} /></div>
         <p className="mt-2 text-muted-foreground">Подключитесь к трансляции, чтобы видеть статистику каждого игрока. Полный разбор, линии и советы появятся после окончания матча.</p>
         <div className="deco-line mt-6" />
       </div>
