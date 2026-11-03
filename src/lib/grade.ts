@@ -17,20 +17,39 @@ const clip = (v: number) => Math.max(0, Math.min(2, Number.isFinite(v) ? v : 1))
 
 interface Perf { k: number; d: number; a: number; nw: number; lh: number; dmg?: number; won: boolean }
 
-/** Weighted ratio of a player's numbers to a baseline (1 = equal). */
-export function perfScore(p: Perf, base: Omit<Perf, "won">): number {
+/** Per-metric ratios vs. baseline (1 = equal) with weights — used for the score and its explanation. */
+export function perfParts(p: Perf, base: Omit<Perf, "won">) {
   const kda = (p.k + p.a * 0.7) / Math.max(1, p.d);
   const bkda = (base.k + base.a * 0.7) / Math.max(1, base.d);
-  const parts: [number, number][] = [
-    [clip(kda / (bkda || 1)), 0.35],
-    [clip(p.nw / (base.nw || 1)), 0.25],
-    [clip(p.lh / (base.lh || 1)), 0.1],
+  const parts: { label: string; v: number; w: number }[] = [
+    { label: "KDA", v: clip(kda / (bkda || 1)), w: 0.35 },
+    { label: "Души", v: clip(p.nw / (base.nw || 1)), w: 0.25 },
+    { label: "Крипы", v: clip(p.lh / (base.lh || 1)), w: 0.1 },
   ];
-  if (p.dmg != null && base.dmg) parts.push([clip(p.dmg / base.dmg), 0.2]);
-  else parts[0]![1] += 0.2;
-  const w = parts.reduce((s, [, x]) => s + x, 0);
-  const r = parts.reduce((s, [v, x]) => s + v * x, 0) / w;
+  if (p.dmg != null && base.dmg) parts.push({ label: "Урон", v: clip(p.dmg / base.dmg), w: 0.2 });
+  else parts[0]!.w += 0.2;
+  return parts;
+}
+
+/** Weighted ratio of a player's numbers to a baseline (1 = equal). */
+export function perfScore(p: Perf, base: Omit<Perf, "won">): number {
+  const parts = perfParts(p, base);
+  const w = parts.reduce((s, x) => s + x.w, 0);
+  const r = parts.reduce((s, x) => s + x.v * x.w, 0) / w;
   return Math.max(0, Math.min(100, r * 46 + (p.won ? 10 : 0)));
+}
+
+/** Human-readable reasons behind a grade (ratio vs. average, win bonus). */
+export function explainGrade(p: Perf, base: Omit<Perf, "won">): string[] {
+  const lines = perfParts(p, base).map((x) => `${x.label}: ${Math.round(x.v * 100)}% от среднего${x.v >= 1.2 ? " — сильно" : x.v <= 0.8 ? " — слабо" : ""}`);
+  lines.push(p.won ? "Победа: +10 баллов" : "Поражение: без бонуса");
+  return lines;
+}
+
+/** Same as explainGrade but with the global baseline scaled to match length. */
+export function explainVsGlobal(p: { k: number; d: number; a: number; nw: number; lh: number; won: boolean }, g: Global, durationS: number) {
+  const f = (durationS || AVG_MATCH_S) / AVG_MATCH_S;
+  return explainGrade(p, { k: g.k * f, d: g.d * f, a: g.a * f, nw: g.nw * f, lh: g.lh * f });
 }
 
 /** Grade of a player within a finished match, relative to the lobby average. */
