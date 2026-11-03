@@ -5,6 +5,8 @@ import { ErrorBox, HeroIcon, Loading, RankBadge, Stat, useHeroMap, useItemMap, u
 import { api } from "@/lib/api";
 import { fmtDate, fmtDuration, fmtK, GAME_MODES, MATCH_MODES } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { MatchAnalysis } from "@/components/MatchAnalysis";
 
 export const Route = createFileRoute("/matches/$matchId")({
   head: ({ params }) => ({
@@ -29,8 +31,9 @@ interface MatchPlayer {
   last_hits: number;
   denies: number;
   level: number;
+  assigned_lane: number;
   items: { game_time_s: number; item_id: number; sold_time_s: number }[];
-  stats: { player_damage: number; player_healing: number; boss_damage: number; player_damage_taken: number }[];
+  stats: import("@/lib/analysis").StatSnap[];
 }
 interface MatchMeta {
   match_info: {
@@ -53,6 +56,7 @@ function MatchPage() {
   const q = useQuery({ queryKey: ["match", matchId], queryFn: () => api<MatchMeta>(`/v1/matches/${matchId}/metadata`), staleTime: Infinity });
   const players = q.data?.match_info.players ?? [];
   const profiles = useSteamProfiles(players.map((p) => p.account_id));
+  const [tab, setTab] = useState<"table" | "lanes" | "tips">("table");
 
   if (q.isLoading) return <Loading label="Загружаем матч…" />;
   if (q.error) return <ErrorBox error={q.error} />;
@@ -81,7 +85,13 @@ function MatchPage() {
           }
         />
       </div>
-      {[0, 1].map((team) => (
+      <div className="flex gap-2">
+        {([["table", "Таблица"], ["lanes", "Линии и график"], ["tips", "Советы"]] as const).map(([k, l]) => (
+          <button key={k} onClick={() => setTab(k)} className={cn("rounded-md border px-4 py-2 font-display text-sm uppercase tracking-wider", tab === k ? "border-primary bg-primary text-primary-foreground" : "border-border bg-secondary hover:border-primary/60")}>{l}</button>
+        ))}
+      </div>
+      {tab !== "table" && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} />}
+      {tab === "table" && [0, 1].map((team) => (
         <TeamTable
           key={team}
           team={team}
