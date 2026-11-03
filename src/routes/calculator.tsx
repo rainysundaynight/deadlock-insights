@@ -13,8 +13,8 @@ export const MAX_ITEMS = 12;
 
 export const Route = createFileRoute("/calculator")({
   validateSearch: (s: Record<string, unknown>) => ({
-    hero: s.hero ? Number(s.hero) || undefined : undefined,
-    items: typeof s.items === "string" ? s.items : s.items != null ? String(s.items) : undefined,
+    hero: s["hero"] ? Number(s["hero"]) || undefined : undefined,
+    items: typeof s["items"] === "string" ? s["items"] : s["items"] != null ? String(s["items"]) : undefined,
   }),
   head: () => ({
     meta: [
@@ -82,7 +82,7 @@ function Calculator() {
             {SLOTS.map((s, i) => (
               <div key={s} className="text-xs">
                 <div className="flex justify-between"><span>{SLOT_LABELS[s] ?? s}</span><span className="tabular">{fmtInt(perSlot[i])}</span></div>
-                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary"><div className="h-full bg-primary" style={{ width: `${total ? (perSlot[i] / total) * 100 : 0}%` }} /></div>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary"><div className="h-full bg-primary" style={{ width: `${total ? ((perSlot[i] ?? 0) / total) * 100 : 0}%` }} /></div>
               </div>
             ))}
           </div>

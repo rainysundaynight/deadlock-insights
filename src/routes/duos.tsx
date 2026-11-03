@@ -59,7 +59,7 @@ function Duos() {
             {slots.filter(([, i]) => (side === 0 ? i < 2 : i >= 2)).map(([l, i]) => (
               <div key={i} className="flex items-center gap-3">
                 {sel[i] ? <HeroIcon heroId={sel[i]!} size={36} /> : <span className="h-9 w-9 rounded-lg border border-dashed border-border" />}
-                <div className="flex-1"><p className="mb-1 text-xs text-muted-foreground">{l}</p><HeroSelect value={sel[i]} onChange={set(i)} allowAll={false} /></div>
+                <div className="flex-1"><p className="mb-1 text-xs text-muted-foreground">{l}</p><HeroSelect value={sel[i] ?? null} onChange={set(i)} allowAll={false} /></div>
               </div>
             ))}
           </section>

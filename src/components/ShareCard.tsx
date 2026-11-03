@@ -13,7 +13,7 @@ export function mvpOf<T extends P>(players: T[], winner: number): T | undefined 
   return [...players].sort((a, b) => score(b) - score(a))[0];
 }
 
-export function MatchActions({ matchId, players, winner, duration, names }: { matchId: number; players: P[]; winner: number; duration: number; names?: Map<number, { personaname: string }> }) {
+export function MatchActions({ matchId, players, winner, duration, names }: { matchId: number; players: P[]; winner: number; duration: number; names?: Map<number, { personaname: string }> | undefined }) {
   const heroes = useHeroMap();
   const [sel, setSel] = useState<number | "mvp">("mvp");
   const p = sel === "mvp" ? mvpOf(players, winner) : players.find((x) => x.account_id === sel);

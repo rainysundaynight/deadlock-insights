@@ -8,7 +8,7 @@ describe("heroTrends", () => {
       { hero_id: 1, bucket: 1, wins: 40, matches: 100, matches_per_bucket: 1000 },
       { hero_id: 1, bucket: 2, wins: 60, matches: 100, matches_per_bucket: 1000 },
     ];
-    const [t] = heroTrends(rows, 1, 10);
+    const t = heroTrends(rows, 1, 10)[0]!;
     expect(t.prevWr).toBe(0.4);
     expect(t.recentWr).toBe(0.6);
     expect(t.delta).toBeCloseTo(0.2);

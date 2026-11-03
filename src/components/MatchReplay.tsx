@@ -16,7 +16,7 @@ const R = 10800; // world half-size
 const S = 1000;
 const toSvg = (x: number, y: number) => [((x + R) / (2 * R)) * S, S - ((y + R) / (2 * R)) * S] as const;
 
-export function MatchReplay({ paths, players, names }: { paths?: MatchPaths; players: P[]; names?: Map<number, { personaname: string }> }) {
+export function MatchReplay({ paths, players, names }: { paths?: MatchPaths | undefined; players: P[]; names?: Map<number, { personaname: string }> | undefined }) {
   const heroes = useHeroMap();
   const len = Math.max(0, ...(paths?.paths ?? []).map((p) => p.x_pos.length));
   const [t, setT] = useState(0);
@@ -34,7 +34,7 @@ export function MatchReplay({ paths, players, names }: { paths?: MatchPaths; pla
     return paths.paths.map((p) => {
       const pts: [number, number][] = p.x_pos.map((xp, i) => {
         const x = p.x_min + (xp / paths.x_resolution) * (p.x_max - p.x_min);
-        const y = p.y_min + (p.y_pos[i] / paths.y_resolution) * (p.y_max - p.y_min);
+        const y = p.y_min + ((p.y_pos[i] ?? 0) / paths.y_resolution) * (p.y_max - p.y_min);
         return toSvg(x, y) as [number, number];
       });
       return { slot: p.player_slot, pts, health: p.health };
