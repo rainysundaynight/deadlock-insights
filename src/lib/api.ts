@@ -84,6 +84,9 @@ export interface MatchHistoryEntry {
   match_result: number;
   game_mode: number;
   match_mode: number;
+  hero_level?: number;
+  ranked_display_badge?: number | null;
+  ranked_delta?: number | null;
 }
 export interface PlayerHeroStat {
   hero_id: number;
@@ -110,6 +113,10 @@ export interface HeroAnalytics {
   total_net_worth: number;
   total_player_damage: number;
   total_last_hits: number;
+  total_denies?: number;
+  total_player_damage_taken?: number;
+  total_shots_hit?: number;
+  total_shots_missed?: number;
 }
 
 // ---------- Query options ----------

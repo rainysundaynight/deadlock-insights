@@ -20,10 +20,9 @@ export function useItemMap() {
 export function PageHeader({ eyebrow, title, children }: { eyebrow?: string; title: ReactNode; children?: ReactNode }) {
   return (
     <div className="mb-8">
-      {eyebrow && <p className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-primary">{eyebrow}</p>}
-      <h1 className="font-display text-4xl font-semibold uppercase md:text-5xl">{title}</h1>
+      {eyebrow && <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">{eyebrow}</p>}
+      <h1 className="font-display text-3xl font-bold md:text-4xl">{title}</h1>
       {children && <div className="mt-3 max-w-2xl text-muted-foreground">{children}</div>}
-      <div className="deco-line mt-6" />
     </div>
   );
 }
@@ -31,7 +30,7 @@ export function PageHeader({ eyebrow, title, children }: { eyebrow?: string; tit
 export function SectionTitle({ children, right }: { children: ReactNode; right?: ReactNode }) {
   return (
     <div className="mb-4 flex items-end justify-between gap-4">
-      <h2 className="font-display text-xl font-medium uppercase tracking-wider text-primary">{children}</h2>
+      <h2 className="font-display text-lg font-semibold">{children}</h2>
       {right}
     </div>
   );
@@ -88,7 +87,7 @@ export function RankBadge({ badge, size = 40, showName = true }: { badge: number
 export function Stat({ label, value, sub, tone }: { label: string; value: ReactNode; sub?: ReactNode; tone?: "win" | "loss" | "brass" }) {
   return (
     <div className="panel p-4">
-      <p className="text-xs uppercase tracking-widest text-muted-foreground">{label}</p>
+      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
       <p
         className={cn(
           "tabular mt-1 text-2xl font-semibold",
@@ -147,7 +146,7 @@ export function Chip({ active, onClick, children }: { active?: boolean; onClick?
       onClick={onClick}
       className={cn(
         "rounded-full border px-3 py-1 text-sm transition-colors",
-        active ? "border-primary bg-primary text-primary-foreground" : "border-border bg-secondary hover:border-primary/60",
+        active ? "border-primary/60 bg-primary/15 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground",
       )}
     >
       {children}
