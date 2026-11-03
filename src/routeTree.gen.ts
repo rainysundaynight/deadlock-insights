@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BuildsRouteImport } from './routes/builds'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ItemsRouteImport } from './routes/items'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as LiveRouteImport } from './routes/live'
@@ -31,6 +32,11 @@ const IndexRoute = IndexRouteImport.update({
 const BuildsRoute = BuildsRouteImport.update({
   id: '/builds',
   path: '/builds',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ItemsRoute = ItemsRouteImport.update({
@@ -92,6 +98,7 @@ const PlayersAccountIdRoute = PlayersAccountIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/builds': typeof BuildsRoute
+  '/compare': typeof CompareRoute
   '/items': typeof ItemsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/live': typeof LiveRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/builds': typeof BuildsRoute
+  '/compare': typeof CompareRoute
   '/items': typeof ItemsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/live': typeof LiveRoute
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/builds': typeof BuildsRoute
+  '/compare': typeof CompareRoute
   '/items': typeof ItemsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/live': typeof LiveRoute
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/builds'
+    | '/compare'
     | '/items'
     | '/leaderboard'
     | '/live'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/builds'
+    | '/compare'
     | '/items'
     | '/leaderboard'
     | '/live'
@@ -170,6 +181,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/builds'
+    | '/compare'
     | '/items'
     | '/leaderboard'
     | '/live'
@@ -186,6 +198,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BuildsRoute: typeof BuildsRoute
+  CompareRoute: typeof CompareRoute
   ItemsRoute: typeof ItemsRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LiveRoute: typeof LiveRoute
@@ -213,6 +226,13 @@ declare module '@tanstack/react-router' {
       path: '/builds'
       fullPath: '/builds'
       preLoaderRoute: typeof BuildsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/items': {
@@ -298,6 +318,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BuildsRoute: BuildsRoute,
+  CompareRoute: CompareRoute,
   ItemsRoute: ItemsRoute,
   LeaderboardRoute: LeaderboardRoute,
   LiveRoute: LiveRoute,
