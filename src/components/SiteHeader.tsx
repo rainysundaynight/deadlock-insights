@@ -4,7 +4,10 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
+import { FriendNotifier } from "@/components/FriendNotifier";
 import { PlayerSearch } from "@/components/PlayerSearch";
+import { SteamButton } from "@/components/SteamButton";
+import { startSteamLogin, useAuth, useMyProfile } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
 const GROUPS = [
@@ -14,6 +17,7 @@ const GROUPS = [
       { to: "/", label: "Главная", icon: Home },
       { to: "/live", label: "Live матчи", icon: Activity, live: true },
       { to: "/compare", label: "Сравнение", icon: GitCompare },
+      { to: "/me", label: "Мой кабинет", icon: Users },
     ],
   },
   {
@@ -76,6 +80,22 @@ function Logo() {
   );
 }
 
+function Account() {
+  const { user, ready } = useAuth();
+  const profile = useMyProfile(user?.id);
+  if (!ready) return <span className="h-10 w-10 shrink-0" />;
+  if (!user) return <SteamButton compact onClick={startSteamLogin} />;
+  return (
+    <>
+      <FriendNotifier userId={user.id} />
+      <Link to="/me" className="flex shrink-0 items-center gap-2 rounded-full border border-border bg-secondary py-1 pl-1 pr-3 text-sm hover:border-primary/50">
+        {profile.data?.avatar_url ? <img src={profile.data.avatar_url} alt="" className="h-8 w-8 rounded-full" /> : <span className="h-8 w-8 rounded-full bg-muted" />}
+        <span className="hidden max-w-28 truncate sm:inline">{profile.data?.persona_name ?? "Кабинет"}</span>
+      </Link>
+    </>
+  );
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
@@ -91,6 +111,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <button className="lg:hidden" onClick={() => setOpen(true)} aria-label="Меню"><Menu /></button>
           <div className="lg:hidden"><Logo /></div>
           <div className="ml-auto w-full max-w-md"><PlayerSearch compact /></div>
+          <Account />
         </div>
       </header>
 

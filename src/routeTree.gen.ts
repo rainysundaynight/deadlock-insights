@@ -15,6 +15,7 @@ import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ItemsRouteImport } from './routes/items'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as LiveRouteImport } from './routes/live'
+import { Route as MeRouteImport } from './routes/me'
 import { Route as MetaRouteImport } from './routes/meta'
 import { Route as PatchesRouteImport } from './routes/patches'
 import { Route as RanksRouteImport } from './routes/ranks'
@@ -55,6 +56,11 @@ const LeaderboardRoute = LeaderboardRouteImport.update({
 const LiveRoute = LiveRouteImport.update({
   id: '/live',
   path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeRoute = MeRouteImport.update({
+  id: '/me',
+  path: '/me',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MetaRoute = MetaRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/items': typeof ItemsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/live': typeof LiveRoute
+  '/me': typeof MeRoute
   '/meta': typeof MetaRoute
   '/patches': typeof PatchesRoute
   '/ranks': typeof RanksRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/items': typeof ItemsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/live': typeof LiveRoute
+  '/me': typeof MeRoute
   '/meta': typeof MetaRoute
   '/patches': typeof PatchesRoute
   '/ranks': typeof RanksRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/items': typeof ItemsRoute
   '/leaderboard': typeof LeaderboardRoute
   '/live': typeof LiveRoute
+  '/me': typeof MeRoute
   '/meta': typeof MetaRoute
   '/patches': typeof PatchesRoute
   '/ranks': typeof RanksRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/items'
     | '/leaderboard'
     | '/live'
+    | '/me'
     | '/meta'
     | '/patches'
     | '/ranks'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/items'
     | '/leaderboard'
     | '/live'
+    | '/me'
     | '/meta'
     | '/patches'
     | '/ranks'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/items'
     | '/leaderboard'
     | '/live'
+    | '/me'
     | '/meta'
     | '/patches'
     | '/ranks'
@@ -238,6 +250,7 @@ export interface RootRouteChildren {
   ItemsRoute: typeof ItemsRoute
   LeaderboardRoute: typeof LeaderboardRoute
   LiveRoute: typeof LiveRoute
+  MeRoute: typeof MeRoute
   MetaRoute: typeof MetaRoute
   PatchesRoute: typeof PatchesRoute
   RanksRoute: typeof RanksRoute
@@ -293,6 +306,13 @@ declare module '@tanstack/react-router' {
       path: '/live'
       fullPath: '/live'
       preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/me': {
+      id: '/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof MeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/meta': {
@@ -382,6 +402,7 @@ const rootRouteChildren: RootRouteChildren = {
   ItemsRoute: ItemsRoute,
   LeaderboardRoute: LeaderboardRoute,
   LiveRoute: LiveRoute,
+  MeRoute: MeRoute,
   MetaRoute: MetaRoute,
   PatchesRoute: PatchesRoute,
   RanksRoute: RanksRoute,

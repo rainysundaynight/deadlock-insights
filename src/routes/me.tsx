@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Bell, Check, LogOut, Plus, Target, Trash2, UserPlus, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { Empty, Loading, PageHeader, RankBadge, SectionTitle, selectClass, inputClass, useSteamProfiles } from "@/components/dl";
+import { Empty, Loading, PageHeader, SectionTitle, selectClass, inputClass, useSteamProfiles } from "@/components/dl";
 import { SteamButton } from "@/components/SteamButton";
 import { supabase } from "@/integrations/supabase/client";
 import { startSteamLogin, useAuth, useFollows, useInvalidateFollows, useMyProfile } from "@/hooks/useAuth";
@@ -165,4 +165,3 @@ function Friends({ userId }: { userId: string }) {
   );
 }
 
-export { RankBadge };
