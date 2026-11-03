@@ -37,7 +37,7 @@ const REGION_RU: Record<string, string> = { europe: "Европа", row: "Аме
 
 type Kind = "all" | "ranked" | "brawl" | "unranked";
 const KINDS: [Kind, string][] = [["all", "Все типы"], ["ranked", "Рейтинговые"], ["unranked", "Обычные"], ["brawl", "Street Brawl"]];
-export const kindOf = (m: { match_mode_parsed: string; game_mode_parsed: string }): Exclude<Kind, "all"> =>
+const kindOf = (m: { match_mode_parsed: string; game_mode_parsed: string }): Exclude<Kind, "all"> =>
   m.game_mode_parsed.includes("StreetBrawl") ? "brawl" : m.match_mode_parsed === "Ranked" ? "ranked" : "unranked";
 
 function LivePage() {
