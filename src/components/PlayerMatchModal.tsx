@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, X } from "lucide-react";
+import { useState } from "react";
 
 import { HeroIcon, useHeroMap, useItemMap } from "@/components/dl";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { fmtDuration, fmtK } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -18,113 +18,74 @@ const SLOT_STYLE: Record<string, string> = {
   vitality: "border-win/60 bg-win/10",
   spirit: "border-chart-5/60 bg-chart-5/10",
 };
-const SLOT_NAME: Record<string, string> = { weapon: "Оружие", vitality: "Живучесть", spirit: "Дух" };
 
-/** Player card for a moment of the replay: stats at `sec` and the build owned at that moment. */
+/** Compact floating player card over the replay map — doesn't block playback. */
 export function PlayerMatchModal({ player, name, sec, hp, onClose }: { player: ModalPlayer | null; name?: string | undefined; sec: number; hp: number; onClose: () => void }) {
   const heroes = useHeroMap();
   const items = useItemMap();
+  const [tab, setTab] = useState<"build" | "history">("build");
   if (!player) return null;
   const hero = heroes.get(player.hero_id);
   const snap = [...(player.stats ?? [])].reverse().find((s) => s.time_stamp_s <= sec);
-  const owned = (player.items ?? []).filter((i) => items.has(i.item_id) && i.game_time_s <= sec && !(i.sold_time_s > 0 && i.sold_time_s <= sec));
-  const bySlot = new Map<string, typeof owned>();
-  for (const i of owned) { const s = items.get(i.item_id)?.item_slot_type ?? "other"; bySlot.set(s, [...(bySlot.get(s) ?? []), i]); }
+  const all = (player.items ?? []).filter((i) => items.has(i.item_id)).sort((a, b) => a.game_time_s - b.game_time_s);
+  const owned = all.filter((i) => i.game_time_s <= sec && !(i.sold_time_s > 0 && i.sold_time_s <= sec));
   const spent = owned.reduce((a, i) => a + (items.get(i.item_id)?.cost ?? 0), 0);
-  const final = { k: player.kills ?? 0, d: player.deaths ?? 0, a: player.assists ?? 0 };
-  const teamCls = player.team === 0 ? "from-amber-team/25" : "from-sapphire-team/25";
+  const border = player.team === 0 ? "border-amber-team/60" : "border-sapphire-team/60";
 
   return (
-    <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl overflow-hidden p-0">
-        <div className={cn("bg-gradient-to-br to-transparent p-5", teamCls)}>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-4">
-              <HeroIcon heroId={player.hero_id} size={64} className={player.team === 0 ? "border-amber-team" : "border-sapphire-team"} />
-              <div className="min-w-0">
-                <div className="truncate font-display text-xl">{name ?? hero?.name}</div>
-                <div className="text-sm font-normal text-muted-foreground">{hero?.name} · {player.team === 0 ? "Амбер" : "Сапфир"} · уровень {snap?.level ?? player.level ?? "—"}</div>
-              </div>
-              {player.account_id ? (
-                <Link to="/players/$accountId" params={{ accountId: String(player.account_id) }} className="ml-auto flex items-center gap-1 rounded-full border border-border px-3 py-1 text-xs font-normal hover:bg-secondary">
-                  Профиль <ExternalLink className="h-3 w-3" />
-                </Link>
-              ) : null}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mt-4 h-2 overflow-hidden rounded-full bg-background/60">
-            <div className={cn("h-full rounded-full transition-all", hp > 0 ? "bg-win" : "bg-loss")} style={{ width: `${Math.max(0, Math.min(100, hp))}%` }} />
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">{hp > 0 ? `Здоровье ${Math.round(hp)}%` : "Мёртв"} · на {fmtDuration(sec)}</p>
+    <div className={cn("absolute right-2 top-2 z-10 w-72 rounded-xl border bg-card/95 p-3 shadow-xl backdrop-blur", border)}>
+      <div className="flex items-center gap-2">
+        <HeroIcon heroId={player.hero_id} size={36} className={player.team === 0 ? "border-amber-team" : "border-sapphire-team"} />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-semibold">{name ?? hero?.name}</div>
+          <div className="text-[11px] text-muted-foreground">{hero?.name} · ур. {snap?.level ?? "—"}</div>
         </div>
-
-        <div className="space-y-5 p-5 pt-2">
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-            {[
-              ["K/D/A", snap ? `${snap.kills ?? 0}/${snap.deaths ?? 0}/${snap.assists ?? 0}` : "—"],
-              ["Души", snap ? fmtK(snap.net_worth ?? 0) : "—"],
-              ["Урон", snap ? fmtK(snap.player_damage ?? 0) : "—"],
-              ["Лечение", snap ? fmtK(snap.player_healing ?? 0) : "—"],
-              ["Крипы", snap ? String(snap.creep_kills ?? 0) : "—"],
-              ["Денаи", snap ? String(snap.denies ?? 0) : "—"],
-            ].map(([l, v]) => (
-              <div key={l} className="rounded-lg bg-secondary/60 p-2 text-center">
-                <div className="tabular font-display text-base">{v}</div>
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{l}</div>
-              </div>
-            ))}
+        {player.account_id ? (
+          <Link to="/players/$accountId" params={{ accountId: String(player.account_id) }} title="Профиль" className="rounded p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"><ExternalLink className="h-3.5 w-3.5" /></Link>
+        ) : null}
+        <button onClick={onClose} className="rounded p-1 text-muted-foreground hover:bg-secondary hover:text-foreground" aria-label="Закрыть"><X className="h-3.5 w-3.5" /></button>
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+        <div className={cn("h-full transition-all", hp > 0 ? "bg-win" : "bg-loss")} style={{ width: `${Math.max(0, Math.min(100, hp))}%` }} />
+      </div>
+      <div className="mt-2 grid grid-cols-4 gap-1 text-center">
+        {[
+          ["KDA", snap ? `${snap.kills ?? 0}/${snap.deaths ?? 0}/${snap.assists ?? 0}` : "—"],
+          ["Души", snap ? fmtK(snap.net_worth ?? 0) : "—"],
+          ["Урон", snap ? fmtK(snap.player_damage ?? 0) : "—"],
+          ["Крипы", snap ? String(snap.creep_kills ?? 0) : "—"],
+        ].map(([l, v]) => (
+          <div key={l} className="rounded-md bg-secondary/60 py-1">
+            <div className="tabular text-xs font-semibold">{v}</div>
+            <div className="text-[9px] uppercase text-muted-foreground">{l}</div>
           </div>
-          <p className="text-xs text-muted-foreground">Статистика с точностью до последнего снимка ({snap ? fmtDuration(snap.time_stamp_s) : "—"}). Итог матча: {final.k}/{final.d}/{final.a}, {fmtK(player.net_worth ?? 0)} душ.</p>
-
-          <div>
-            <div className="mb-2 flex items-baseline justify-between">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground">Билд на {fmtDuration(sec)}</p>
-              <span className="tabular text-xs text-primary">{fmtK(spent)} душ в предметах</span>
+        ))}
+      </div>
+      <div className="mt-2 flex gap-1 text-[11px]">
+        {([["build", `Билд · ${fmtK(spent)}`], ["history", "История покупок"]] as const).map(([k, l]) => (
+          <button key={k} onClick={() => setTab(k)} className={cn("rounded-full border px-2 py-0.5", tab === k ? "border-primary/60 bg-primary/15 text-primary" : "border-border text-muted-foreground")}>{l}</button>
+        ))}
+      </div>
+      {tab === "build" ? (
+        owned.length === 0 ? <p className="mt-2 text-xs text-muted-foreground">Пока ничего не куплено.</p> : (
+          <div className="mt-2 grid grid-cols-6 gap-1">
+            {owned.map((i, idx) => { const it = items.get(i.item_id)!; return (
+              <img key={`${i.item_id}-${idx}`} src={it.shop_image_webp ?? it.image_webp ?? it.image} alt={it.name} title={`${it.name} · ${fmtDuration(i.game_time_s)}`} className={cn("h-10 w-10 rounded-md border p-0.5", SLOT_STYLE[it.item_slot_type ?? ""] ?? "border-border")} />
+            ); })}
+          </div>
+        )
+      ) : (
+        <div className="mt-2 max-h-48 space-y-0.5 overflow-y-auto pr-1">
+          {all.map((i, idx) => { const it = items.get(i.item_id)!; return (
+            <div key={`h-${i.item_id}-${idx}`} className={cn("flex items-center gap-2 text-xs", i.game_time_s > sec && "opacity-35")}>
+              <span className="tabular w-9 text-muted-foreground">{fmtDuration(i.game_time_s)}</span>
+              <img src={it.shop_image_webp ?? it.image_webp ?? it.image} alt="" className={cn("h-6 w-6 rounded border", SLOT_STYLE[it.item_slot_type ?? ""] ?? "border-border")} />
+              <span className="min-w-0 flex-1 truncate">{it.name}</span>
+              {i.sold_time_s > 0 && <span className="text-[10px] text-loss">−{fmtDuration(i.sold_time_s)}</span>}
             </div>
-            {owned.length === 0 ? <p className="text-sm text-muted-foreground">Пока ничего не куплено.</p> : (
-              <div className="space-y-3">
-                {["weapon", "vitality", "spirit", "other"].filter((s) => bySlot.has(s)).map((s) => (
-                  <div key={s}>
-                    <p className="mb-1 text-[11px] text-muted-foreground">{SLOT_NAME[s] ?? "Прочее"}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {bySlot.get(s)!.map((i, idx) => {
-                        const it = items.get(i.item_id)!;
-                        return (
-                          <div key={`${i.item_id}-${idx}`} title={`${it.name} · куплен ${fmtDuration(i.game_time_s)}`} className={cn("flex items-center gap-2 rounded-lg border p-1 pr-2", SLOT_STYLE[s] ?? "border-border")}>
-                            <img src={it.shop_image_webp ?? it.image_webp ?? it.image} alt="" className="h-8 w-8" />
-                            <span className="max-w-28 truncate text-xs">{it.name}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">История покупок</p>
-            <div className="max-h-64 space-y-1 overflow-y-auto pr-1">
-              {[...(player.items ?? [])].filter((i) => items.has(i.item_id)).sort((a, b) => a.game_time_s - b.game_time_s).map((i, idx) => {
-                const it = items.get(i.item_id)!;
-                const future = i.game_time_s > sec;
-                const sold = i.sold_time_s > 0;
-                return (
-                  <div key={`h-${i.item_id}-${idx}`} className={cn("flex items-center gap-3 rounded-lg border p-1.5 pr-3", SLOT_STYLE[it.item_slot_type ?? ""] ?? "border-border", future && "opacity-35")}>
-                    <span className="tabular w-11 text-xs text-muted-foreground">{fmtDuration(i.game_time_s)}</span>
-                    <img src={it.shop_image_webp ?? it.image_webp ?? it.image} alt="" className="h-7 w-7" />
-                    <span className="min-w-0 flex-1 truncate text-sm">{it.name}</span>
-                    {sold && <span className="text-[11px] text-loss">продан {fmtDuration(i.sold_time_s)}</span>}
-                    <span className="tabular text-xs text-primary">{fmtK(it.cost ?? 0)}</span>
-                  </div>
-                );
-              })}
-            </div>
-            <p className="mt-1 text-[11px] text-muted-foreground">Полупрозрачные — куплены позже текущего момента реплея.</p>
-          </div>
+          ); })}
         </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </div>
   );
 }
