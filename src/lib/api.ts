@@ -138,6 +138,6 @@ export const itemsQuery = queryOptions({
 
 export const ranksQuery = queryOptions({
   queryKey: ["ranks"],
-  queryFn: () => api<Rank[]>("/v1/assets/ranks", { language: "russian" }),
+  queryFn: () => api<Rank[]>("/v1/assets/ranks", { language: "english" }),
   staleTime: day,
 });
