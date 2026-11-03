@@ -211,12 +211,14 @@ interface LiveMatch {
   spectators: number;
   game_mode_parsed?: string;
   match_mode?: number;
+  game_mode?: number;
   net_worth_team_0: number;
   net_worth_team_1: number;
   players: { account_id: number; team: number; hero_id: number }[];
 }
 
 function LiveView({ m }: { m: LiveMatch }) {
+  const mode = [m.match_mode ? MATCH_MODES[m.match_mode] : null, m.game_mode ? GAME_MODES[m.game_mode] : null].filter(Boolean).join(" · ");
   return (
     <div className="space-y-8">
       <div>
@@ -232,7 +234,7 @@ function LiveView({ m }: { m: LiveMatch }) {
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <Stat label="Начался" value={<span className="text-lg">{fmtDate(m.start_time)}</span>} />
         <Stat label="Зрители" value={m.spectators} />
-        <Stat label="Режим" value={<span className="text-lg">{MATCH_MODES[m.match_mode] ?? "—"} · {GAME_MODES[m.game_mode] ?? "—"}</span>} />
+        <Stat label="Режим" value={<span className="text-lg">{mode || "—"}</span>} />
       </div>
       <LiveScoreboard matchId={m.match_id} roster={m.players} ranked={m.match_mode === 4} />
     </div>

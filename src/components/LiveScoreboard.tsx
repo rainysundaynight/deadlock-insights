@@ -225,7 +225,7 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
   );
 }
 
-function TeamRosters({ roster, names }: { roster: Roster[]; names?: Map<number, { personaname: string }> }) {
+function TeamRosters({ roster, names }: { roster: Roster[]; names?: Map<number, { personaname: string }> | undefined }) {
   const heroes = useHeroMap();
   return (
     <div className="grid gap-4 md:grid-cols-2">
