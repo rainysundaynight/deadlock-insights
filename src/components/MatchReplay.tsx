@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { HeroIcon, useHeroMap } from "@/components/dl";
 import { PlayerMatchModal, type ModalPlayer } from "@/components/PlayerMatchModal";
 import { api } from "@/lib/api";
-import { fmtDuration } from "@/lib/format";
+import { fmtDuration, fmtK } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export interface MatchPath {
@@ -148,6 +148,15 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   const timedEvents: { t: number; team: number; text: string }[] = [];
   for (let t0 = RUNE_FIRST; t0 < (len * (paths!.interval_s || 1)); t0 += RUNE_EVERY) timedEvents.push({ t: t0, team: -1, text: "Появились руны на мостах" });
   for (let t0 = RIFT_FIRST; t0 < (len * (paths!.interval_s || 1)); t0 += RIFT_EVERY) timedEvents.push({ t: t0, team: -1, text: "Открылись рифты" });
+  const fights = (() => {
+    const ds = players.flatMap((p) => (p.death_details ?? []).map((d) => ({ t: d.game_time_s, team: p.team }))).sort((a, b) => a.t - b.t);
+    const out: { start: number; end: number; amber: number; sapph: number }[] = [];
+    let cur: typeof ds = [];
+    const flush = () => { if (cur.length >= 3) out.push({ start: cur[0]!.t, end: cur.at(-1)!.t, amber: cur.filter((d) => d.team === 1).length, sapph: cur.filter((d) => d.team === 0).length }); cur = []; };
+    for (const d of ds) { if (cur.length && d.t - cur.at(-1)!.t > 20) flush(); cur.push(d); }
+    flush();
+    return out.sort((a, b) => b.amber + b.sapph - (a.amber + a.sapph)).slice(0, 12).sort((a, b) => a.start - b.start);
+  })();
   const objEvents = [
     ...(objectives ?? []).filter((o) => STRUCT_OF[o.team_objective_id] && o.destroyed_time_s).map((o) => ({ t: o.destroyed_time_s, team: o.team, text: `${o.team === 0 ? "Амбер" : "Сапфир"} теряет: ${STRUCT_NAME[STRUCT_OF[o.team_objective_id]!]}` })),
     ...(midBoss ?? []).map((b) => ({ t: b.destroyed_time_s, team: b.team_killed, text: `${b.team_killed === 0 ? "Амбер" : "Сапфир"} убивает Мид-босса` })),
@@ -232,25 +241,59 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             {SPEEDS.map((s) => <option key={s} value={s}>×{s}</option>)}
           </select>
         </div>
+        <ValueChart players={players} names={names} sec={sec} sel={sel} onSelect={setSel} fights={fights} onSeek={(s2) => setT(Math.round(s2 / (paths!.interval_s || 1)))} />
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
           <span>щит — Guardian</span><span>шагоход — Walker</span><span>прямоугольник — Base Guardian</span><span>ромб — Shrine</span><span>корона — Patron</span><span>R — рифт, B — руна (пульсируют, когда активны; таймеры примерные)</span><span>нажмите на героя — карточка с билдом</span><span>U — урна</span><span>M — мид-босс</span><span>T — телепорт</span><span>● лагеря (красный — сильный)</span><span>◆ жёлтый — хранилище</span><span>пунктир — зиплайны</span>
         </div>
       </div>
       <div className="space-y-4">
         <div className="panel space-y-1 p-3 text-sm">
-          <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Игроки</p>
-          {players.map((p) => {
-            const w = world.find((x) => x.slot === p.player_slot);
-            const hp = w?.health?.[Math.min(ti, (w?.pts.length ?? 1) - 1)] ?? 100;
+          <p className="mb-2 flex justify-between text-xs uppercase tracking-wider text-muted-foreground"><span>Игроки</span><span>K/D/A · души</span></p>
+          {[0, 1].map((team) => {
+            const tp = players.filter((p) => p.team === team);
+            const snapOf = (p: P) => [...(p.stats ?? [])].reverse().find((x) => x.time_stamp_s <= sec);
+            const tot = tp.reduce((a, p) => a + (snapOf(p)?.net_worth ?? 0), 0);
+            const maxNw = Math.max(1, ...players.map((p) => snapOf(p)?.net_worth ?? 0));
             return (
-              <button key={p.player_slot} onClick={() => setSel(p.player_slot)} className={cn("flex w-full items-center gap-2 rounded px-1 text-left hover:bg-secondary", hp <= 0 && "opacity-40")}>
-                <HeroIcon heroId={p.hero_id} size={24} className={p.team === 0 ? "border-amber-team" : "border-sapphire-team"} />
-                <span className="truncate">{names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name}</span>
-                {hp <= 0 && <span className="ml-auto text-xs text-loss">мёртв</span>}
-              </button>
+              <div key={team} className="mb-2">
+                <div className={cn("mb-1 flex justify-between text-[11px] font-semibold", team === 0 ? "text-amber-team" : "text-sapphire-team")}><span>{team === 0 ? "Амбер" : "Сапфир"}</span><span className="tabular">{fmtK(tot)}</span></div>
+                {tp.map((p) => {
+                  const w = world.find((x) => x.slot === p.player_slot);
+                  const hp = w?.health?.[Math.min(ti, (w?.pts.length ?? 1) - 1)] ?? 100;
+                  const sn = snapOf(p);
+                  return (
+                    <button key={p.player_slot} onClick={() => setSel(p.player_slot)} className={cn("w-full rounded px-1 py-0.5 text-left hover:bg-secondary", sel === p.player_slot && "bg-secondary", hp <= 0 && "opacity-40")}>
+                      <div className="flex items-center gap-2">
+                        <HeroIcon heroId={p.hero_id} size={24} className={team === 0 ? "border-amber-team" : "border-sapphire-team"} />
+                        <span className="min-w-0 flex-1 truncate text-xs">{names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name}</span>
+                        <span className="tabular text-[11px] text-muted-foreground">{sn ? `${sn.kills ?? 0}/${sn.deaths ?? 0}/${sn.assists ?? 0}` : "—"}</span>
+                        <span className="tabular w-10 text-right text-[11px] text-primary">{sn ? fmtK(sn.net_worth ?? 0) : "—"}</span>
+                      </div>
+                      <div className="ml-8 mt-0.5 flex gap-1">
+                        <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted"><div className={team === 0 ? "h-full bg-amber-team" : "h-full bg-sapphire-team"} style={{ width: `${((sn?.net_worth ?? 0) / maxNw) * 100}%` }} /></div>
+                        <div className="h-1 w-10 overflow-hidden rounded-full bg-muted"><div className={cn("h-full", hp > 0 ? "bg-win" : "bg-loss")} style={{ width: `${Math.max(0, hp)}%` }} /></div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             );
           })}
         </div>
+        {fights.length > 0 && (
+          <div className="panel max-h-72 space-y-1 overflow-auto p-3 text-xs">
+            <p className="mb-2 uppercase tracking-wider text-muted-foreground">Ключевые файты</p>
+            {fights.map((f, i) => (
+              <button key={i} onClick={() => { setT(Math.max(0, Math.round((f.start - 8) / (paths!.interval_s || 1)))); setPlay(true); if (mult > 10) setMult(5); }}
+                className={cn("flex w-full items-center gap-2 rounded px-1 py-1 text-left hover:bg-secondary", sec >= f.start - 8 && sec <= f.end + 2 && "bg-primary/10")}>
+                <span className="tabular w-10 text-muted-foreground">{fmtDuration(f.start)}</span>
+                <span className="text-amber-team tabular">{f.amber}</span><span className="text-muted-foreground">:</span><span className="text-sapphire-team tabular">{f.sapph}</span>
+                <span className="flex-1 truncate">{f.amber === f.sapph ? "Размен" : f.amber > f.sapph ? "Амбер выигрывает" : "Сапфир выигрывает"} · {f.amber + f.sapph} смертей</span>
+                <Play className="h-3 w-3 text-primary" />
+              </button>
+            ))}
+          </div>
+        )}
         {objEvents.length > 0 && (
           <div className="panel max-h-80 space-y-1 overflow-auto p-3 text-xs">
             <p className="mb-2 uppercase tracking-wider text-muted-foreground">Объекты</p>
@@ -271,4 +314,35 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
 function Marker({ x, y, c, label, short, big, small }: { x: number; y: number; c: string; label: string; short: string; big?: boolean; small?: boolean }) {
   const r = big ? 18 : small ? 8 : 12;
   return <g><circle cx={x} cy={y} r={r} fill={c} stroke="black" strokeWidth={2} /><text x={x} y={y + r * 0.4} fontSize={r * 1.1} textAnchor="middle" fill="black" fontWeight={800}>{short}</text><title>{label}</title></g>;
+}
+
+/** Souls (player value) over time for every player; click a line to select, click the chart to seek. */
+function ValueChart({ players, names, sec, sel, onSelect, fights, onSeek }: {
+  players: P[]; names?: Map<number, { personaname: string }> | undefined; sec: number; sel: number | null;
+  onSelect: (s: number) => void; fights: { start: number }[]; onSeek: (s: number) => void;
+}) {
+  const heroes = useHeroMap();
+  const W = 800, H = 180;
+  const maxT = Math.max(60, ...players.map((p) => p.stats?.at(-1)?.time_stamp_s ?? 0));
+  const maxV = Math.max(1, ...players.map((p) => p.stats?.at(-1)?.net_worth ?? 0));
+  const x = (t: number) => (t / maxT) * W, y = (v: number) => H - (v / maxV) * (H - 10);
+  const col = (team: number) => (team === 0 ? "var(--team-amber)" : "var(--team-sapphire)");
+  return (
+    <div className="mt-4">
+      <p className="mb-1 flex justify-between text-xs uppercase tracking-wider text-muted-foreground"><span>Ценность игроков (души)</span><span className="normal-case">нажмите на график — перемотка</span></p>
+      <svg viewBox={`0 0 ${W} ${H}`} className="h-44 w-full cursor-crosshair rounded-lg bg-secondary/40" preserveAspectRatio="none"
+        onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); onSeek(((e.clientX - r.left) / r.width) * maxT); }}>
+        {fights.map((f, i) => <rect key={i} x={x(f.start) - 2} y={0} width={6} height={H} fill="var(--loss)" opacity={0.15} />)}
+        {players.map((p) => {
+          const pts = (p.stats ?? []).map((s) => `${x(s.time_stamp_s)},${y(s.net_worth ?? 0)}`).join(" ");
+          const active = sel === p.player_slot;
+          return <polyline key={p.player_slot} points={`0,${H} ${pts}`} fill="none" stroke={col(p.team)} strokeWidth={active ? 3 : 1.3} opacity={sel == null || active ? 0.9 : 0.25} vectorEffect="non-scaling-stroke"
+            style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); onSelect(p.player_slot); }}>
+            <title>{names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name}</title>
+          </polyline>;
+        })}
+        <line x1={x(sec)} x2={x(sec)} y1={0} y2={H} stroke="var(--primary)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+      </svg>
+    </div>
+  );
 }
