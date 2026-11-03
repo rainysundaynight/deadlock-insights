@@ -102,6 +102,27 @@ export function PlayerMatchModal({ player, name, sec, hp, onClose }: { player: M
               </div>
             )}
           </div>
+
+          <div>
+            <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">История покупок</p>
+            <div className="max-h-64 space-y-1 overflow-y-auto pr-1">
+              {[...(player.items ?? [])].filter((i) => items.has(i.item_id)).sort((a, b) => a.game_time_s - b.game_time_s).map((i, idx) => {
+                const it = items.get(i.item_id)!;
+                const future = i.game_time_s > sec;
+                const sold = i.sold_time_s > 0;
+                return (
+                  <div key={`h-${i.item_id}-${idx}`} className={cn("flex items-center gap-3 rounded-lg border p-1.5 pr-3", SLOT_STYLE[it.item_slot_type ?? ""] ?? "border-border", future && "opacity-35")}>
+                    <span className="tabular w-11 text-xs text-muted-foreground">{fmtDuration(i.game_time_s)}</span>
+                    <img src={it.shop_image_webp ?? it.image_webp ?? it.image} alt="" className="h-7 w-7" />
+                    <span className="min-w-0 flex-1 truncate text-sm">{it.name}</span>
+                    {sold && <span className="text-[11px] text-loss">продан {fmtDuration(i.sold_time_s)}</span>}
+                    <span className="tabular text-xs text-primary">{fmtK(it.cost ?? 0)}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-1 text-[11px] text-muted-foreground">Полупрозрачные — куплены позже текущего момента реплея.</p>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
