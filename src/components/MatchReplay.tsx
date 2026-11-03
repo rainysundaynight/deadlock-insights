@@ -80,10 +80,21 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   const md = map.data;
   const bossDead = (midBoss ?? []).filter((b) => b.destroyed_time_s <= sec);
   const teamCol = (team: number) => (team === 0 ? "var(--team-amber)" : "var(--team-sapphire)");
+  const structures = md ? buildStructures(md, objectives ?? [], toSvg, rel) : [];
+  const timed = md ? [
+    ...(md.entities.unstable_rifts ?? []).map((r) => ({ ...cycle(sec, RIFT_FIRST, RIFT_EVERY, RIFT_OPEN), x: rel(r)[0], y: rel(r)[1], c: "oklch(0.7 0.25 310)", short: "R", label: "Рифт" })),
+    ...(md.entities.bridge_buffs ?? []).map((r) => ({ ...cycle(sec, RUNE_FIRST, RUNE_EVERY, RUNE_STAY), x: rel(r)[0], y: rel(r)[1], c: "oklch(0.85 0.17 95)", short: "B", label: "Руна (бафф моста)" })),
+  ] : [];
+  const selP = sel != null ? players.find((p) => p.player_slot === sel) ?? null : null;
+  const selW = sel != null ? world.find((w) => w.slot === sel) : undefined;
 
+  const timedEvents: { t: number; team: number; text: string }[] = [];
+  for (let t0 = RUNE_FIRST; t0 < (len * (paths!.interval_s || 1)); t0 += RUNE_EVERY) timedEvents.push({ t: t0, team: -1, text: "Появились руны на мостах" });
+  for (let t0 = RIFT_FIRST; t0 < (len * (paths!.interval_s || 1)); t0 += RIFT_EVERY) timedEvents.push({ t: t0, team: -1, text: "Открылись рифты" });
   const objEvents = [
-    ...(objectives ?? []).filter((o) => OBJ_KEY[o.team_objective_id] && o.destroyed_time_s).map((o) => ({ t: o.destroyed_time_s, team: o.team, text: `${o.team === 0 ? "Амбер" : "Сапфир"} теряет ${objName(OBJ_KEY[o.team_objective_id] ?? "")}` })),
+    ...(objectives ?? []).filter((o) => STRUCT_OF[o.team_objective_id] && o.destroyed_time_s).map((o) => ({ t: o.destroyed_time_s, team: o.team, text: `${o.team === 0 ? "Амбер" : "Сапфир"} теряет: ${STRUCT_NAME[STRUCT_OF[o.team_objective_id]!]}` })),
     ...(midBoss ?? []).map((b) => ({ t: b.destroyed_time_s, team: b.team_killed, text: `${b.team_killed === 0 ? "Амбер" : "Сапфир"} убивает Мид-босса` })),
+    ...timedEvents,
   ].sort((a, b) => a.t - b.t);
 
   return (
@@ -147,7 +158,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
               const img = heroes.get(p.hero_id)?.images.icon_image_small_webp ?? heroes.get(p.hero_id)?.images.icon_image_small;
               const col = teamCol(p.team);
               return (
-                <g key={w.slot} opacity={hp <= 0 ? 0.25 : 1} style={{ transition: "transform 100ms linear" }} transform={`translate(${pt[0]},${pt[1]})`}>
+                <g key={w.slot} opacity={hp <= 0 ? 0.25 : 1} style={{ transition: "transform 100ms linear", cursor: "pointer" }} transform={`translate(${pt[0]},${pt[1]})`} onClick={() => setSel(w.slot)}>
                   <circle r={21} fill="var(--card)" stroke={col} strokeWidth={4} />
                   {img && <image href={img} x={-17} y={-17} width={34} height={34} clipPath="circle(17px)" />}
                   <rect x={-20} y={24} width={40} height={5} rx={2} fill="black" /><rect x={-20} y={24} width={(40 * Math.max(0, hp)) / 100} height={5} rx={2} fill={col} />
