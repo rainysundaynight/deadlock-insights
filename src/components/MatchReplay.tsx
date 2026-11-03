@@ -55,7 +55,7 @@ function snapToZip(p: Pt, lines: Pt[][]): Pt {
 }
 function buildStructures(md: MapData, objectives: MatchObjective[], toSvg: (x: number, y: number) => Pt, rel: (r: Rel) => Pt) {
   const lines = md.zipline_paths.map((z) => z.P0_points.map((pt) => toSvg((z.origin[0] ?? 0) + (pt[0] ?? 0), (z.origin[1] ?? 0) + (pt[1] ?? 0))));
-  const out: { key: string; kind: StructKind; team: number; x: number; y: number; dt?: number }[] = [];
+  const out: { key: string; kind: StructKind; team: number; x: number; y: number; dt?: number | undefined }[] = [];
   const killed = (team: number, ids: number[]) => objectives.filter((o) => o.team === team && ids.includes(o.team_objective_id) && o.destroyed_time_s > 0).map((o) => o.destroyed_time_s).sort((a, b) => a - b);
   for (const [k, r] of Object.entries(md.objective_positions)) {
     const m = k.match(/^team(\d)_(tier[12])_(\d)$/); if (!m) continue;

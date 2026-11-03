@@ -21,7 +21,7 @@ const SLOT_STYLE: Record<string, string> = {
 const SLOT_NAME: Record<string, string> = { weapon: "Оружие", vitality: "Живучесть", spirit: "Дух" };
 
 /** Player card for a moment of the replay: stats at `sec` and the build owned at that moment. */
-export function PlayerMatchModal({ player, name, sec, hp, onClose }: { player: ModalPlayer | null; name?: string; sec: number; hp: number; onClose: () => void }) {
+export function PlayerMatchModal({ player, name, sec, hp, onClose }: { player: ModalPlayer | null; name?: string | undefined; sec: number; hp: number; onClose: () => void }) {
   const heroes = useHeroMap();
   const items = useItemMap();
   if (!player) return null;
