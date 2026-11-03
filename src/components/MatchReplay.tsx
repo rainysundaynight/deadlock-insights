@@ -3,6 +3,7 @@ import { Pause, Play } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { HeroIcon, useHeroMap } from "@/components/dl";
+import { PlayerMatchModal, type ModalPlayer } from "@/components/PlayerMatchModal";
 import { api } from "@/lib/api";
 import { fmtDuration } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -13,7 +14,7 @@ export interface MatchPath {
 }
 export interface MatchPaths { interval_s: number; x_resolution: number; y_resolution: number; paths: MatchPath[] }
 export interface MatchObjective { destroyed_time_s: number; team_objective_id: number; team: number }
-interface P { player_slot: number; team: number; hero_id: number; death_details?: { game_time_s: number; death_pos: { x: number; y: number } }[] }
+type P = ModalPlayer & { death_details?: { game_time_s: number; death_pos: { x: number; y: number } }[] };
 
 type Rel = { left_relative: number; top_relative: number };
 interface MapData {
@@ -22,13 +23,68 @@ interface MapData {
   objective_positions: Record<string, Rel>;
   zipline_paths: { origin: number[]; color: string; P0_points: number[][] }[];
   neutral_camps: (Rel & { kind: string; name: string })[];
-  entities: Partial<Record<"shops" | "bridge_buffs" | "unstable_rifts" | "soul_urn_pads" | "teleporters", (Rel & { kind?: string; team?: number })[]>>;
+  entities: Partial<Record<"shops" | "bridge_buffs" | "unstable_rifts" | "soul_urn_pads" | "teleporters" | "base_sentries", (Rel & { kind?: string; team?: number })[]>>;
 }
 const mapQuery = { queryKey: ["map-assets"], queryFn: () => api<MapData>("/v1/assets/map"), staleTime: Infinity };
 
 const S = 1000;
 // objective id (ECitadelTeamObjective) → position key suffix
-const OBJ_KEY: Record<number, string> = { 0: "core", 1: "tier1_1", 3: "tier1_3", 4: "tier1_4", 5: "tier2_1", 7: "tier2_3", 8: "tier2_4", 9: "titan" };
+const OBJ_KEY: Record<number, string> = { 1: "tier1_1", 3: "tier1_3", 4: "tier1_4", 5: "tier2_1", 7: "tier2_3", 8: "tier2_4" };
+type StructKind = "guardian" | "walker" | "patron" | "shrine" | "baseGuardian";
+const STRUCT_NAME: Record<StructKind, string> = { guardian: "Guardian", walker: "Walker", patron: "Patron", shrine: "Shrine", baseGuardian: "Base Guardian" };
+const STRUCT_OF: Record<number, StructKind> = { 0: "patron", 1: "guardian", 3: "guardian", 4: "guardian", 5: "walker", 7: "walker", 8: "walker", 9: "patron", 10: "shrine", 11: "shrine", 12: "baseGuardian", 13: "baseGuardian", 14: "baseGuardian", 15: "baseGuardian", 16: "baseGuardian", 17: "baseGuardian" };
+// Game timers (approximate, the match data has no spawn events): runes on bridges and rift openings.
+const RUNE_FIRST = 300, RUNE_EVERY = 300, RUNE_STAY = 120;
+const RIFT_FIRST = 600, RIFT_EVERY = 300, RIFT_OPEN = 90;
+function cycle(sec: number, first: number, every: number, stay: number) {
+  if (sec < first) return { active: false, next: first - sec };
+  const into = (sec - first) % every;
+  return into < stay ? { active: true, next: null } : { active: false, next: every - into };
+}
+type Pt = readonly [number, number];
+/** Nearest point on any zipline (objective_positions in the assets are offset, structures sit on the ziplines). */
+function snapToZip(p: Pt, lines: Pt[][]): Pt {
+  let best: Pt = p, bd = Infinity;
+  for (const l of lines) for (let i = 1; i < l.length; i++) {
+    const a = l[i - 1]!, b = l[i]!; const dx = b[0] - a[0], dy = b[1] - a[1]; const L = dx * dx + dy * dy || 1;
+    const u = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L));
+    const q: Pt = [a[0] + u * dx, a[1] + u * dy]; const d = (q[0] - p[0]) ** 2 + (q[1] - p[1]) ** 2;
+    if (d < bd) { bd = d; best = q; }
+  }
+  return best;
+}
+function buildStructures(md: MapData, objectives: MatchObjective[], toSvg: (x: number, y: number) => Pt, rel: (r: Rel) => Pt) {
+  const lines = md.zipline_paths.map((z) => z.P0_points.map((pt) => toSvg((z.origin[0] ?? 0) + (pt[0] ?? 0), (z.origin[1] ?? 0) + (pt[1] ?? 0))));
+  const out: { key: string; kind: StructKind; team: number; x: number; y: number; dt?: number }[] = [];
+  const killed = (team: number, ids: number[]) => objectives.filter((o) => o.team === team && ids.includes(o.team_objective_id) && o.destroyed_time_s > 0).map((o) => o.destroyed_time_s).sort((a, b) => a - b);
+  for (const [k, r] of Object.entries(md.objective_positions)) {
+    const m = k.match(/^team(\d)_(tier[12])_(\d)$/); if (!m) continue;
+    const team = +m[1]!; const [x, y] = snapToZip(rel(r), lines);
+    const id = Object.entries(OBJ_KEY).find(([, v]) => v === `${m[2]}_${m[3]}`)?.[0];
+    const dt = objectives.find((o) => o.team === team && String(o.team_objective_id) === id && o.destroyed_time_s > 0)?.destroyed_time_s;
+    out.push({ key: k, kind: m[2] === "tier1" ? "guardian" : "walker", team, x, y, dt });
+  }
+  for (const team of [0, 1]) {
+    const s = (md.entities.base_sentries ?? []).filter((e) => e.team === team).map(rel).sort((a, b) => a[0] - b[0]);
+    if (!s.length) continue;
+    const cx = s.reduce((a, p) => a + p[0], 0) / s.length, cy = s.reduce((a, p) => a + p[1], 0) / s.length;
+    const outer = [s[0]!, s[s.length - 1]!], inner = s.slice(1, -1);
+    const bg = killed(team, [12, 13, 14, 15, 16, 17]), sh = killed(team, [10, 11]);
+    outer.forEach((p, i) => out.push({ key: `bg${team}${i}`, kind: "baseGuardian", team, x: p[0], y: p[1], dt: bg[i] }));
+    inner.forEach((p, i) => out.push({ key: `sh${team}${i}`, kind: "shrine", team, x: p[0], y: p[1], dt: sh[i] }));
+    const patronDt = objectives.find((o) => o.team === team && (o.team_objective_id === 0 || o.team_objective_id === 9) && o.destroyed_time_s > 0)?.destroyed_time_s;
+    out.push({ key: `pt${team}`, kind: "patron", team, x: cx, y: cy + (team === 0 ? 22 : -22), dt: patronDt });
+  }
+  return out;
+}
+function StructIcon({ kind, fill }: { kind: StructKind; fill: string }) {
+  const st = { fill, stroke: "black", strokeWidth: 2, strokeLinejoin: "round" as const };
+  if (kind === "guardian") return <path d="M0,-11 L9,-7 L8,3 Q5,9 0,12 Q-5,9 -8,3 L-9,-7 Z" {...st} />;
+  if (kind === "walker") return <g><path d="M-6,4 L-11,13 M6,4 L11,13 M0,5 L0,14" stroke="black" strokeWidth={4} /><path d="M-6,4 L-11,13 M6,4 L11,13 M0,5 L0,14" stroke={fill} strokeWidth={2} /><path d="M0,-13 L11,-6 L11,4 L0,8 L-11,4 L-11,-6 Z" {...st} /><circle r={3} cy={-3} fill="black" /></g>;
+  if (kind === "baseGuardian") return <g><rect x={-9} y={-12} width={18} height={22} rx={2} {...st} /><rect x={-5} y={-8} width={10} height={4} fill="black" opacity={0.6} /></g>;
+  if (kind === "shrine") return <g><path d="M0,-12 L9,0 L0,12 L-9,0 Z" {...st} /><path d="M0,-5 Q4,0 0,6 Q-4,0 0,-5 Z" fill="black" opacity={0.6} /></g>;
+  return <g><circle r={17} {...st} strokeWidth={2.5} /><path d="M-9,4 L-10,-6 L-4,-1 L0,-9 L4,-1 L10,-6 L9,4 Z" fill="black" opacity={0.7} /></g>;
+}
 
 type Layer = "zip" | "camps" | "obj" | "buffs" | "shops" | "move";
 const LAYERS: [Layer, string][] = [["obj", "Башни"], ["zip", "Зиплайны"], ["camps", "Лагеря"], ["buffs", "Урна · рифт · баффы"], ["shops", "Магазины"], ["move", "Тропы"]];
@@ -48,6 +104,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   const [t, setT] = useState(0);
   const [play, setPlay] = useState(false);
   const [mult, setMult] = useState(80);
+  const [sel, setSel] = useState<number | null>(null);
   const [layers, setLayers] = useState<Set<Layer>>(new Set(["obj", "zip", "camps", "buffs"]));
   const on = (l: Layer) => layers.has(l);
   const stepS = (mult * 0.1) / (paths?.interval_s || 1);
@@ -166,6 +223,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
               );
             })}
           </svg>
+          <PlayerMatchModal player={selP} name={selP?.account_id ? names?.get(selP.account_id)?.personaname : undefined} sec={sec} hp={selW?.health?.[Math.min(ti, selW.pts.length - 1)] ?? 100} onClose={() => setSel(null)} />
           {!md && <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">Загрузка карты…</div>}
         </div>
         <div className="mt-3 flex items-center gap-3">
@@ -177,7 +235,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
           </select>
         </div>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
-          <span>◆ башни (серые — разрушены)</span><span>B — бафф моста</span><span>R — рифт</span><span>U — урна</span><span>M — мид-босс</span><span>T — телепорт</span><span>● лагеря (красный — сильный)</span><span>◆ жёлтый — хранилище</span><span>пунктир — зиплайны</span>
+          <span>щит — Guardian</span><span>шагоход — Walker</span><span>прямоугольник — Base Guardian</span><span>ромб — Shrine</span><span>корона — Patron</span><span>R — рифт, B — руна (пульсируют, когда активны; таймеры примерные)</span><span>нажмите на героя — карточка с билдом</span><span>U — урна</span><span>M — мид-босс</span><span>T — телепорт</span><span>● лагеря (красный — сильный)</span><span>◆ жёлтый — хранилище</span><span>пунктир — зиплайны</span>
         </div>
       </div>
       <div className="space-y-4">
@@ -187,11 +245,11 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             const w = world.find((x) => x.slot === p.player_slot);
             const hp = w?.health?.[Math.min(ti, (w?.pts.length ?? 1) - 1)] ?? 100;
             return (
-              <div key={p.player_slot} className={cn("flex items-center gap-2", hp <= 0 && "opacity-40")}>
+              <button key={p.player_slot} onClick={() => setSel(p.player_slot)} className={cn("flex w-full items-center gap-2 rounded px-1 text-left hover:bg-secondary", hp <= 0 && "opacity-40")}>
                 <HeroIcon heroId={p.hero_id} size={24} className={p.team === 0 ? "border-amber-team" : "border-sapphire-team"} />
-                <span className="truncate">{names?.get((p as unknown as { account_id: number }).account_id)?.personaname ?? heroes.get(p.hero_id)?.name}</span>
+                <span className="truncate">{names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name}</span>
                 {hp <= 0 && <span className="ml-auto text-xs text-loss">мёртв</span>}
-              </div>
+              </button>
             );
           })}
         </div>
@@ -201,7 +259,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             {objEvents.map((e, i) => (
               <button key={i} onClick={() => setT(Math.round(e.t / (paths!.interval_s || 1)))} className={cn("flex w-full items-center gap-2 rounded px-1 py-0.5 text-left hover:bg-secondary", e.t > sec && "opacity-40")}>
                 <span className="tabular w-10 text-muted-foreground">{fmtDuration(e.t)}</span>
-                <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: teamCol(e.team) }} />
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: e.team < 0 ? "oklch(0.75 0.2 310)" : teamCol(e.team) }} />
                 <span>{e.text}</span>
               </button>
             ))}
@@ -215,11 +273,4 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
 function Marker({ x, y, c, label, short, big, small }: { x: number; y: number; c: string; label: string; short: string; big?: boolean; small?: boolean }) {
   const r = big ? 18 : small ? 8 : 12;
   return <g><circle cx={x} cy={y} r={r} fill={c} stroke="black" strokeWidth={2} /><text x={x} y={y + r * 0.4} fontSize={r * 1.1} textAnchor="middle" fill="black" fontWeight={800}>{short}</text><title>{label}</title></g>;
-}
-
-function objName(k: string) {
-  if (k === "core") return "Патрон (базу)";
-  if (k === "titan") return "Титана";
-  const [tier, lane] = k.split("_").length === 2 ? k.split("_") : [k, ""];
-  return `${tier === "tier1" ? "Стража" : "Хранителя"} (линия ${lane})`;
 }
