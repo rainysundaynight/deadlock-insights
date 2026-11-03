@@ -225,7 +225,7 @@ function LiveView({ m }: { m: LiveMatch }) {
         </h1>
         {m.game_mode_parsed?.includes("StreetBrawl") && <p className="mt-2 inline-flex rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs text-primary">Режим Street Brawl · 4 на 4, души общие на команду</p>}
         <div className="mt-3"><SpectateButton matchId={m.match_id} /></div>
-        <p className="mt-2 text-muted-foreground">Подключитесь к трансляции, чтобы видеть статистику каждого игрока. Полный разбор, линии и советы появятся после окончания матча.</p>
+        <p className="mt-2 text-muted-foreground">Статистика игроков обновляется в реальном времени. Полный разбор, линии и советы появятся после окончания матча.</p>
         <div className="deco-line mt-6" />
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

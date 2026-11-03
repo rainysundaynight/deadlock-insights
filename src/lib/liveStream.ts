@@ -7,7 +7,7 @@ export interface LivePlayer {
   nw: number; k: number; d: number; a: number; lh: number; dn: number; dmg: number; heal: number; obj: number; streak: number;
 }
 export type LiveStatus = "idle" | "connecting" | "streaming" | "ended" | "error";
-export type LiveEventKind = "kill" | "death" | "level" | "streak" | "lead";
+export type LiveEventKind = "kill" | "death" | "level" | "streak" | "lead" | "sync";
 export interface LiveEvent { id: number; t: number; kind: LiveEventKind; team: number; hero: number; name: string; text: string }
 
 const TICK_RATE = 60;
@@ -43,7 +43,6 @@ export function useLiveScoreboard(matchId: number, enabled: boolean) {
   const [message, setMessage] = useState<string>("");
   const latest = useRef(new Map<number, LivePlayer>());
   const tick = useRef(0);
-  const firstTick = useRef<number | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
@@ -54,12 +53,32 @@ export function useLiveScoreboard(matchId: number, enabled: boolean) {
     let seq = 0;
     let leader = -1;
     const prevSnap = new Map<number, LivePlayer>();
+    const hist: { t: number; diff: number; a: number; s: number }[] = [];
+    const pending: LiveEvent[] = [];
+    let lastHistT = -999;
     es.onmessage = (e) => {
       const r = JSON.parse(e.data) as LivePlayer & { tick: number };
       if (!r.hero) return;
-      latest.current.set(r.entity_index, { ...r, team: r.team - 2 });
+      const cur = { ...r, team: r.team - 2 };
+      const t = Math.round(r.tick / TICK_RATE);
+      // Diff every message (incl. replay catch-up from match start) so the feed covers the whole game.
+      const prev = prevSnap.get(r.entity_index);
+      // The broadcast only keeps the last few minutes, so summarise what happened before we joined.
+      if (!prev && cur.k + cur.d + cur.a > 0) pending.push({ id: seq++, t, kind: "sync", team: cur.team, hero: cur.hero, name: cur.name, text: `до начала записи: ${cur.k}/${cur.d}/${cur.a}${cur.streak >= 2 ? `, серия ${cur.streak}` : ""}` });
+      for (const ev of diffEvents(prev, cur, t)) pending.push({ ...ev, id: seq++ });
+      prevSnap.set(r.entity_index, cur);
+      latest.current.set(r.entity_index, cur);
       tick.current = r.tick;
-      if (firstTick.current === null) firstTick.current = r.tick;
+      if (t - lastHistT >= 10 && latest.current.size >= 2) {
+        lastHistT = t;
+        const list = [...latest.current.values()];
+        const sum = (tm: number) => list.filter((p) => p.team === tm).reduce((s2, p) => s2 + p.nw, 0);
+        const diff = sum(0) - sum(1);
+        const lead = Math.abs(diff) < 1500 ? leader : diff > 0 ? 0 : 1;
+        if (lead !== leader && leader !== -1 && lead !== -1) pending.push({ id: seq++, t, kind: "lead", team: lead, hero: 0, name: lead === 0 ? "Амбер" : "Сапфир", text: "выходит вперёд по душам" });
+        leader = lead;
+        hist.push({ t, diff, a: Math.max(0, diff), s: Math.min(0, diff) });
+      }
     };
     es.addEventListener("status", (e) => setMessage((e as MessageEvent).data));
     es.addEventListener("end", () => { setStatus("ended"); es.close(); });
@@ -78,23 +97,9 @@ export function useLiveScoreboard(matchId: number, enabled: boolean) {
       if (!list.length) return;
       setStatus((s) => (s === "connecting" ? "streaming" : s));
       setPlayers(list);
-      const t = Math.round(tick.current / TICK_RATE);
-      setGameTime(t);
-      const fresh: LiveEvent[] = [];
-      for (const p of list) {
-        for (const ev of diffEvents(prevSnap.get(p.entity_index), p, t)) fresh.push({ ...ev, id: seq++ });
-        prevSnap.set(p.entity_index, p);
-      }
-      if (tick.current !== lastSample) {
-        lastSample = tick.current;
-        const sum = (tm: number) => list.filter((p) => p.team === tm).reduce((s, p) => s + p.nw, 0);
-        const diff = sum(0) - sum(1);
-        const lead = Math.abs(diff) < 1500 ? leader : diff > 0 ? 0 : 1;
-        if (lead !== leader && leader !== -1 && lead !== -1) fresh.push({ id: seq++, t, kind: "lead", team: lead, hero: 0, name: lead === 0 ? "Амбер" : "Сапфир", text: "выходит вперёд по душам" });
-        leader = lead;
-        setHistory((h) => [...h.slice(-900), { t, diff, a: Math.max(0, diff), s: Math.min(0, diff) }]);
-      }
-      if (fresh.length) setEvents((ev) => [...fresh.reverse(), ...ev].slice(0, 200));
+      setGameTime(Math.round(tick.current / TICK_RATE));
+      if (hist.length !== lastSample) { lastSample = hist.length; setHistory(hist.slice(-1500)); }
+      if (pending.length) { const fresh = pending.splice(0).reverse(); setEvents((ev) => [...fresh, ...ev].slice(0, 500)); }
     }, 1000);
     return () => { clearInterval(iv); es.close(); };
   }, [matchId, enabled]);
