@@ -32,6 +32,7 @@ const OBJ_KEY: Record<number, string> = { 0: "core", 1: "tier1_1", 3: "tier1_3",
 
 type Layer = "zip" | "camps" | "obj" | "buffs" | "shops" | "move";
 const LAYERS: [Layer, string][] = [["obj", "Башни"], ["zip", "Зиплайны"], ["camps", "Лагеря"], ["buffs", "Урна · рифт · баффы"], ["shops", "Магазины"], ["move", "Тропы"]];
+const SPEEDS = [1, 2, 5, 10, 20, 80, 200, 500];
 
 export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   paths?: MatchPaths | undefined; players: P[]; names?: Map<number, { personaname: string }> | undefined;
@@ -46,15 +47,16 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   const len = Math.max(0, ...(paths?.paths ?? []).map((p) => p.x_pos.length));
   const [t, setT] = useState(0);
   const [play, setPlay] = useState(false);
-  const [speed, setSpeed] = useState(8);
+  const [mult, setMult] = useState(80);
   const [layers, setLayers] = useState<Set<Layer>>(new Set(["obj", "zip", "camps", "buffs"]));
   const on = (l: Layer) => layers.has(l);
+  const stepS = (mult * 0.1) / (paths?.interval_s || 1);
 
   useEffect(() => {
     if (!play) return;
-    const iv = setInterval(() => setT((v) => (v + speed >= len - 1 ? (setPlay(false), len - 1) : v + speed)), 100);
+    const iv = setInterval(() => setT((v) => (v + stepS >= len - 1 ? (setPlay(false), len - 1) : v + stepS)), 100);
     return () => clearInterval(iv);
-  }, [play, speed, len]);
+  }, [play, stepS, len]);
 
   const world = useMemo(() => {
     if (!paths) return null;
@@ -71,6 +73,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   if (!world || !len) return <div className="panel p-6 text-sm text-muted-foreground">Для этого матча нет данных о передвижении игроков.</div>;
   const bySlot = new Map(players.map((p) => [p.player_slot, p]));
   const sec = t * (paths!.interval_s || 1);
+  const ti = Math.max(0, Math.min(Math.floor(t), len - 1));
   const deaths = players.flatMap((p) => (p.death_details ?? []).filter((d) => d.game_time_s <= sec && d.game_time_s > sec - 20).map((d) => ({ ...d, team: p.team })));
   const destroyed = new Map<string, number>();
   for (const o of objectives ?? []) { const k = OBJ_KEY[o.team_objective_id]; if (k && o.destroyed_time_s) destroyed.set(`team${o.team}_${k}`, o.destroyed_time_s); }
@@ -97,7 +100,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             {md && <image href={md.images.minimap} x={0} y={0} width={S} height={S} opacity={0.95} />}
             {on("move") && world.map((w) => {
               const p = bySlot.get(w.slot);
-              return <polyline key={w.slot} points={w.pts.slice(0, t + 1).filter((_, i) => i % 3 === 0).map((q) => q.join(",")).join(" ")} fill="none" stroke={p ? teamCol(p.team) : "white"} strokeOpacity={0.35} strokeWidth={2} />;
+              return <polyline key={w.slot} points={w.pts.slice(0, ti + 1).filter((_, i) => i % 3 === 0).map((q) => q.join(",")).join(" ")} fill="none" stroke={p ? teamCol(p.team) : "white"} strokeOpacity={0.35} strokeWidth={2} />;
             })}
             {md && on("zip") && md.zipline_paths.map((z, i) => (
               <polyline key={i} points={z.P0_points.map((pt) => toSvg((z.origin[0] ?? 0) + (pt[0] ?? 0), (z.origin[1] ?? 0) + (pt[1] ?? 0)).join(",")).join(" ")}
@@ -133,7 +136,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             {deaths.map((d, i) => { const [x, y] = toSvg(d.death_pos.x, d.death_pos.y); return <text key={i} x={x} y={y} fontSize={26} textAnchor="middle" fill="var(--loss)" stroke="black" strokeWidth={1}>✕</text>; })}
             {world.map((w) => {
               const p = bySlot.get(w.slot); if (!p) return null;
-              const idx = Math.min(t, w.pts.length - 1);
+              const idx = Math.min(ti, w.pts.length - 1);
               const pt = w.pts[idx]; if (!pt) return null;
               const hp = w.health?.[idx] ?? 100;
               const img = heroes.get(p.hero_id)?.images.icon_image_small_webp ?? heroes.get(p.hero_id)?.images.icon_image_small;
@@ -151,10 +154,10 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
         </div>
         <div className="mt-3 flex items-center gap-3">
           <button onClick={() => setPlay((v) => !v)} className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">{play ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</button>
-          <input type="range" min={0} max={len - 1} value={t} onChange={(e) => setT(+e.target.value)} className="flex-1 accent-[var(--primary)]" />
+          <input type="range" min={0} max={len - 1} step="any" value={t} onChange={(e) => setT(+e.target.value)} className="flex-1 accent-[var(--primary)]" />
           <span className="tabular w-14 text-sm">{fmtDuration(sec)}</span>
-          <select value={speed} onChange={(e) => setSpeed(+e.target.value)} className="rounded-md border border-border bg-secondary px-2 py-1 text-xs">
-            {[2, 8, 20, 50].map((s) => <option key={s} value={s}>×{s * 10}</option>)}
+          <select value={mult} onChange={(e) => setMult(+e.target.value)} className="rounded-md border border-border bg-secondary px-2 py-1 text-xs">
+            {SPEEDS.map((s) => <option key={s} value={s}>×{s}</option>)}
           </select>
         </div>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
@@ -166,7 +169,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
           <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Игроки</p>
           {players.map((p) => {
             const w = world.find((x) => x.slot === p.player_slot);
-            const hp = w?.health?.[Math.min(t, (w?.pts.length ?? 1) - 1)] ?? 100;
+            const hp = w?.health?.[Math.min(ti, (w?.pts.length ?? 1) - 1)] ?? 100;
             return (
               <div key={p.player_slot} className={cn("flex items-center gap-2", hp <= 0 && "opacity-40")}>
                 <HeroIcon heroId={p.hero_id} size={24} className={p.team === 0 ? "border-amber-team" : "border-sapphire-team"} />
