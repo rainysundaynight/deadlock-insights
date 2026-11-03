@@ -19,10 +19,13 @@ import { Route as MetaRouteImport } from './routes/meta'
 import { Route as PatchesRouteImport } from './routes/patches'
 import { Route as RanksRouteImport } from './routes/ranks'
 import { Route as TierlistRouteImport } from './routes/tierlist'
+import { Route as AuthSteamRouteImport } from './routes/auth.steam'
 import { Route as HeroesIndexRouteImport } from './routes/heroes.index'
 import { Route as HeroesHeroIdRouteImport } from './routes/heroes.$heroId'
 import { Route as MatchesMatchIdRouteImport } from './routes/matches.$matchId'
 import { Route as PlayersAccountIdRouteImport } from './routes/players.$accountId'
+import { Route as ApiPublicSteamCallbackRouteImport } from './routes/api/public/steam.callback'
+import { Route as ApiPublicSteamLoginRouteImport } from './routes/api/public/steam.login'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -74,6 +77,11 @@ const TierlistRoute = TierlistRouteImport.update({
   path: '/tierlist',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthSteamRoute = AuthSteamRouteImport.update({
+  id: '/auth/steam',
+  path: '/auth/steam',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HeroesIndexRoute = HeroesIndexRouteImport.update({
   id: '/heroes/',
   path: '/heroes/',
@@ -94,6 +102,16 @@ const PlayersAccountIdRoute = PlayersAccountIdRouteImport.update({
   path: '/players/$accountId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSteamCallbackRoute = ApiPublicSteamCallbackRouteImport.update({
+  id: '/api/public/steam/callback',
+  path: '/api/public/steam/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSteamLoginRoute = ApiPublicSteamLoginRouteImport.update({
+  id: '/api/public/steam/login',
+  path: '/api/public/steam/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -106,10 +124,13 @@ export interface FileRoutesByFullPath {
   '/patches': typeof PatchesRoute
   '/ranks': typeof RanksRoute
   '/tierlist': typeof TierlistRoute
+  '/auth/steam': typeof AuthSteamRoute
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/players/$accountId': typeof PlayersAccountIdRoute
   '/heroes/': typeof HeroesIndexRoute
+  '/api/public/steam/callback': typeof ApiPublicSteamCallbackRoute
+  '/api/public/steam/login': typeof ApiPublicSteamLoginRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -122,10 +143,13 @@ export interface FileRoutesByTo {
   '/patches': typeof PatchesRoute
   '/ranks': typeof RanksRoute
   '/tierlist': typeof TierlistRoute
+  '/auth/steam': typeof AuthSteamRoute
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/players/$accountId': typeof PlayersAccountIdRoute
   '/heroes': typeof HeroesIndexRoute
+  '/api/public/steam/callback': typeof ApiPublicSteamCallbackRoute
+  '/api/public/steam/login': typeof ApiPublicSteamLoginRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -139,10 +163,13 @@ export interface FileRoutesById {
   '/patches': typeof PatchesRoute
   '/ranks': typeof RanksRoute
   '/tierlist': typeof TierlistRoute
+  '/auth/steam': typeof AuthSteamRoute
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/players/$accountId': typeof PlayersAccountIdRoute
   '/heroes/': typeof HeroesIndexRoute
+  '/api/public/steam/callback': typeof ApiPublicSteamCallbackRoute
+  '/api/public/steam/login': typeof ApiPublicSteamLoginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -157,10 +184,13 @@ export interface FileRouteTypes {
     | '/patches'
     | '/ranks'
     | '/tierlist'
+    | '/auth/steam'
     | '/heroes/$heroId'
     | '/matches/$matchId'
     | '/players/$accountId'
     | '/heroes/'
+    | '/api/public/steam/callback'
+    | '/api/public/steam/login'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -173,10 +203,13 @@ export interface FileRouteTypes {
     | '/patches'
     | '/ranks'
     | '/tierlist'
+    | '/auth/steam'
     | '/heroes/$heroId'
     | '/matches/$matchId'
     | '/players/$accountId'
     | '/heroes'
+    | '/api/public/steam/callback'
+    | '/api/public/steam/login'
   id:
     | '__root__'
     | '/'
@@ -189,10 +222,13 @@ export interface FileRouteTypes {
     | '/patches'
     | '/ranks'
     | '/tierlist'
+    | '/auth/steam'
     | '/heroes/$heroId'
     | '/matches/$matchId'
     | '/players/$accountId'
     | '/heroes/'
+    | '/api/public/steam/callback'
+    | '/api/public/steam/login'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -206,10 +242,13 @@ export interface RootRouteChildren {
   PatchesRoute: typeof PatchesRoute
   RanksRoute: typeof RanksRoute
   TierlistRoute: typeof TierlistRoute
+  AuthSteamRoute: typeof AuthSteamRoute
   HeroesHeroIdRoute: typeof HeroesHeroIdRoute
   MatchesMatchIdRoute: typeof MatchesMatchIdRoute
   PlayersAccountIdRoute: typeof PlayersAccountIdRoute
   HeroesIndexRoute: typeof HeroesIndexRoute
+  ApiPublicSteamCallbackRoute: typeof ApiPublicSteamCallbackRoute
+  ApiPublicSteamLoginRoute: typeof ApiPublicSteamLoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -284,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TierlistRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/steam': {
+      id: '/auth/steam'
+      path: '/auth/steam'
+      fullPath: '/auth/steam'
+      preLoaderRoute: typeof AuthSteamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/heroes/': {
       id: '/heroes/'
       path: '/heroes'
@@ -312,6 +358,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayersAccountIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/steam/callback': {
+      id: '/api/public/steam/callback'
+      path: '/api/public/steam/callback'
+      fullPath: '/api/public/steam/callback'
+      preLoaderRoute: typeof ApiPublicSteamCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/steam/login': {
+      id: '/api/public/steam/login'
+      path: '/api/public/steam/login'
+      fullPath: '/api/public/steam/login'
+      preLoaderRoute: typeof ApiPublicSteamLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -326,10 +386,13 @@ const rootRouteChildren: RootRouteChildren = {
   PatchesRoute: PatchesRoute,
   RanksRoute: RanksRoute,
   TierlistRoute: TierlistRoute,
+  AuthSteamRoute: AuthSteamRoute,
   HeroesHeroIdRoute: HeroesHeroIdRoute,
   MatchesMatchIdRoute: MatchesMatchIdRoute,
   PlayersAccountIdRoute: PlayersAccountIdRoute,
   HeroesIndexRoute: HeroesIndexRoute,
+  ApiPublicSteamCallbackRoute: ApiPublicSteamCallbackRoute,
+  ApiPublicSteamLoginRoute: ApiPublicSteamLoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
