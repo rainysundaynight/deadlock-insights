@@ -14,6 +14,9 @@ import { cn } from "@/lib/utils";
 import { gradeHistory, gradeTone } from "@/lib/grade";
 import { globalAvgQuery } from "@/components/PlayerInsights";
 import { globalAverages } from "@/lib/playerStats";
+import { gradeHistory, gradeTone } from "@/lib/grade";
+import { globalAvgQuery } from "@/components/PlayerInsights";
+import { globalAverages } from "@/lib/playerStats";
 
 export const Route = createFileRoute("/players/$accountId")({
   head: ({ params }) => ({

@@ -292,3 +292,14 @@ function LiveView({ m }: { m: LiveMatch }) {
     </div>
   );
 }
+
+function Share({ pct, team }: { pct: number; team: number }) {
+  return (
+    <span className="mt-1 flex items-center gap-1.5 text-[10px] text-muted-foreground" title="Доля от команды">
+      <span className="h-1 w-12 overflow-hidden rounded bg-secondary">
+        <span className={cn("block h-full", team === 0 ? "bg-amber-team" : "bg-sapphire-team")} style={{ width: `${Math.min(100, pct)}%` }} />
+      </span>
+      {pct.toFixed(0)}%
+    </span>
+  );
+}
