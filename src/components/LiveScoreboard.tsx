@@ -28,7 +28,7 @@ function useRanks(roster: Roster[], ranked: boolean) {
     queryKey: ["lb-all"], enabled: ranked, staleTime: 3600_000,
     queryFn: async () => (await Promise.all(REGIONS.map((r) => api<{ entries: LbEntry[] }>(`/v1/leaderboard/${r.id}`).then((d) => d.entries.filter((e) => e.rank <= 250)).catch(() => [])))).flat(),
   });
-  return { badge: (i: number) => ranks[i]?.data?.badge, lb: lb.data ?? [] };
+  return { badge: (i: number) => { const b = ranks[i]?.data?.badge; return b && b > 10 ? b : ranks[i]?.isFetched ? null : undefined; }, lb: lb.data ?? [] };
 }
 
 /** Per-player estimated rank for unranked players, from their own match history (cached 24h). */
@@ -37,7 +37,7 @@ function usePotentialBadges(roster: Roster[], badge: (i: number) => number | nul
     queries: roster.map((r, i) => ({
       queryKey: ["pot-rank", r.account_id],
       queryFn: () => fetchPotentialBadge(r.account_id),
-      enabled: badge(i) == null,
+      enabled: badge(i) === null,
       staleTime: 86_400_000,
       retry: false,
     })),

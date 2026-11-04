@@ -1,7 +1,9 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-import { HeroIcon, Loading, rankParams } from "@/components/dl";
+import { HeroIcon, Loading, rankParams, useHeroMap } from "@/components/dl";
 import { api, ranksQuery, type HeroAnalytics } from "@/lib/api";
 import { fmtInt } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -101,5 +103,64 @@ export function RankMetaGrid() {
         );
       })}
     </div>
+  );
+}
+
+const COLORS = ["var(--primary)", "var(--team-sapphire)", "#4ade80", "#f472b6", "#a78bfa"];
+
+/** Compare win rates of several heroes across every rank tier. */
+export function HeroRankCompare({ days }: { days: number }) {
+  const heroes = useHeroMap();
+  const { loading, byTier } = useHeroStatsByRank(days);
+  const info = useRankInfo();
+  const [sel, setSel] = useState<number[]>([]);
+  const all = [...heroes.values()].sort((a, b) => a.name.localeCompare(b.name));
+  const picked = sel.length ? sel : all.slice(0, 3).map((h) => h.id);
+  const toggle = (id: number) => setSel((s) => {
+    const cur = s.length ? s : picked;
+    return cur.includes(id) ? cur.filter((x) => x !== id) : cur.length >= 5 ? cur : [...cur, id];
+  });
+  const data = byTier.map(({ tier, rows }) => {
+    const o: Record<string, number | string | null> = { r: info(tier).name };
+    for (const id of picked) {
+      const h = rows.find((x) => x.hero_id === id);
+      o[id] = h && h.matches >= 30 ? +((h.wins / h.matches) * 100).toFixed(1) : null;
+    }
+    return o;
+  });
+  return (
+    <section className="mt-10 space-y-3">
+      <h2 className="font-display text-lg font-semibold uppercase tracking-wider">Сравнение героев по рангам</h2>
+      <p className="text-sm text-muted-foreground">Выберите до 5 героев — винрейт в каждом ранге за {days} дн.</p>
+      <div className="flex flex-wrap gap-1">
+        {all.map((h) => {
+          const i = picked.indexOf(h.id);
+          return (
+            <button key={h.id} onClick={() => toggle(h.id)} title={h.name}
+              className={cn("rounded-md border-2 p-0.5 transition", i < 0 && "border-transparent opacity-40 hover:opacity-100")}
+              style={i >= 0 ? { borderColor: COLORS[i] } : undefined}>
+              <HeroIcon heroId={h.id} size={32} />
+            </button>
+          );
+        })}
+      </div>
+      <div className="panel p-4">
+        {loading ? <Loading /> : (
+          <div className="h-80">
+            <ResponsiveContainer>
+              <LineChart data={data}>
+                <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
+                <XAxis dataKey="r" stroke="var(--muted-foreground)" fontSize={11} />
+                <YAxis stroke="var(--muted-foreground)" fontSize={11} unit="%" domain={["auto", "auto"]} />
+                <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)" }} />
+                {picked.map((id, i) => (
+                  <Line key={id} dataKey={String(id)} name={heroes.get(id)?.name ?? String(id)} stroke={COLORS[i] ?? "var(--primary)"} strokeWidth={2} connectNulls dot={{ r: 3 }} />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

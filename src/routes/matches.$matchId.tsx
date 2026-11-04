@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { ErrorBox, HeroIcon, Loading, RankBadge, Stat, useHeroMap, useItemMap, useSteamProfiles } from "@/components/dl";
+import { ErrorBox, HeroIcon, Loading, PlayerRank, RankBadge, Stat, useHeroMap, useItemMap, useSteamProfiles } from "@/components/dl";
 import { api } from "@/lib/api";
 import { fmtDate, fmtDuration, fmtK, GAME_MODES, MATCH_MODES } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -202,6 +202,7 @@ function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }:
                         </Link>
                         <p className="text-xs text-muted-foreground">{heroes.get(p.hero_id)?.name} · ур. {p.level}</p>
                       </div>
+                      <PlayerRank accountId={p.account_id} />
                     </div>
                   </td>
                   <td className="p-3">{ga && (() => {

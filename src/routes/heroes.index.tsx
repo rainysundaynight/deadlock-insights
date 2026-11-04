@@ -7,6 +7,7 @@ import { Chip, ErrorBox, RankFilter, rankParams, HeroIcon, Loading, PageHeader, 
 import { api, heroesQuery, type HeroAnalytics } from "@/lib/api";
 import { fmtInt, fmtK, fmtPct, kda, winrate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { HeroRankCompare } from "@/components/RankMeta";
 
 export const Route = createFileRoute("/heroes/")({
   head: () => ({
@@ -31,7 +32,7 @@ function HeroesPage() {
   const [period, setPeriod] = useState(7);
   const [range, setRange] = useState<number | null>(null);
   const [sort, setSort] = useState<SortKey>("winrate");
-  const [view, setView] = useState<"table" | "grid">("table");
+  const [view, setView] = useState<"table" | "grid">("grid");
   const heroes = useHeroMap();
   const heroList = useQuery(heroesQuery);
 
@@ -79,14 +80,23 @@ function HeroesPage() {
         <span className="mx-2 h-6 w-px bg-border" />
         <RankFilter value={range} onChange={setRange} />
         <span className="ml-auto flex gap-2">
-          <Chip active={view === "table"} onClick={() => setView("table")}>Таблица</Chip>
+          {view === "grid" && (
+            <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} className="h-9 rounded-md border border-input bg-secondary px-2 text-sm">
+              <option value="winrate">По винрейту</option>
+              <option value="pickrate">По пикрейту</option>
+              <option value="matches">По матчам</option>
+              <option value="kda">По KDA</option>
+              <option value="nw">По душам</option>
+            </select>
+          )}
           <Chip active={view === "grid"} onClick={() => setView("grid")}>Карточки</Chip>
+          <Chip active={view === "table"} onClick={() => setView("table")}>Таблица</Chip>
         </span>
       </div>
 
       {view === "grid" ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {heroList.data?.map((h) => {
+          {[...(heroList.data ?? [])].filter((h) => !rows.length || rows.some((r) => r.hero_id === h.id)).sort((a, b) => rows.findIndex((r) => r.hero_id === a.id) - rows.findIndex((r) => r.hero_id === b.id)).map((h) => {
             const s = rows.find((r) => r.hero_id === h.id);
             return (
               <Link key={h.id} to="/heroes/$heroId" params={{ heroId: String(h.id) }} className="panel panel-hover group overflow-hidden">
@@ -139,6 +149,7 @@ function HeroesPage() {
           </table>
         </div>
       )}
+      <HeroRankCompare days={period} />
     </div>
   );
 }

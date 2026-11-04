@@ -275,3 +275,21 @@ export function RankFilter({ value, onChange }: { value: number | null; onChange
     </span>
   );
 }
+
+/** Player's real rank, or a semi-transparent potential rank estimated from their history. */
+export function PlayerRank({ accountId, size = 26 }: { accountId: number; size?: number }) {
+  const real = useQuery({
+    queryKey: ["rank", String(accountId)],
+    queryFn: () => api<{ badge: number | null }>(`/v1/players/${accountId}/rank`),
+    staleTime: 600_000, retry: false,
+  });
+  const has = !!real.data?.badge && real.data.badge > 10;
+  const pot = useQuery({
+    queryKey: ["pot-rank", accountId],
+    queryFn: () => import("@/lib/potentialRank").then((m) => m.fetchPotentialBadge(accountId)),
+    enabled: real.isFetched && !has, staleTime: 86_400_000, retry: false,
+  });
+  const b = has ? real.data!.badge : pot.data;
+  if (!b) return null;
+  return <span title={has ? undefined : "Потенциальный ранг по последним матчам игрока"}><RankBadge badge={b} size={size} showName={false} potential={!has} /></span>;
+}
