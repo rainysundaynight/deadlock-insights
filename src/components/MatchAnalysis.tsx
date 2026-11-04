@@ -13,10 +13,69 @@ export function MatchAnalysis({ view, players, durationS, names }: { view: "lane
   return view === "lanes" ? (
     <div className="space-y-8">
       <AdvantageChart players={players} />
+      <TeamMinutes players={players} durationS={durationS} />
       <Lanes players={players} names={names} />
     </div>
   ) : (
     <Tips players={players} durationS={durationS} names={names} />
+  );
+}
+
+const TEAM_METRICS = [
+  ["net_worth", "Души"], ["kills", "Убийства"], ["deaths", "Смерти"], ["player_damage", "Урон"],
+  ["player_healing", "Лечение"], ["creep_kills", "Крипы"], ["denies", "Денаи"], ["player_damage_taken", "Получено урона"],
+] as const;
+type TeamMetric = (typeof TEAM_METRICS)[number][0];
+
+function TeamMinutes({ players, durationS }: { players: APlayer[]; durationS: number }) {
+  const [metric, setMetric] = useState<TeamMetric>("net_worth");
+  const [step, setStep] = useState(3);
+  const mins: number[] = [];
+  for (let m = step; m * 60 <= durationS + 59; m += step) mins.push(m);
+  const rows = mins.map((m) => {
+    const sum = (team: number) => players.filter((p) => p.team === team).reduce((a, p) => a + (Number(snapAt(p, m * 60)?.[metric]) || 0), 0);
+    return { m, a: sum(0), b: sum(1) };
+  });
+  const max = Math.max(1, ...rows.map((r) => Math.max(r.a, r.b)));
+  return (
+    <section className="panel p-4">
+      <SectionTitle right={<span className="text-xs text-muted-foreground">суммы команд на минуту</span>}>Команды по минутам</SectionTitle>
+      <div className="mb-3 flex flex-wrap gap-2">
+        {TEAM_METRICS.map(([k, l]) => (
+          <button key={k} onClick={() => setMetric(k)} className={cn("rounded-full border px-3 py-1 text-xs", metric === k ? "border-primary/60 bg-primary/15 text-primary" : "border-border text-muted-foreground")}>{l}</button>
+        ))}
+        <span className="mx-1 w-px bg-border" />
+        {[1, 3, 5].map((s) => (
+          <button key={s} onClick={() => setStep(s)} className={cn("rounded-full border px-3 py-1 text-xs", step === s ? "border-primary/60 bg-primary/15 text-primary" : "border-border text-muted-foreground")}>каждые {s} мин</button>
+        ))}
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground">
+            <tr className="border-b border-border"><th className="p-2">Мин</th><th className="p-2 text-amber-team">Амбер</th><th className="p-2 w-1/2"></th><th className="p-2 text-sapphire-team">Сапфир</th><th className="p-2">Разница</th></tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => {
+              const d = r.a - r.b;
+              return (
+                <tr key={r.m} className="border-b border-border/50 last:border-0">
+                  <td className="tabular p-2 text-muted-foreground">{r.m}:00</td>
+                  <td className="tabular p-2 text-amber-team">{fmtK(r.a)}</td>
+                  <td className="p-2">
+                    <div className="flex h-2 gap-1">
+                      <div className="flex flex-1 justify-end"><div className="h-full rounded-l bg-amber-team" style={{ width: `${(r.a / max) * 100}%` }} /></div>
+                      <div className="flex-1"><div className="h-full rounded-r bg-sapphire-team" style={{ width: `${(r.b / max) * 100}%` }} /></div>
+                    </div>
+                  </td>
+                  <td className="tabular p-2 text-sapphire-team">{fmtK(r.b)}</td>
+                  <td className={cn("tabular p-2", d > 0 ? "text-amber-team" : d < 0 ? "text-sapphire-team" : "text-muted-foreground")}>{d > 0 ? "+" : ""}{fmtK(d)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 
@@ -78,7 +137,7 @@ function Lanes({ players, names }: { players: APlayer[]; names: Names }) {
                           <Link to="/players/$accountId" params={{ accountId: String(p.account_id) }} className="block truncate font-medium hover:text-primary">
                             {names?.get(p.account_id)?.personaname ?? `#${p.account_id}`}
                           </Link>
-                          <span className="tabular text-primary">{fmtK(s?.net_worth)}</span>
+                          <span className={cn("tabular", p.team === 0 ? "text-amber-team" : "text-sapphire-team")}>{fmtK(s?.net_worth)}</span>
                           <span className="tabular text-muted-foreground"> · {s?.kills ?? 0}/{s?.deaths ?? 0}/{s?.assists ?? 0} · {s?.creep_kills ?? 0}🗡</span>
                         </div>
                       </div>
