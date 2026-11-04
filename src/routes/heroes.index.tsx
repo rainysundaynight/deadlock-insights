@@ -3,7 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowDown } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { Chip, ErrorBox, RankRangeFilter, rankParams, type RankRange, HeroIcon, Loading, PageHeader, WinrateBar, useHeroMap } from "@/components/dl";
+import { Chip, ErrorBox, RankFilter, rankParams, HeroIcon, Loading, PageHeader, WinrateBar, useHeroMap } from "@/components/dl";
 import { api, heroesQuery, type HeroAnalytics } from "@/lib/api";
 import { fmtInt, fmtK, fmtPct, kda, winrate } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -29,7 +29,7 @@ type SortKey = "winrate" | "pickrate" | "matches" | "kda" | "nw";
 
 function HeroesPage() {
   const [period, setPeriod] = useState(7);
-  const [range, setRange] = useState<RankRange>([0, 11]);
+  const [range, setRange] = useState<number | null>(null);
   const [sort, setSort] = useState<SortKey>("winrate");
   const [view, setView] = useState<"table" | "grid">("table");
   const heroes = useHeroMap();
@@ -77,7 +77,7 @@ function HeroesPage() {
           <Chip key={p.d} active={period === p.d} onClick={() => setPeriod(p.d)}>{p.label}</Chip>
         ))}
         <span className="mx-2 h-6 w-px bg-border" />
-        <RankRangeFilter value={range} onChange={setRange} />
+        <RankFilter value={range} onChange={setRange} />
         <span className="ml-auto flex gap-2">
           <Chip active={view === "table"} onClick={() => setView("table")}>Таблица</Chip>
           <Chip active={view === "grid"} onClick={() => setView("grid")}>Карточки</Chip>

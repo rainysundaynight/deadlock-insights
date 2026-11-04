@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
-import { Chip, ErrorBox, RankRangeFilter, rankParams, type RankRange, HeroIcon, Loading, PageHeader, useHeroMap } from "@/components/dl";
+import { Chip, ErrorBox, RankFilter, rankParams, HeroIcon, Loading, PageHeader, useHeroMap } from "@/components/dl";
 import { api, type HeroAnalytics } from "@/lib/api";
 import { fmtInt } from "@/lib/format";
 import { buildTierList, type Tier } from "@/lib/tier";
@@ -32,7 +32,7 @@ const TIER_STYLE: Record<Tier, string> = {
 
 function TierPage() {
   const heroes = useHeroMap();
-  const [range, setRange] = useState<RankRange>([8, 11]);
+  const [range, setRange] = useState<number | null>(null);
   const [days, setDays] = useState(7);
   const [view, setView] = useState<"tiers" | "table">("tiers");
   const q = useQuery({
@@ -48,10 +48,10 @@ function TierPage() {
   return (
     <div>
       <PageHeader eyebrow="Мета" title="Тир-лист героев">
-        Оценка учитывает винрейт (сглаженный по числу матчей) и популярность героя в выбранном диапазоне рангов.
+        Оценка учитывает винрейт (сглаженный по числу матчей) и популярность героя в выбранном ранге.
       </PageHeader>
       <div className="mb-6 flex flex-wrap items-center gap-2">
-        <RankRangeFilter value={range} onChange={setRange} />
+        <RankFilter value={range} onChange={setRange} />
         <span className="mx-2 h-5 w-px bg-border" />
         {PERIODS.map((p) => <Chip key={p.d} active={days === p.d} onClick={() => setDays(p.d)}>{p.label}</Chip>)}
         <span className="ml-auto flex gap-2">

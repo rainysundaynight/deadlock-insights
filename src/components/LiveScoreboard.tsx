@@ -4,11 +4,12 @@ import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Too
 import { useMemo, useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { HeroIcon, Loading, RankBadge, lobbyBadge, useHeroMap, useSteamProfiles } from "@/components/dl";
+import { HeroIcon, Loading, RankBadge, useHeroMap, useSteamProfiles } from "@/components/dl";
 import { LiveMap } from "@/components/LiveMap";
 import { api } from "@/lib/api";
 import { fmtDuration, fmtK, REGIONS } from "@/lib/format";
 import { useLiveScoreboard, type LiveEvent } from "@/lib/liveStream";
+import { fetchPotentialBadge } from "@/lib/potentialRank";
 import { cn } from "@/lib/utils";
 
 const TEAMS = ["Амбер", "Сапфир"];
@@ -30,6 +31,20 @@ function useRanks(roster: Roster[], ranked: boolean) {
   return { badge: (i: number) => ranks[i]?.data?.badge, lb: lb.data ?? [] };
 }
 
+/** Per-player estimated rank for unranked players, from their own match history (cached 24h). */
+function usePotentialBadges(roster: Roster[], badge: (i: number) => number | null | undefined) {
+  const qs = useQueries({
+    queries: roster.map((r, i) => ({
+      queryKey: ["pot-rank", r.account_id],
+      queryFn: () => fetchPotentialBadge(r.account_id),
+      enabled: badge(i) == null,
+      staleTime: 86_400_000,
+      retry: false,
+    })),
+  });
+  return (i: number) => qs[i]?.data ?? null;
+}
+
 const EV_ICON: Record<LiveEvent["kind"], typeof Swords> = { kill: Swords, death: Skull, level: TrendingUp, streak: Flame, lead: Crown, sync: History };
 
 export function LiveScoreboard({ matchId, roster = [], ranked = false }: { matchId: number; roster?: Roster[]; ranked?: boolean }) {
@@ -38,22 +53,22 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
   const heroes = useHeroMap();
   const profiles = useSteamProfiles(roster.map((r) => r.account_id));
   const { badge, lb } = useRanks(roster, ranked);
-  const potentialB = lobbyBadge(roster.map((_, i) => badge(i)));
+  const potential = usePotentialBadges(roster, badge);
   const [filter, setFilter] = useState<"all" | LiveEvent["kind"]>("all");
   const [teamF, setTeamF] = useState<-1 | 0 | 1>(-1);
 
   const info = useMemo(() => {
-    const m = new Map<string, { id: number; badge?: number | null | undefined; place?: number }>();
+    const m = new Map<string, { id: number; badge?: number | null | undefined; pot?: number | null | undefined; place?: number }>();
     for (const p of players) {
       const i = roster.findIndex((r) => r.hero_id === p.hero && r.team === p.team);
       if (i < 0) continue;
       const id = roster[i]!.account_id;
       const cands = lb.filter((e) => e.possible_account_ids.includes(id));
       const hit = cands.find((e) => e.possible_account_ids.length === 1 || e.account_name === p.name) ?? (cands.length === 1 ? cands[0] : undefined);
-      m.set(`${p.team}-${p.hero}`, { id, badge: badge(i), ...(hit ? { place: hit.rank } : {}) });
+      m.set(`${p.team}-${p.hero}`, { id, badge: badge(i), pot: potential(i), ...(hit ? { place: hit.rank } : {}) });
     }
     return m;
-  }, [players, roster, lb, badge]);
+  }, [players, roster, lb, badge, potential]);
 
   if (!on)
     return (
@@ -206,9 +221,9 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
                           </p>
                           <p className="text-xs text-muted-foreground">{heroes.get(p.hero)?.name}</p>
                         </div>
-                        {r?.badge || potentialB ? (
-                          <div className="ml-auto flex flex-col items-center leading-none">
-                            <RankBadge badge={r?.badge || potentialB} size={28} showName={false} potential={!r?.badge} />
+                        {r?.badge || r?.pot ? (
+                          <div className="ml-auto flex flex-col items-center leading-none" title={r?.badge ? undefined : "Потенциальный ранг по последним матчам игрока"}>
+                            <RankBadge badge={r?.badge || r?.pot} size={28} showName={false} potential={!r?.badge} />
                             {r?.place && <span className="tabular mt-0.5 text-[10px] font-bold text-primary">#{r?.place}</span>}
                           </div>
                         ) : null}
