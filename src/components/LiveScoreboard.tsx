@@ -221,9 +221,9 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
                           </p>
                           <p className="text-xs text-muted-foreground">{heroes.get(p.hero)?.name}</p>
                         </div>
-                        {r?.badge || potentialB ? (
-                          <div className="ml-auto flex flex-col items-center leading-none">
-                            <RankBadge badge={r?.badge || potentialB} size={28} showName={false} potential={!r?.badge} />
+                        {r?.badge || r?.pot ? (
+                          <div className="ml-auto flex flex-col items-center leading-none" title={r?.badge ? undefined : "Потенциальный ранг по последним матчам игрока"}>
+                            <RankBadge badge={r?.badge || r?.pot} size={28} showName={false} potential={!r?.badge} />
                             {r?.place && <span className="tabular mt-0.5 text-[10px] font-bold text-primary">#{r?.place}</span>}
                           </div>
                         ) : null}
