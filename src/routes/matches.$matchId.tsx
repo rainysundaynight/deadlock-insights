@@ -208,13 +208,17 @@ function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }:
                     const g = gradeVsGlobal(inp, ga, durationS);
                     const why = explainVsGlobal(inp, ga, durationS);
                     return (
-                      <span className="group relative inline-block">
-                        <span className={cn("inline-grid h-8 w-9 cursor-help place-items-center rounded-md border border-border bg-secondary font-display text-sm font-extrabold", gradeTone(g.grade))}>{g.grade}</span>
-                        <span className="pointer-events-none absolute left-full top-0 z-20 ml-2 hidden w-60 rounded-lg border border-border bg-popover p-3 text-xs font-normal shadow-lg group-hover:block">
-                          <span className="mb-1 block font-semibold">Почему {g.grade} · {g.score.toFixed(0)}/100</span>
-                          {why.map((w) => <span key={w} className="block text-muted-foreground">{w}</span>)}
-                        </span>
-                      </span>
+                      <TooltipProvider delayDuration={100}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className={cn("inline-grid h-8 w-9 cursor-help place-items-center rounded-md border border-border bg-secondary font-display text-sm font-extrabold", gradeTone(g.grade))}>{g.grade}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" collisionPadding={12} className="w-64 border border-border bg-popover p-3 text-xs text-popover-foreground shadow-lg">
+                            <span className="mb-1 block font-semibold">Почему {g.grade} · {g.score.toFixed(0)}/100</span>
+                            {why.map((w) => <span key={w} className="block text-muted-foreground">{w}</span>)}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     );
                   })()}</td>
                   <td className="tabular p-3">{p.kills}/<span className="text-loss">{p.deaths}</span>/{p.assists}</td>
