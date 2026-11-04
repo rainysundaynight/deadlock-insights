@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, Loader2 } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
+import { AlertTriangle, Check, ChevronDown, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { api, heroesQuery, itemsQuery, ranksQuery, type Hero, type Item, type SteamProfile } from "@/lib/api";
 import { splitBadge } from "@/lib/format";
