@@ -9,11 +9,13 @@ import { cn } from "@/lib/utils";
 
 type Names = Map<number, { personaname: string }> | undefined;
 
-export function MatchAnalysis({ view, players, durationS, names }: { view: "lanes" | "tips"; players: APlayer[]; durationS: number; names: Names }) {
+type Obj = { destroyed_time_s: number; team_objective_id: number; team: number };
+type Boss = { team_killed: number; destroyed_time_s: number };
+export function MatchAnalysis({ view, players, durationS, names, objectives, midBoss }: { view: "lanes" | "tips"; players: APlayer[]; durationS: number; names: Names; objectives?: Obj[] | undefined; midBoss?: Boss[] | undefined }) {
   return view === "lanes" ? (
     <div className="space-y-8">
       <AdvantageChart players={players} />
-      <TeamMinutes players={players} durationS={durationS} />
+      <TeamMinutes players={players} durationS={durationS} objectives={objectives ?? []} midBoss={midBoss ?? []} />
       <Lanes players={players} names={names} />
     </div>
   ) : (
@@ -27,7 +29,30 @@ const TEAM_METRICS = [
 ] as const;
 type TeamMetric = (typeof TEAM_METRICS)[number][0];
 
-function TeamMinutes({ players, durationS }: { players: APlayer[]; durationS: number }) {
+const STRUCT: Record<number, string> = { 0: "Patron", 9: "Patron", 1: "Guardian", 3: "Guardian", 4: "Guardian", 5: "Walker", 7: "Walker", 8: "Walker", 10: "Shrine", 11: "Shrine", 12: "Base Guardian", 13: "Base Guardian", 14: "Base Guardian", 15: "Base Guardian", 16: "Base Guardian", 17: "Base Guardian" };
+type MinEvent = { t: number; kind: "tower" | "boss" | "fight"; team: number; text: string };
+function matchEvents(players: APlayer[], objectives: Obj[], midBoss: Boss[]): MinEvent[] {
+  const ev: MinEvent[] = [];
+  for (const o of objectives) if (o.destroyed_time_s > 0 && STRUCT[o.team_objective_id]) ev.push({ t: o.destroyed_time_s, kind: "tower", team: o.team === 0 ? 1 : 0, text: `${STRUCT[o.team_objective_id]} ${o.team === 0 ? "Амбер" : "Сапфир"}` });
+  for (const b of midBoss) if (b.destroyed_time_s > 0) ev.push({ t: b.destroyed_time_s, kind: "boss", team: b.team_killed, text: `Мид-босс → ${b.team_killed === 0 ? "Амбер" : "Сапфир"}` });
+  const ds = players.flatMap((p) => ((p as { death_details?: { game_time_s: number }[] }).death_details ?? []).map((d) => ({ t: d.game_time_s, team: p.team }))).sort((a, b) => a.t - b.t);
+  let cur: typeof ds = [];
+  const flush = () => {
+    if (cur.length >= 3) {
+      const a = cur.filter((d) => d.team === 1).length, b = cur.filter((d) => d.team === 0).length;
+      ev.push({ t: cur[0]!.t, kind: "fight", team: a >= b ? 0 : 1, text: `Тимфайт ${a}:${b}` });
+    }
+    cur = [];
+  };
+  for (const d of ds) { if (cur.length && d.t - cur.at(-1)!.t > 20) flush(); cur.push(d); }
+  flush();
+  return ev.sort((a, b) => a.t - b.t);
+}
+const EV_ICON = { tower: "🏰", boss: "👹", fight: "⚔️" } as const;
+
+function TeamMinutes({ players, durationS, objectives, midBoss }: { players: APlayer[]; durationS: number; objectives: Obj[]; midBoss: Boss[] }) {
+  const events = matchEvents(players, objectives, midBoss);
+  const [kinds, setKinds] = useState({ tower: true, boss: true, fight: true });
   const [metric, setMetric] = useState<TeamMetric>("net_worth");
   const [step, setStep] = useState(3);
   const mins: number[] = [];
@@ -48,15 +73,22 @@ function TeamMinutes({ players, durationS }: { players: APlayer[]; durationS: nu
         {[1, 3, 5].map((s) => (
           <button key={s} onClick={() => setStep(s)} className={cn("rounded-full border px-3 py-1 text-xs", step === s ? "border-primary/60 bg-primary/15 text-primary" : "border-border text-muted-foreground")}>каждые {s} мин</button>
         ))}
+        <span className="mx-1 w-px bg-border" />
+        {(["tower", "boss", "fight"] as const).map((k) => (
+          <button key={k} onClick={() => setKinds({ ...kinds, [k]: !kinds[k] })} className={cn("rounded-full border px-3 py-1 text-xs", kinds[k] ? "border-primary/60 bg-primary/15 text-primary" : "border-border text-muted-foreground")}>
+            {EV_ICON[k]} {k === "tower" ? "Башни" : k === "boss" ? "Мид-босс" : "Тимфайты"}
+          </button>
+        ))}
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground">
-            <tr className="border-b border-border"><th className="p-2">Мин</th><th className="p-2 text-amber-team">Амбер</th><th className="p-2 w-1/2"></th><th className="p-2 text-sapphire-team">Сапфир</th><th className="p-2">Разница</th></tr>
+            <tr className="border-b border-border"><th className="p-2">Мин</th><th className="p-2 text-amber-team">Амбер</th><th className="p-2 w-1/2"></th><th className="p-2 text-sapphire-team">Сапфир</th><th className="p-2">Разница</th><th className="p-2">События</th></tr>
           </thead>
           <tbody>
             {rows.map((r) => {
               const d = r.a - r.b;
+              const evs = events.filter((e) => kinds[e.kind] && e.t > (r.m - step) * 60 && e.t <= r.m * 60);
               return (
                 <tr key={r.m} className="border-b border-border/50 last:border-0">
                   <td className="tabular p-2 text-muted-foreground">{r.m}:00</td>
@@ -69,6 +101,15 @@ function TeamMinutes({ players, durationS }: { players: APlayer[]; durationS: nu
                   </td>
                   <td className="tabular p-2 text-sapphire-team">{fmtK(r.b)}</td>
                   <td className={cn("tabular p-2", d > 0 ? "text-amber-team" : d < 0 ? "text-sapphire-team" : "text-muted-foreground")}>{d > 0 ? "+" : ""}{fmtK(d)}</td>
+                  <td className="p-2">
+                    <div className="flex min-w-48 flex-wrap gap-1">
+                      {evs.map((e, i) => (
+                        <span key={i} className={cn("whitespace-nowrap rounded border px-1.5 py-0.5 text-[11px]", e.team === 0 ? "border-amber-team/40 bg-amber-team/10 text-amber-team" : "border-sapphire-team/40 bg-sapphire-team/10 text-sapphire-team")}>
+                          {EV_ICON[e.kind]} <span className="tabular text-muted-foreground">{fmtDuration(e.t)}</span> {e.text}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
                 </tr>
               );
             })}
