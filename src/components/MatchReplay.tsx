@@ -107,11 +107,11 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   const [sel, setSel] = useState<number | null>(null);
   const [layers, setLayers] = useState<Set<Layer>>(new Set(["obj", "zip", "camps", "buffs"]));
   const on = (l: Layer) => layers.has(l);
-  const stepS = (mult * 0.1) / (paths?.interval_s || 1);
+  const stepS = (mult * 0.033) / (paths?.interval_s || 1);
 
   useEffect(() => {
     if (!play) return;
-    const iv = setInterval(() => setT((v) => (v + stepS >= len - 1 ? (setPlay(false), len - 1) : v + stepS)), 100);
+    const iv = setInterval(() => setT((v) => (v + stepS >= len - 1 ? (setPlay(false), len - 1) : v + stepS)), 33);
     return () => clearInterval(iv);
   }, [play, stepS, len]);
 
@@ -217,12 +217,15 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             {world.map((w) => {
               const p = bySlot.get(w.slot); if (!p) return null;
               const idx = Math.min(ti, w.pts.length - 1);
-              const pt = w.pts[idx]; if (!pt) return null;
+              const a0 = w.pts[idx]; if (!a0) return null;
+              const b0 = w.pts[Math.min(idx + 1, w.pts.length - 1)] ?? a0;
+              const fr = Math.min(1, Math.max(0, t - idx));
+              const pt = [a0[0] + (b0[0] - a0[0]) * fr, a0[1] + (b0[1] - a0[1]) * fr];
               const hp = w.health?.[idx] ?? 100;
               const img = heroes.get(p.hero_id)?.images.icon_image_small_webp ?? heroes.get(p.hero_id)?.images.icon_image_small;
               const col = teamCol(p.team);
               return (
-                <g key={w.slot} opacity={hp <= 0 ? 0.25 : 1} style={{ transition: "transform 100ms linear", cursor: "pointer" }} transform={`translate(${pt[0]},${pt[1]})`} onClick={() => setSel(w.slot)}>
+                <g key={w.slot} opacity={hp <= 0 ? 0.25 : 1} style={{ cursor: "pointer" }} transform={`translate(${pt[0]},${pt[1]})`} onClick={() => setSel(w.slot)}>
                   <circle r={21} fill="var(--card)" stroke={col} strokeWidth={4} />
                   {img && <image href={img} x={-17} y={-17} width={34} height={34} clipPath="circle(17px)" />}
                   <rect x={-20} y={24} width={40} height={5} rx={2} fill="black" /><rect x={-20} y={24} width={(40 * Math.max(0, hp)) / 100} height={5} rx={2} fill={col} />
@@ -230,6 +233,25 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
               );
             })}
           </svg>
+          {(() => {
+            const nwOf = (team: number) => players.filter((p) => p.team === team).reduce((a, p) => a + ([...(p.stats ?? [])].reverse().find((x) => x.time_stamp_s <= sec)?.net_worth ?? 0), 0);
+            const a = nwOf(0), b = nwOf(1);
+            const pa = winChance(a, b, sec);
+            return [0, 1].map((team) => (
+              <div key={team} className={cn("pointer-events-none absolute top-2 rounded-lg border bg-card/85 px-3 py-1.5 backdrop-blur", team === 0 ? "left-2 border-amber-team/60" : "right-2 border-sapphire-team/60 text-right")}>
+                <div className={cn("text-xs font-bold uppercase", team === 0 ? "text-amber-team" : "text-sapphire-team")}>{team === 0 ? "Амбер" : "Сапфир"}</div>
+                <div className="tabular text-sm font-semibold">{fmtK(team === 0 ? a : b)} <span className="text-[10px] font-normal text-muted-foreground">душ</span></div>
+                <div className="tabular text-[11px] text-muted-foreground">победа ≈ {Math.round((team === 0 ? pa : 1 - pa) * 100)}%</div>
+              </div>
+            ));
+          })()}
+          {(() => {
+            const since = sec - RIFT_FIRST;
+            if (since < 0 || since % RIFT_EVERY > 8) return null;
+            const rifts = md?.entities.unstable_rifts ?? [];
+            const sides = [...new Set(rifts.map((r) => (r.left_relative < 0.4 ? "левой" : r.left_relative > 0.6 ? "правой" : "центральной")))];
+            return <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-foreground px-4 py-1.5 text-sm font-semibold text-background shadow-lg">Открылись рифты{sides.length ? ` · на ${sides.join(" и ")} линии` : ""}</div>;
+          })()}
           <PlayerMatchModal player={selP} name={selP?.account_id ? names?.get(selP.account_id)?.personaname : undefined} sec={sec} hp={selW?.health?.[Math.min(ti, selW.pts.length - 1)] ?? 100} onClose={() => setSel(null)} />
           {!md && <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">Загрузка карты…</div>}
         </div>
@@ -242,6 +264,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
           </select>
         </div>
         <ValueChart players={players} names={names} sec={sec} sel={sel} onSelect={setSel} fights={fights} onSeek={(s2) => setT(Math.round(s2 / (paths!.interval_s || 1)))} />
+        <PlayerCompare players={players} names={names} sec={sec} />
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
           <span>щит — Guardian</span><span>шагоход — Walker</span><span>прямоугольник — Base Guardian</span><span>ромб — Shrine</span><span>корона — Patron</span><span>R — рифт, B — руна (пульсируют, когда активны; таймеры примерные)</span><span>нажмите на героя — карточка с билдом</span><span>U — урна</span><span>M — мид-босс</span><span>T — телепорт</span><span>● лагеря (красный — сильный)</span><span>◆ жёлтый — хранилище</span><span>пунктир — зиплайны</span>
         </div>
@@ -343,6 +366,53 @@ function ValueChart({ players, names, sec, sel, onSelect, fights, onSeek }: {
         })}
         <line x1={x(sec)} x2={x(sec)} y1={0} y2={H} stroke="var(--primary)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
       </svg>
+    </div>
+  );
+}
+
+/** Rough win chance for Amber from the soul lead, weighted more as the game goes on. Own heuristic. */
+export function winChance(a: number, b: number, sec: number) {
+  if (a + b <= 0) return 0.5;
+  const lead = (a - b) / ((a + b) / 2);
+  const k = 4 + Math.min(1, sec / 1800) * 8;
+  return 1 / (1 + Math.exp(-lead * k));
+}
+
+const CMP = [["net_worth", "Души"], ["kills", "Убийства"], ["deaths", "Смерти"], ["assists", "Помощь"], ["player_damage", "Урон"], ["player_healing", "Лечение"], ["creep_kills", "Крипы"], ["denies", "Денаи"], ["level", "Уровень"]] as const;
+
+function PlayerCompare({ players, names, sec }: { players: P[]; names?: Map<number, { personaname: string }> | undefined; sec: number }) {
+  const heroes = useHeroMap();
+  const [a, setA] = useState(players.find((p) => p.team === 0)?.player_slot ?? 0);
+  const [b, setB] = useState(players.find((p) => p.team === 1)?.player_slot ?? 1);
+  const nm = (p: P) => names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name ?? "";
+  const pa = players.find((p) => p.player_slot === a), pb = players.find((p) => p.player_slot === b);
+  const snap = (p?: P) => [...(p?.stats ?? [])].reverse().find((x) => x.time_stamp_s <= sec);
+  const sa = snap(pa), sb = snap(pb);
+  const pick = (v: number, set: (n: number) => void) => (
+    <select value={v} onChange={(e) => set(+e.target.value)} className="min-w-0 flex-1 rounded-md border border-border bg-secondary px-2 py-1 text-xs">
+      {players.map((p) => <option key={p.player_slot} value={p.player_slot}>{p.team === 0 ? "🟠" : "🔵"} {nm(p)}</option>)}
+    </select>
+  );
+  return (
+    <div className="mt-4 rounded-lg bg-secondary/30 p-3">
+      <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Сравнение игроков · на {fmtDuration(sec)}</p>
+      <div className="mb-3 flex items-center gap-2">{pa && <HeroIcon heroId={pa.hero_id} size={28} />}{pick(a, setA)}<span className="text-xs text-muted-foreground">vs</span>{pick(b, setB)}{pb && <HeroIcon heroId={pb.hero_id} size={28} />}</div>
+      <div className="space-y-1.5">
+        {CMP.map(([k, l]) => {
+          const va = (sa?.[k] as number | undefined) ?? 0, vb = (sb?.[k] as number | undefined) ?? 0;
+          const tot = va + vb || 1;
+          const better = k === "deaths" ? va < vb : va > vb;
+          return (
+            <div key={k} className="grid grid-cols-[3.5rem_1fr_5rem_1fr_3.5rem] items-center gap-2 text-xs">
+              <span className={cn("tabular text-right", va !== vb && better && "font-semibold text-primary")}>{fmtK(va)}</span>
+              <div className="flex h-1.5 justify-end overflow-hidden rounded-full bg-muted"><div className="h-full bg-amber-team" style={{ width: `${(va / tot) * 100}%` }} /></div>
+              <span className="text-center text-[10px] uppercase text-muted-foreground">{l}</span>
+              <div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full bg-sapphire-team" style={{ width: `${(vb / tot) * 100}%` }} /></div>
+              <span className={cn("tabular", va !== vb && !better && "font-semibold text-primary")}>{fmtK(vb)}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
