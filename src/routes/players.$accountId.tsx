@@ -11,6 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, type MatchHistoryEntry, type PlayerHeroStat } from "@/lib/api";
 import { fmtAgo, fmtDuration, fmtHours, fmtInt, fmtK, kda, winrate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { gradeHistory, gradeTone } from "@/lib/grade";
+import { globalAvgQuery } from "@/components/PlayerInsights";
+import { globalAverages } from "@/lib/playerStats";
 
 export const Route = createFileRoute("/players/$accountId")({
   head: ({ params }) => ({
