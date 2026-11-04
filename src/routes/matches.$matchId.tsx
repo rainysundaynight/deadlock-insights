@@ -7,6 +7,7 @@ import { fmtDate, fmtDuration, fmtK, GAME_MODES, MATCH_MODES } from "@/lib/forma
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { MatchAnalysis } from "@/components/MatchAnalysis";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DamageView, ItemsTimeline } from "@/components/MatchDeep";
 import { LaneMinutes } from "@/components/LaneMinutes";
 import { explainVsGlobal, gradeVsGlobal, gradeTone } from "@/lib/grade";
@@ -120,7 +121,7 @@ function MatchPage() {
       {tab === "details" && <MatchDetails players={players} names={profiles.data} durationS={m.duration_s} />}
       {tab === "damage" && <DamageView players={players} names={profiles.data} />}
       {tab === "items" && <ItemsTimeline players={players} names={profiles.data} />}
-      {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} />}
+      {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} objectives={m.objectives} midBoss={m.mid_boss} />}
       {tab === "lanes" && <LaneMinutes players={players} names={profiles.data} />}
       {tab === "table" && [0, 1].map((team) => (
         <TeamTable
