@@ -28,6 +28,13 @@ interface MapData {
 const mapQuery = { queryKey: ["map-assets"], queryFn: () => api<MapData>("/v1/assets/map"), staleTime: Infinity };
 
 const S = 1000;
+/** Playback quality: update interval (ms) and whether heroes glide between recorded points. */
+const QUALITY = {
+  low: { label: "Качество: низкое", tick: 150, smooth: false },
+  mid: { label: "Качество: среднее", tick: 66, smooth: true },
+  high: { label: "Качество: плавное", tick: 33, smooth: true },
+  ultra: { label: "Качество: максимум", tick: 16, smooth: true },
+} as const;
 // objective id (ECitadelTeamObjective) → position key suffix
 const OBJ_KEY: Record<number, string> = { 1: "tier1_1", 3: "tier1_3", 4: "tier1_4", 5: "tier2_1", 7: "tier2_3", 8: "tier2_4" };
 type StructKind = "guardian" | "walker" | "patron" | "shrine" | "baseGuardian";
@@ -104,16 +111,18 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   const [t, setT] = useState(0);
   const [play, setPlay] = useState(false);
   const [mult, setMult] = useState(80);
+  const [quality, setQuality] = useState<keyof typeof QUALITY>("high");
+  const Q = QUALITY[quality];
   const [sel, setSel] = useState<number | null>(null);
   const [layers, setLayers] = useState<Set<Layer>>(new Set(["obj", "zip", "camps", "buffs"]));
   const on = (l: Layer) => layers.has(l);
-  const stepS = (mult * 0.033) / (paths?.interval_s || 1);
+  const stepS = (mult * Q.tick / 1000) / (paths?.interval_s || 1);
 
   useEffect(() => {
     if (!play) return;
-    const iv = setInterval(() => setT((v) => (v + stepS >= len - 1 ? (setPlay(false), len - 1) : v + stepS)), 33);
+    const iv = setInterval(() => setT((v) => (v + stepS >= len - 1 ? (setPlay(false), len - 1) : v + stepS)), Q.tick);
     return () => clearInterval(iv);
-  }, [play, stepS, len]);
+  }, [play, stepS, len, Q.tick]);
 
   const world = useMemo(() => {
     if (!paths) return null;
@@ -219,7 +228,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
               const idx = Math.min(ti, w.pts.length - 1);
               const a0 = w.pts[idx]; if (!a0) return null;
               const b0 = w.pts[Math.min(idx + 1, w.pts.length - 1)] ?? a0;
-              const fr = Math.min(1, Math.max(0, t - idx));
+              const fr = Q.smooth ? Math.min(1, Math.max(0, t - idx)) : 0;
               const pt = [a0[0] + (b0[0] - a0[0]) * fr, a0[1] + (b0[1] - a0[1]) * fr];
               const hp = w.health?.[idx] ?? 100;
               const img = heroes.get(p.hero_id)?.images.icon_image_small_webp ?? heroes.get(p.hero_id)?.images.icon_image_small;
@@ -262,6 +271,9 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
           <select value={mult} onChange={(e) => setMult(+e.target.value)} className="rounded-md border border-border bg-secondary px-2 py-1 text-xs">
             {SPEEDS.map((s) => <option key={s} value={s}>×{s}</option>)}
           </select>
+          <select value={quality} onChange={(e) => setQuality(e.target.value as keyof typeof QUALITY)} title="Качество воспроизведения" className="rounded-md border border-border bg-secondary px-2 py-1 text-xs">
+            {Object.entries(QUALITY).map(([k, q]) => <option key={k} value={k}>{q.label}</option>)}
+          </select>
         </div>
         <ValueChart players={players} names={names} sec={sec} sel={sel} onSelect={setSel} fights={fights} onSeek={(s2) => setT(Math.round(s2 / (paths!.interval_s || 1)))} />
         <PlayerCompare players={players} names={names} sec={sec} />
@@ -290,7 +302,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
                         <HeroIcon heroId={p.hero_id} size={24} className={team === 0 ? "border-amber-team" : "border-sapphire-team"} />
                         <span className="min-w-0 flex-1 truncate text-xs">{names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name}</span>
                         <span className="tabular text-[11px] text-muted-foreground">{sn ? `${sn.kills ?? 0}/${sn.deaths ?? 0}/${sn.assists ?? 0}` : "—"}</span>
-                        <span className="tabular w-10 text-right text-[11px] text-primary">{sn ? fmtK(sn.net_worth ?? 0) : "—"}</span>
+                        <span className={cn("tabular w-10 text-right text-[11px] font-semibold", team === 0 ? "text-amber-team" : "text-sapphire-team")}>{sn ? fmtK(sn.net_worth ?? 0) : "—"}</span>
                       </div>
                       <div className="ml-8 mt-0.5 flex gap-1">
                         <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted"><div className={team === 0 ? "h-full bg-amber-team" : "h-full bg-sapphire-team"} style={{ width: `${((sn?.net_worth ?? 0) / maxNw) * 100}%` }} /></div>
@@ -388,6 +400,15 @@ function PlayerCompare({ players, names, sec }: { players: P[]; names?: Map<numb
   const pa = players.find((p) => p.player_slot === a), pb = players.find((p) => p.player_slot === b);
   const snap = (p?: P) => [...(p?.stats ?? [])].reverse().find((x) => x.time_stamp_s <= sec);
   const sa = snap(pa), sb = snap(pb);
+  const [metric, setMetric] = useState<(typeof CMP)[number][0]>("net_worth");
+  const series = (p?: P) => (p?.stats ?? []).map((x) => ({ t: x.time_stamp_s, v: (x[metric] as number | undefined) ?? 0 }));
+  const ra = series(pa), rb = series(pb);
+  const maxT = Math.max(60, ...ra.map((r) => r.t), ...rb.map((r) => r.t));
+  const maxV = Math.max(1, ...ra.map((r) => r.v), ...rb.map((r) => r.v));
+  const W = 800, H = 140;
+  const line = (r: { t: number; v: number }[]) => r.map((q) => `${(q.t / maxT) * W},${H - (q.v / maxV) * (H - 8)}`).join(" ");
+  const minutes = [...new Set([...ra, ...rb].map((r) => r.t))].sort((x, y) => x - y);
+  const at = (r: { t: number; v: number }[], t: number) => [...r].reverse().find((q) => q.t <= t)?.v ?? 0;
   const pick = (v: number, set: (n: number) => void) => (
     <select value={v} onChange={(e) => set(+e.target.value)} className="min-w-0 flex-1 rounded-md border border-border bg-secondary px-2 py-1 text-xs">
       {players.map((p) => <option key={p.player_slot} value={p.player_slot}>{p.team === 0 ? "🟠" : "🔵"} {nm(p)}</option>)}
@@ -412,6 +433,27 @@ function PlayerCompare({ players, names, sec }: { players: P[]; names?: Map<numb
             </div>
           );
         })}
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-1">
+        <span className="mr-1 text-[11px] uppercase tracking-wider text-muted-foreground">По минутам:</span>
+        {CMP.map(([k, l]) => <button key={k} onClick={() => setMetric(k)} className={cn("rounded-full border px-2 py-0.5 text-[11px]", metric === k ? "border-primary/60 bg-primary/15 text-primary" : "border-border text-muted-foreground")}>{l}</button>)}
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="mt-2 h-36 w-full rounded-md bg-background/50">
+        <polyline points={line(ra)} fill="none" stroke="var(--team-amber)" strokeWidth={2.5} vectorEffect="non-scaling-stroke" />
+        <polyline points={line(rb)} fill="none" stroke="var(--team-sapphire)" strokeWidth={2.5} vectorEffect="non-scaling-stroke" />
+        <line x1={(sec / maxT) * W} x2={(sec / maxT) * W} y1={0} y2={H} stroke="var(--primary)" strokeWidth={1.5} vectorEffect="non-scaling-stroke" />
+      </svg>
+      <div className="mt-2 overflow-x-auto">
+        <table className="tabular text-[11px]">
+          <tbody>
+            {[["Мин", (t: number) => String(Math.round(t / 60)), ""], [pa ? nm(pa) : "", (t: number) => fmtK(at(ra, t)), "text-amber-team"], [pb ? nm(pb) : "", (t: number) => fmtK(at(rb, t)), "text-sapphire-team"], ["Разница", (t: number) => { const d = at(ra, t) - at(rb, t); return (d > 0 ? "+" : "") + fmtK(d); }, "text-muted-foreground"]].map(([l, f, c]) => (
+              <tr key={l as string}>
+                <td className={cn("sticky left-0 max-w-24 truncate bg-card pr-2", c as string)}>{l as string}</td>
+                {minutes.map((t) => <td key={t} className={cn("px-1.5 text-right", c as string, t <= sec && "font-semibold")}>{(f as (t: number) => string)(t)}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
