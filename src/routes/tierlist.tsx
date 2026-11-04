@@ -48,7 +48,7 @@ function TierPage() {
   return (
     <div>
       <PageHeader eyebrow="Мета" title="Тир-лист героев">
-        Оценка учитывает винрейт (сглаженный по числу матчей) и популярность героя в выбранном диапазоне рангов.
+        Оценка учитывает винрейт (сглаженный по числу матчей) и популярность героя в выбранном ранге.
       </PageHeader>
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <RankFilter value={range} onChange={setRange} />
