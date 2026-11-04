@@ -218,9 +218,13 @@ function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }:
                     );
                   })()}</td>
                   <td className="tabular p-3">{p.kills}/<span className="text-loss">{p.deaths}</span>/{p.assists}</td>
-                  <td className="tabular p-3 text-primary">{fmtK(p.net_worth)}</td>
+                  <td className={cn("tabular p-3", kp >= 60 ? "text-win" : kp < 35 ? "text-loss" : "")}>{kp}%</td>
+                  <td className="tabular p-3">
+                    <span className={team === 0 ? "text-amber-team" : "text-sapphire-team"}>{fmtK(p.net_worth)}</span>
+                    <Share pct={nwShare} team={team} />
+                  </td>
                   <td className="tabular p-3">{p.last_hits}<span className="text-muted-foreground">/{p.denies}</span></td>
-                  <td className="tabular p-3">{fmtK(last?.player_damage)}</td>
+                  <td className="tabular p-3">{fmtK(last?.player_damage)}<Share pct={dmgShare} team={team} /></td>
                   <td className="tabular p-3">{fmtK(last?.player_healing)}</td>
                   <td className="p-3">
                     <div className="flex min-w-60 flex-wrap gap-1">
