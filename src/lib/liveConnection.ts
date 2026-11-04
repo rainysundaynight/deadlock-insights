@@ -10,7 +10,7 @@ export interface LiveListener {
 interface Conn {
   es: EventSource;
   listeners: Set<LiveListener>;
-  closeTimer?: ReturnType<typeof setTimeout>;
+  closeTimer: ReturnType<typeof setTimeout> | undefined;
 }
 
 const pool = new Map<string, Conn>();
