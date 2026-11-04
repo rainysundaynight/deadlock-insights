@@ -71,7 +71,7 @@ export function LiveMap({ matchId, players }: { matchId: number; players: LivePl
       </div>
       <div className="relative mx-auto aspect-square w-full max-w-[720px] bg-background">
         <svg viewBox={`0 0 ${S} ${S}`} className="absolute inset-0 h-full w-full">
-          {map.data && <image href={map.data.images.minimap} x={0} y={0} width={S} height={S} opacity={0.95} />}
+          {map.data && <image href={map.data.images.minimap} x={0} y={0} width={S} height={S} style={{ filter: "brightness(2.2) contrast(1.1)" }} />}
           {live.map(([id, p]) => {
             const x = ((world(p.cx, p.vx) + R) / (2 * R)) * S;
             const y = ((R - world(p.cy, p.vy)) / (2 * R)) * S;
