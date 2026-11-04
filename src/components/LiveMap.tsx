@@ -3,7 +3,8 @@ import { Map as MapIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { useHeroMap } from "@/components/dl";
-import { API, api } from "@/lib/api";
+import { api } from "@/lib/api";
+import { subscribeLive } from "@/lib/liveConnection";
 import type { LivePlayer } from "@/lib/liveStream";
 
 const QUERY = `SELECT entity_index, "m_iTeamNum" AS team, "m_hController" AS ctl, "m_iHealth" AS hp, "m_iMaxHealth" AS mhp,
@@ -15,7 +16,7 @@ const S = 1000;
 // Source 2 world coordinate: 512-unit cells offset by half the grid.
 const world = (cell = 0, v = 0) => cell * 512 - 32768 + v;
 
-/** Live positions of every hero on the real minimap. Opens its own broadcast connection. */
+/** Live positions of every hero on the real minimap. Shares the broadcast connection pool. */
 export function LiveMap({ matchId, players }: { matchId: number; players: LivePlayer[] }) {
   const heroes = useHeroMap();
   const [attempt, setAttempt] = useState(0);
@@ -28,27 +29,23 @@ export function LiveMap({ matchId, players }: { matchId: number; players: LivePl
   useEffect(() => {
     setErr(""); setStale(false); store.current.clear(); setPawns([]);
     let last = Date.now();
-    const es = new EventSource(`${API}/v1/matches/demo/live/query?${new URLSearchParams({ query: QUERY, match_id: String(matchId) })}`);
-    es.onmessage = (e) => {
-      last = Date.now();
-      const r = JSON.parse(e.data) as Pawn & { entity_index: number };
-      if (r.entity_index == null) return;
-      const prev = store.current.get(r.entity_index) ?? {};
-      const next = { ...prev };
-      for (const [k, v] of Object.entries(r)) if (v != null) (next as Record<string, unknown>)[k] = v;
-      store.current.set(r.entity_index, next);
-    };
-    es.addEventListener("error", (e) => {
-      const d = (e as MessageEvent).data;
-      if (d) setErr(String(d).slice(0, 160));
-      else if (es.readyState === EventSource.CLOSED) setErr("Трансляция закрыла соединение");
-      if (d) es.close();
+    const unsub = subscribeLive(matchId, QUERY, {
+      onMessage: (data) => {
+        last = Date.now();
+        const r = JSON.parse(data) as Pawn & { entity_index: number };
+        if (r.entity_index == null) return;
+        const prev = store.current.get(r.entity_index) ?? {};
+        const next = { ...prev };
+        for (const [k, v] of Object.entries(r)) if (v != null) (next as Record<string, unknown>)[k] = v;
+        store.current.set(r.entity_index, next);
+      },
+      onError: (d) => setErr(d ? d.slice(0, 160) : "Трансляция закрыла соединение"),
     });
     const iv = setInterval(() => {
       setPawns([...store.current.entries()]);
       setStale(Date.now() - last > 15000);
     }, 400);
-    return () => { clearInterval(iv); es.close(); };
+    return () => { clearInterval(iv); unsub(); };
   }, [matchId, attempt]);
 
   const R = map.data?.radius ?? 10752;
