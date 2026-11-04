@@ -53,22 +53,22 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
   const heroes = useHeroMap();
   const profiles = useSteamProfiles(roster.map((r) => r.account_id));
   const { badge, lb } = useRanks(roster, ranked);
-  const potentialB = lobbyBadge(roster.map((_, i) => badge(i)));
+  const potential = usePotentialBadges(roster, badge);
   const [filter, setFilter] = useState<"all" | LiveEvent["kind"]>("all");
   const [teamF, setTeamF] = useState<-1 | 0 | 1>(-1);
 
   const info = useMemo(() => {
-    const m = new Map<string, { id: number; badge?: number | null | undefined; place?: number }>();
+    const m = new Map<string, { id: number; badge?: number | null | undefined; pot?: number | null | undefined; place?: number }>();
     for (const p of players) {
       const i = roster.findIndex((r) => r.hero_id === p.hero && r.team === p.team);
       if (i < 0) continue;
       const id = roster[i]!.account_id;
       const cands = lb.filter((e) => e.possible_account_ids.includes(id));
       const hit = cands.find((e) => e.possible_account_ids.length === 1 || e.account_name === p.name) ?? (cands.length === 1 ? cands[0] : undefined);
-      m.set(`${p.team}-${p.hero}`, { id, badge: badge(i), ...(hit ? { place: hit.rank } : {}) });
+      m.set(`${p.team}-${p.hero}`, { id, badge: badge(i), pot: potential(i), ...(hit ? { place: hit.rank } : {}) });
     }
     return m;
-  }, [players, roster, lb, badge]);
+  }, [players, roster, lb, badge, potential]);
 
   if (!on)
     return (
