@@ -4,7 +4,7 @@ import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Too
 import { useMemo, useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { HeroIcon, Loading, RankBadge, useHeroMap, useSteamProfiles } from "@/components/dl";
+import { HeroIcon, Loading, RankBadge, lobbyBadge, useHeroMap, useSteamProfiles } from "@/components/dl";
 import { LiveMap } from "@/components/LiveMap";
 import { api } from "@/lib/api";
 import { fmtDuration, fmtK, REGIONS } from "@/lib/format";
@@ -20,7 +20,7 @@ function useRanks(roster: Roster[], ranked: boolean) {
     queries: roster.map((r) => ({
       queryKey: ["rank", String(r.account_id)],
       queryFn: () => api<{ badge: number | null }>(`/v1/players/${r.account_id}/rank`),
-      enabled: ranked, staleTime: 600_000, retry: false,
+      staleTime: 600_000, retry: false,
     })),
   });
   const lb = useQuery({
@@ -38,6 +38,7 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
   const heroes = useHeroMap();
   const profiles = useSteamProfiles(roster.map((r) => r.account_id));
   const { badge, lb } = useRanks(roster, ranked);
+  const potentialB = lobbyBadge(roster.map((_, i) => badge(i)));
   const [filter, setFilter] = useState<"all" | LiveEvent["kind"]>("all");
   const [teamF, setTeamF] = useState<-1 | 0 | 1>(-1);
 
@@ -205,10 +206,10 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
                           </p>
                           <p className="text-xs text-muted-foreground">{heroes.get(p.hero)?.name}</p>
                         </div>
-                        {ranked && r?.badge ? (
+                        {r?.badge || potentialB ? (
                           <div className="ml-auto flex flex-col items-center leading-none">
-                            <RankBadge badge={r.badge} size={28} showName={false} />
-                            {r.place && <span className="tabular mt-0.5 text-[10px] font-bold text-primary">#{r.place}</span>}
+                            <RankBadge badge={r?.badge || potentialB} size={28} showName={false} potential={!r?.badge} />
+                            {r?.place && <span className="tabular mt-0.5 text-[10px] font-bold text-primary">#{r?.place}</span>}
                           </div>
                         ) : null}
                       </div>

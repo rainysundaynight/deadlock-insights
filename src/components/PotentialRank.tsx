@@ -28,7 +28,7 @@ export function PotentialRank({ accountId, history }: { accountId: number; histo
   return (
     <div className="flex flex-col items-start gap-1 md:items-end" title={`По рангам ${q.data.n} игроков из последних ${recent.length} матчей и винрейту`}>
       <span className="rounded-full border border-dashed border-primary/50 px-2 py-0.5 text-[10px] uppercase tracking-wider text-primary">Потенциальный ранг</span>
-      <div className="opacity-80"><RankBadge badge={q.data.badge} size={56} /></div>
+      <RankBadge badge={q.data.badge} size={56} potential />
       <span className="text-[11px] text-muted-foreground">оценка по {q.data.n} соперникам и союзникам</span>
     </div>
   );
