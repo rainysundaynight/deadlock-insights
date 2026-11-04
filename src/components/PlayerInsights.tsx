@@ -3,7 +3,7 @@ import { Area, AreaChart, CartesianGrid, PolarAngleAxis, PolarGrid, Radar, Radar
 import { useMemo } from "react";
 
 import { HeroIcon, SectionTitle, Stat, WinrateBar, useHeroMap } from "@/components/dl";
-import { api, type HeroAnalytics, type MatchHistoryEntry } from "@/lib/api";
+import { api, ranksQuery, type HeroAnalytics, type MatchHistoryEntry } from "@/lib/api";
 import { fmtDuration, fmtK, kda } from "@/lib/format";
 import { formSeries, globalAverages, playstyle, summarize, won } from "@/lib/playerStats";
 import { gradeFromScore, gradeHistory, gradeTone, strengthsWeaknesses } from "@/lib/grade";
@@ -18,12 +18,23 @@ export const globalAvgQuery = {
 
 const tip = { background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 };
 
-export function PlayerInsights({ history }: { history: MatchHistoryEntry[] }) {
+export function PlayerInsights({ history, badge }: { history: MatchHistoryEntry[]; badge?: number | null | undefined }) {
   const heroes = useHeroMap();
   const g = useQuery(globalAvgQuery);
+  const myBadge = badge || history.find((m) => m.ranked_display_badge)?.ranked_display_badge || null;
+  const tier = myBadge ? Math.floor(myBadge / 10) : null;
+  const rq = useQuery({
+    queryKey: ["rank-avg", tier],
+    enabled: tier != null,
+    staleTime: 1000 * 60 * 60,
+    queryFn: () => api<HeroAnalytics[]>("/v1/analytics/hero-stats", { min_average_badge: tier! * 10 + 1, max_average_badge: tier! * 10 + 6, min_unix_timestamp: Math.floor(Date.now() / 86400000) * 86400 - 14 * 86400 }),
+  });
+  const ranksQ = useQuery(ranksQuery);
+  const rankName = tier != null ? ranksQ.data?.find((r) => r.tier === tier)?.name ?? `Tier ${tier}` : null;
+  const radarBase = rq.data?.length ? rq.data : g.data;
   const recent = history.slice(0, 100);
   const s = useMemo(() => summarize(recent), [recent]);
-  const radar = useMemo(() => (g.data ? playstyle(s, globalAverages(g.data)) : []), [s, g.data]);
+  const radar = useMemo(() => (radarBase ? playstyle(s, globalAverages(radarBase)) : []), [s, radarBase]);
   const form = useMemo(() => formSeries(recent), [recent]);
   const hasRank = recent.some((m) => m.ranked_delta != null);
   const last30 = useMemo(() => history.slice(0, 30), [history]);
@@ -163,7 +174,7 @@ export function PlayerInsights({ history }: { history: MatchHistoryEntry[] }) {
         </section>
         <section className="panel p-5 lg:col-span-2">
           <SectionTitle>Стиль игры</SectionTitle>
-          <p className="-mt-2 mb-2 text-xs text-muted-foreground">100 = средний игрок за 14 дней</p>
+          <p className="-mt-2 mb-2 text-xs text-muted-foreground">100 = средний игрок {rq.data?.length && rankName ? <>ранга <span className="text-primary">{rankName}</span>{badge ? "" : " (по последнему/потенциальному рангу)"}</> : "за 14 дней"}</p>
           <div className="h-60">
             <ResponsiveContainer>
               <RadarChart data={radar} outerRadius="72%">

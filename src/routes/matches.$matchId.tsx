@@ -7,6 +7,7 @@ import { fmtDate, fmtDuration, fmtK, GAME_MODES, MATCH_MODES } from "@/lib/forma
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { MatchAnalysis } from "@/components/MatchAnalysis";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DamageView, ItemsTimeline } from "@/components/MatchDeep";
 import { LaneMinutes } from "@/components/LaneMinutes";
 import { explainVsGlobal, gradeVsGlobal, gradeTone } from "@/lib/grade";
@@ -120,7 +121,7 @@ function MatchPage() {
       {tab === "details" && <MatchDetails players={players} names={profiles.data} durationS={m.duration_s} />}
       {tab === "damage" && <DamageView players={players} names={profiles.data} />}
       {tab === "items" && <ItemsTimeline players={players} names={profiles.data} />}
-      {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} />}
+      {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} objectives={m.objectives} midBoss={m.mid_boss} />}
       {tab === "lanes" && <LaneMinutes players={players} names={profiles.data} />}
       {tab === "table" && [0, 1].map((team) => (
         <TeamTable
@@ -208,13 +209,17 @@ function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }:
                     const g = gradeVsGlobal(inp, ga, durationS);
                     const why = explainVsGlobal(inp, ga, durationS);
                     return (
-                      <span className="group relative inline-block">
-                        <span className={cn("inline-grid h-8 w-9 cursor-help place-items-center rounded-md border border-border bg-secondary font-display text-sm font-extrabold", gradeTone(g.grade))}>{g.grade}</span>
-                        <span className="pointer-events-none absolute left-full top-0 z-20 ml-2 hidden w-60 rounded-lg border border-border bg-popover p-3 text-xs font-normal shadow-lg group-hover:block">
-                          <span className="mb-1 block font-semibold">Почему {g.grade} · {g.score.toFixed(0)}/100</span>
-                          {why.map((w) => <span key={w} className="block text-muted-foreground">{w}</span>)}
-                        </span>
-                      </span>
+                      <TooltipProvider delayDuration={100}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className={cn("inline-grid h-8 w-9 cursor-help place-items-center rounded-md border border-border bg-secondary font-display text-sm font-extrabold", gradeTone(g.grade))}>{g.grade}</span>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" collisionPadding={12} className="w-64 border border-border bg-popover p-3 text-xs text-popover-foreground shadow-lg">
+                            <span className="mb-1 block font-semibold">Почему {g.grade} · {g.score.toFixed(0)}/100</span>
+                            {why.map((w) => <span key={w} className="block text-muted-foreground">{w}</span>)}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     );
                   })()}</td>
                   <td className="tabular p-3">{p.kills}/<span className="text-loss">{p.deaths}</span>/{p.assists}</td>
