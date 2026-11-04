@@ -33,7 +33,7 @@ const STRUCT: Record<number, string> = { 0: "Patron", 9: "Patron", 1: "Guardian"
 type MinEvent = { t: number; kind: "tower" | "boss" | "fight"; team: number; text: string };
 function matchEvents(players: APlayer[], objectives: Obj[], midBoss: Boss[]): MinEvent[] {
   const ev: MinEvent[] = [];
-  for (const o of objectives) if (o.destroyed_time_s > 0 && STRUCT[o.team_objective_id]) ev.push({ t: o.destroyed_time_s, kind: "tower", team: o.team === 0 ? 1 : 0, text: `${STRUCT[o.team_objective_id]} ${o.team === 0 ? "Амбер" : "Сапфир"}` });
+  for (const o of objectives) if (o.destroyed_time_s > 0 && STRUCT[o.team_objective_id]) ev.push({ t: o.destroyed_time_s, kind: "tower", team: o.team === 0 ? 1 : 0, text: `${o.team === 0 ? "Амбер" : "Сапфир"} теряет ${STRUCT[o.team_objective_id]}` });
   for (const b of midBoss) if (b.destroyed_time_s > 0) ev.push({ t: b.destroyed_time_s, kind: "boss", team: b.team_killed, text: `Мид-босс → ${b.team_killed === 0 ? "Амбер" : "Сапфир"}` });
   const ds = players.flatMap((p) => ((p as { death_details?: { game_time_s: number }[] }).death_details ?? []).map((d) => ({ t: d.game_time_s, team: p.team }))).sort((a, b) => a.t - b.t);
   let cur: typeof ds = [];
