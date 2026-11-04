@@ -409,15 +409,41 @@ function PlayerCompare({ players, names, sec }: { players: P[]; names?: Map<numb
   const line = (r: { t: number; v: number }[]) => r.map((q) => `${(q.t / maxT) * W},${H - (q.v / maxV) * (H - 8)}`).join(" ");
   const minutes = [...new Set([...ra, ...rb].map((r) => r.t))].sort((x, y) => x - y);
   const at = (r: { t: number; v: number }[], t: number) => [...r].reverse().find((q) => q.t <= t)?.v ?? 0;
-  const pick = (v: number, set: (n: number) => void) => (
-    <select value={v} onChange={(e) => set(+e.target.value)} className="min-w-0 flex-1 rounded-md border border-border bg-secondary px-2 py-1 text-xs">
-      {players.map((p) => <option key={p.player_slot} value={p.player_slot}>{p.team === 0 ? "🟠" : "🔵"} {nm(p)}</option>)}
-    </select>
+  const picker = (v: number, other: number, set: (n: number) => void, side: 0 | 1) => (
+    <div className="flex flex-1 flex-wrap justify-center gap-1.5">
+      {players.map((p) => {
+        const active = p.player_slot === v;
+        const taken = p.player_slot === other;
+        return (
+          <button
+            key={p.player_slot}
+            onClick={() => set(p.player_slot)}
+            title={nm(p)}
+            className={cn(
+              "flex w-16 flex-col items-center gap-0.5 rounded-md border p-1 transition-colors",
+              active
+                ? side === 0
+                  ? "border-amber-team bg-amber-team/15"
+                  : "border-sapphire-team bg-sapphire-team/15"
+                : "border-transparent opacity-70 hover:border-border hover:opacity-100",
+              taken && "opacity-30",
+            )}
+          >
+            <HeroIcon heroId={p.hero_id} size={32} />
+            <span className={cn("w-full truncate text-center text-[10px] leading-tight", active ? (side === 0 ? "text-amber-team" : "text-sapphire-team") : "text-muted-foreground")}>{nm(p)}</span>
+          </button>
+        );
+      })}
+    </div>
   );
   return (
     <div className="mt-4 rounded-lg bg-secondary/30 p-3">
       <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Сравнение игроков · на {fmtDuration(sec)}</p>
-      <div className="mb-3 flex items-center gap-2">{pa && <HeroIcon heroId={pa.hero_id} size={28} />}{pick(a, setA)}<span className="text-xs text-muted-foreground">vs</span>{pick(b, setB)}{pb && <HeroIcon heroId={pb.hero_id} size={28} />}</div>
+      <div className="mb-3 flex items-start gap-3">
+        {picker(a, b, setA, 0)}
+        <span className="mt-3 shrink-0 text-xs font-semibold uppercase text-muted-foreground">vs</span>
+        {picker(b, a, setB, 1)}
+      </div>
       <div className="space-y-1.5">
         {CMP.map(([k, l]) => {
           const va = (sa?.[k] as number | undefined) ?? 0, vb = (sb?.[k] as number | undefined) ?? 0;
