@@ -154,7 +154,7 @@ export function HeroRankCompare({ days }: { days: number }) {
                 <YAxis stroke="var(--muted-foreground)" fontSize={11} unit="%" domain={["auto", "auto"]} />
                 <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)" }} />
                 {picked.map((id, i) => (
-                  <Line key={id} dataKey={String(id)} name={heroes.get(id)?.name} stroke={COLORS[i]} strokeWidth={2} connectNulls dot={{ r: 3 }} />
+                  <Line key={id} dataKey={String(id)} name={heroes.get(id)?.name ?? String(id)} stroke={COLORS[i] ?? "var(--primary)"} strokeWidth={2} connectNulls dot={{ r: 3 }} />
                 ))}
               </LineChart>
             </ResponsiveContainer>
