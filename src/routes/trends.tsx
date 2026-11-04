@@ -4,7 +4,7 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-import { Chip, ErrorBox, HeroIcon, Loading, PageHeader, useHeroMap } from "@/components/dl";
+import { Chip, ErrorBox, RankRangeFilter, rankParams, type RankRange, HeroIcon, Loading, PageHeader, useHeroMap } from "@/components/dl";
 import { api } from "@/lib/api";
 import { heroTrends, type DayRow } from "@/lib/trends";
 import { cn } from "@/lib/utils";
@@ -30,7 +30,7 @@ function Trends() {
   const [hero, setHero] = useState<number | null>(null);
   const since = Math.floor(Date.now() / 1000 / 86400) * 86400 - 28 * 86400;
   const q = useQuery({
-    queryKey: ["trends", badge, since],
+    queryKey: ["trends", range, since],
     queryFn: () => api<DayRow[]>("/v1/analytics/hero-stats", { bucket: "start_time_day", min_unix_timestamp: since, ...rankParams(range) }),
     staleTime: 3600_000,
   });
