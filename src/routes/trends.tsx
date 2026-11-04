@@ -4,7 +4,7 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-import { Chip, ErrorBox, HeroIcon, Loading, PageHeader, useHeroMap } from "@/components/dl";
+import { Chip, ErrorBox, RankRangeFilter, rankParams, type RankRange, HeroIcon, Loading, PageHeader, useHeroMap } from "@/components/dl";
 import { api } from "@/lib/api";
 import { heroTrends, type DayRow } from "@/lib/trends";
 import { cn } from "@/lib/utils";
@@ -23,16 +23,15 @@ export const Route = createFileRoute("/trends")({
   component: Trends,
 });
 
-const BRACKETS = [[0, "Все"], [80, "Oracle+"], [100, "Phantom+"]] as const;
 
 function Trends() {
   const heroes = useHeroMap();
-  const [badge, setBadge] = useState<number>(0);
+  const [range, setRange] = useState<RankRange>([0, 11]);
   const [hero, setHero] = useState<number | null>(null);
   const since = Math.floor(Date.now() / 1000 / 86400) * 86400 - 28 * 86400;
   const q = useQuery({
-    queryKey: ["trends", badge, since],
-    queryFn: () => api<DayRow[]>("/v1/analytics/hero-stats", { bucket: "start_time_day", min_unix_timestamp: since, min_average_badge: badge || undefined }),
+    queryKey: ["trends", range, since],
+    queryFn: () => api<DayRow[]>("/v1/analytics/hero-stats", { bucket: "start_time_day", min_unix_timestamp: since, ...rankParams(range) }),
     staleTime: 3600_000,
   });
   const trends = useMemo(() => heroTrends((q.data ?? []).filter((r) => heroes.has(r.hero_id))), [q.data, heroes]);
@@ -64,7 +63,7 @@ function Trends() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Мета" title="Тренды меты">Последние 7 дней против предыдущих 7: изменение винрейта (в п.п.) и популярности.</PageHeader>
-      <div className="flex flex-wrap gap-2">{BRACKETS.map(([b, l]) => <Chip key={b} active={badge === b} onClick={() => setBadge(b)}>{l}</Chip>)}</div>
+      <RankRangeFilter value={range} onChange={setRange} />
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} /> : (
         <>
           {sel && (

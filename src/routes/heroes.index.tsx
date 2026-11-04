@@ -3,7 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowDown } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { Chip, ErrorBox, HeroIcon, Loading, PageHeader, WinrateBar, useHeroMap } from "@/components/dl";
+import { Chip, ErrorBox, RankRangeFilter, rankParams, type RankRange, HeroIcon, Loading, PageHeader, WinrateBar, useHeroMap } from "@/components/dl";
 import { api, heroesQuery, type HeroAnalytics } from "@/lib/api";
 import { fmtInt, fmtK, fmtPct, kda, winrate } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -25,28 +25,22 @@ const PERIODS = [
   { d: 30, label: "30 дней" },
   { d: 90, label: "90 дней" },
 ];
-const BADGES = [
-  { b: 0, label: "Все ранги" },
-  { b: 60, label: "Ритуалист+" },
-  { b: 80, label: "Оракул+" },
-  { b: 100, label: "Вознесённый+" },
-];
 type SortKey = "winrate" | "pickrate" | "matches" | "kda" | "nw";
 
 function HeroesPage() {
   const [period, setPeriod] = useState(7);
-  const [badge, setBadge] = useState(0);
+  const [range, setRange] = useState<RankRange>([0, 11]);
   const [sort, setSort] = useState<SortKey>("winrate");
   const [view, setView] = useState<"table" | "grid">("table");
   const heroes = useHeroMap();
   const heroList = useQuery(heroesQuery);
 
   const q = useQuery({
-    queryKey: ["hero-stats", period, badge],
+    queryKey: ["hero-stats", period, range],
     queryFn: () =>
       api<HeroAnalytics[]>("/v1/analytics/hero-stats", {
         min_unix_timestamp: Math.floor(Date.now() / 1000 / 3600) * 3600 - period * 86400,
-        min_average_badge: badge || undefined,
+        ...rankParams(range),
       }),
   });
 
@@ -83,9 +77,7 @@ function HeroesPage() {
           <Chip key={p.d} active={period === p.d} onClick={() => setPeriod(p.d)}>{p.label}</Chip>
         ))}
         <span className="mx-2 h-6 w-px bg-border" />
-        {BADGES.map((b) => (
-          <Chip key={b.b} active={badge === b.b} onClick={() => setBadge(b.b)}>{b.label}</Chip>
-        ))}
+        <RankRangeFilter value={range} onChange={setRange} />
         <span className="ml-auto flex gap-2">
           <Chip active={view === "table"} onClick={() => setView("table")}>Таблица</Chip>
           <Chip active={view === "grid"} onClick={() => setView("grid")}>Карточки</Chip>

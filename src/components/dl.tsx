@@ -219,3 +219,30 @@ export function useSteamProfiles(ids: number[]) {
   });
 }
 
+
+export type RankRange = [number, number];
+/** API params for a tier range (tier 0 = Obscurus … 11 = Eternus). */
+export const rankParams = ([lo, hi]: RankRange) => ({
+  ...(lo > 0 ? { min_average_badge: lo * 10 + 1 } : {}),
+  ...(hi < 11 ? { max_average_badge: hi * 10 + 6 } : {}),
+});
+
+/** "From – to" selector covering every rank. */
+export function RankRangeFilter({ value, onChange }: { value: RankRange; onChange: (v: RankRange) => void }) {
+  const { data: ranks } = useQuery(ranksQuery);
+  const tiers = Array.from({ length: 12 }, (_, t) => ({ t, name: ranks?.find((r) => r.tier === t)?.name ?? `Tier ${t}` }));
+  const [lo, hi] = value;
+  return (
+    <span className="flex items-center gap-2 text-xs text-muted-foreground">
+      Ранг
+      <select className={selectClass} value={lo} onChange={(e) => { const v = +e.target.value; onChange([v, Math.max(v, hi)]); }}>
+        {tiers.map((x) => <option key={x.t} value={x.t}>{x.name}</option>)}
+      </select>
+      —
+      <select className={selectClass} value={hi} onChange={(e) => { const v = +e.target.value; onChange([Math.min(lo, v), v]); }}>
+        {tiers.map((x) => <option key={x.t} value={x.t}>{x.name}</option>)}
+      </select>
+      {(lo > 0 || hi < 11) && <button onClick={() => onChange([0, 11])} className="hover:text-primary">сброс</button>}
+    </span>
+  );
+}

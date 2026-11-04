@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
-import { Chip, ErrorBox, HeroIcon, Loading, PageHeader, useHeroMap } from "@/components/dl";
+import { Chip, ErrorBox, RankRangeFilter, rankParams, type RankRange, HeroIcon, Loading, PageHeader, useHeroMap } from "@/components/dl";
 import { api, type HeroAnalytics } from "@/lib/api";
 import { fmtInt } from "@/lib/format";
 import { buildTierList, type Tier } from "@/lib/tier";
@@ -20,13 +20,6 @@ export const Route = createFileRoute("/tierlist")({
   component: TierPage,
 });
 
-const BRACKETS = [
-  { label: "Все ранги", min: 0 },
-  { label: "Ritualist+", min: 50 },
-  { label: "Oracle+", min: 80 },
-  { label: "Phantom+", min: 100 },
-  { label: "Eternus", min: 110 },
-];
 const PERIODS = [{ label: "7 дней", d: 7 }, { label: "14 дней", d: 14 }, { label: "30 дней", d: 30 }];
 
 const TIER_STYLE: Record<Tier, string> = {
@@ -39,15 +32,15 @@ const TIER_STYLE: Record<Tier, string> = {
 
 function TierPage() {
   const heroes = useHeroMap();
-  const [min, setMin] = useState(80);
+  const [range, setRange] = useState<RankRange>([8, 11]);
   const [days, setDays] = useState(7);
   const [view, setView] = useState<"tiers" | "table">("tiers");
   const q = useQuery({
-    queryKey: ["tier", min, days],
+    queryKey: ["tier", range, days],
     queryFn: () =>
       api<HeroAnalytics[]>("/v1/analytics/hero-stats", {
         min_unix_timestamp: Math.floor(Date.now() / 1000 / 3600) * 3600 - days * 86400,
-        ...(min ? { min_average_badge: min } : {}),
+        ...rankParams(range),
       }),
   });
   const rows = useMemo(() => buildTierList((q.data ?? []).filter((r) => heroes.has(r.hero_id))), [q.data, heroes]);
@@ -58,7 +51,7 @@ function TierPage() {
         Оценка учитывает винрейт (сглаженный по числу матчей) и популярность героя в выбранном диапазоне рангов.
       </PageHeader>
       <div className="mb-6 flex flex-wrap items-center gap-2">
-        {BRACKETS.map((b) => <Chip key={b.min} active={min === b.min} onClick={() => setMin(b.min)}>{b.label}</Chip>)}
+        <RankRangeFilter value={range} onChange={setRange} />
         <span className="mx-2 h-5 w-px bg-border" />
         {PERIODS.map((p) => <Chip key={p.d} active={days === p.d} onClick={() => setDays(p.d)}>{p.label}</Chip>)}
         <span className="ml-auto flex gap-2">
