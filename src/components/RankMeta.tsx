@@ -18,7 +18,7 @@ export function useHeroStatsByRank(days = 14) {
       staleTime: 3600_000,
     })),
   });
-  return { loading: qs.some((q) => q.isLoading), byTier: TIERS.map((t, i) => ({ tier: t, rows: qs[i].data ?? [] })) };
+  return { loading: qs.some((q) => q.isLoading), byTier: TIERS.map((t, i) => ({ tier: t, rows: qs[i]?.data ?? [] })) };
 }
 
 function useRankInfo() {
