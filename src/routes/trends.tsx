@@ -4,7 +4,7 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-import { Chip, ErrorBox, RankRangeFilter, rankParams, type RankRange, HeroIcon, Loading, PageHeader, useHeroMap } from "@/components/dl";
+import { Chip, ErrorBox, RankFilter, rankParams, HeroIcon, Loading, PageHeader, useHeroMap } from "@/components/dl";
 import { api } from "@/lib/api";
 import { heroTrends, type DayRow } from "@/lib/trends";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/trends")({
 
 function Trends() {
   const heroes = useHeroMap();
-  const [range, setRange] = useState<RankRange>([0, 11]);
+  const [range, setRange] = useState<number | null>(null);
   const [hero, setHero] = useState<number | null>(null);
   const since = Math.floor(Date.now() / 1000 / 86400) * 86400 - 28 * 86400;
   const q = useQuery({
@@ -63,7 +63,7 @@ function Trends() {
   return (
     <div className="space-y-6">
       <PageHeader eyebrow="Мета" title="Тренды меты">Последние 7 дней против предыдущих 7: изменение винрейта (в п.п.) и популярности.</PageHeader>
-      <RankRangeFilter value={range} onChange={setRange} />
+      <RankFilter value={range} onChange={setRange} />
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} /> : (
         <>
           {sel && (
