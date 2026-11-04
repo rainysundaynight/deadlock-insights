@@ -138,11 +138,38 @@ function MatchPage() {
   );
 }
 
-function TeamTable({ team, won, players, names, lobby, winner, durationS }: { durationS: number; team: number; won: boolean; players: MatchPlayer[]; lobby: MatchPlayer[]; winner: number; names?: Map<number, { personaname: string }> | undefined }) {
+type SortKey = "grade" | "kda" | "nw" | "lh" | "dmg" | "heal" | "kp";
+function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }: { durationS: number; team: number; won: boolean; players: MatchPlayer[]; lobby: MatchPlayer[]; winner: number; names?: Map<number, { personaname: string }> | undefined }) {
   const heroes = useHeroMap();
   const items = useItemMap();
   const gq = useQuery(globalAvgQuery);
   const ga = gq.data ? globalAverages(gq.data) : null;
+  const [sort, setSort] = useState<SortKey>("nw");
+  const teamKills = rawPlayers.reduce((s, p) => s + p.kills, 0) || 1;
+  const teamNw = rawPlayers.reduce((s, p) => s + p.net_worth, 0) || 1;
+  const teamDmg = rawPlayers.reduce((s, p) => s + (p.stats.at(-1)?.player_damage ?? 0), 0) || 1;
+  const val = (p: MatchPlayer): number => {
+    const l = p.stats.at(-1);
+    switch (sort) {
+      case "grade": return ga ? gradeVsGlobal({ k: p.kills, d: p.deaths, a: p.assists, nw: p.net_worth, lh: p.last_hits, won: p.team === winner }, ga, durationS).score : 0;
+      case "kda": return (p.kills + p.assists) / Math.max(1, p.deaths);
+      case "lh": return p.last_hits;
+      case "dmg": return l?.player_damage ?? 0;
+      case "heal": return l?.player_healing ?? 0;
+      case "kp": return p.kills + p.assists;
+      default: return p.net_worth;
+    }
+  };
+  const players = [...rawPlayers].sort((a, b) => val(b) - val(a));
+  const Th = ({ k, children, title }: { k?: SortKey; children: React.ReactNode; title?: string }) => (
+    <th className="p-3" title={title}>
+      {k ? (
+        <button onClick={() => setSort(k)} className={cn("uppercase tracking-wider hover:text-foreground", sort === k && "text-primary")}>
+          {children}{sort === k ? " ↓" : ""}
+        </button>
+      ) : children}
+    </th>
+  );
   return (
     <section className="panel overflow-hidden">
       <div className={cn("flex items-center justify-between border-b border-border px-4 py-3", team === 0 ? "text-amber-team" : "text-sapphire-team")}>
@@ -153,11 +180,14 @@ function TeamTable({ team, won, players, names, lobby, winner, durationS }: { du
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground">
             <tr className="border-b border-border">
-              <th className="p-3">Игрок</th><th className="p-3" title="Оценка относительно среднего игрока (как в профиле)">Оценка</th><th className="p-3">K/D/A</th><th className="p-3">Души</th><th className="p-3">Крипы</th><th className="p-3">Урон</th><th className="p-3">Лечение</th><th className="p-3">Предметы</th>
+              <Th>Игрок</Th><Th k="grade" title="Оценка относительно среднего игрока (как в профиле)">Оценка</Th><Th k="kda">K/D/A</Th><Th k="kp" title="Участие в убийствах команды: (K + A) / убийства команды">KP%</Th><Th k="nw">Души</Th><Th k="lh">Крипы</Th><Th k="dmg">Урон</Th><Th k="heal">Лечение</Th><Th>Предметы</Th>
             </tr>
           </thead>
           <tbody>
             {players.map((p) => {
+              const kp = Math.round(((p.kills + p.assists) / teamKills) * 100);
+              const nwShare = (p.net_worth / teamNw) * 100;
+              const dmgShare = ((p.stats.at(-1)?.player_damage ?? 0) / teamDmg) * 100;
               const last = p.stats.at(-1);
               const final = p.items.filter((i) => i.sold_time_s === 0 && items.has(i.item_id));
               return (
@@ -188,9 +218,13 @@ function TeamTable({ team, won, players, names, lobby, winner, durationS }: { du
                     );
                   })()}</td>
                   <td className="tabular p-3">{p.kills}/<span className="text-loss">{p.deaths}</span>/{p.assists}</td>
-                  <td className="tabular p-3 text-primary">{fmtK(p.net_worth)}</td>
+                  <td className={cn("tabular p-3", kp >= 60 ? "text-win" : kp < 35 ? "text-loss" : "")}>{kp}%</td>
+                  <td className="tabular p-3">
+                    <span className={team === 0 ? "text-amber-team" : "text-sapphire-team"}>{fmtK(p.net_worth)}</span>
+                    <Share pct={nwShare} team={team} />
+                  </td>
                   <td className="tabular p-3">{p.last_hits}<span className="text-muted-foreground">/{p.denies}</span></td>
-                  <td className="tabular p-3">{fmtK(last?.player_damage)}</td>
+                  <td className="tabular p-3">{fmtK(last?.player_damage)}<Share pct={dmgShare} team={team} /></td>
                   <td className="tabular p-3">{fmtK(last?.player_healing)}</td>
                   <td className="p-3">
                     <div className="flex min-w-60 flex-wrap gap-1">
@@ -256,5 +290,16 @@ function LiveView({ m }: { m: LiveMatch }) {
       </div>
       <LiveScoreboard matchId={m.match_id} roster={m.players} ranked={m.match_mode === 4} />
     </div>
+  );
+}
+
+function Share({ pct, team }: { pct: number; team: number }) {
+  return (
+    <span className="mt-1 flex items-center gap-1.5 text-[10px] text-muted-foreground" title="Доля от команды">
+      <span className="h-1 w-12 overflow-hidden rounded bg-secondary">
+        <span className={cn("block h-full", team === 0 ? "bg-amber-team" : "bg-sapphire-team")} style={{ width: `${Math.min(100, pct)}%` }} />
+      </span>
+      {pct.toFixed(0)}%
+    </span>
   );
 }
