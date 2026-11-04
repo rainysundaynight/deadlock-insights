@@ -32,7 +32,7 @@ export function subscribeLive(matchId: number, query: string, listener: LiveList
   if (!conn) {
     const url = `${API}/v1/matches/demo/live/query?${new URLSearchParams({ query, match_id: String(matchId) })}`;
     const es = new EventSource(url);
-    const c: Conn = { es, listeners: new Set() };
+    const c: Conn = { es, listeners: new Set(), closeTimer: undefined };
     es.onmessage = (e) => c.listeners.forEach((l) => l.onMessage(e.data));
     es.addEventListener("status", (e) => c.listeners.forEach((l) => l.onStatus?.((e as MessageEvent).data)));
     es.addEventListener("end", () => c.listeners.forEach((l) => l.onEnd?.()));
