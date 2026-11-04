@@ -66,22 +66,46 @@ export function HeroLink({ heroId, size = 36 }: { heroId: number; size?: number 
   );
 }
 
-export function RankBadge({ badge, size = 40, showName = true }: { badge: number | null | undefined; size?: number; showName?: boolean }) {
+const ROMAN = ["", "I", "II", "III", "IV", "V", "VI"];
+export function RankBadge({ badge, size = 40, showName = true, potential = false }: { badge: number | null | undefined; size?: number; showName?: boolean; potential?: boolean }) {
   const { data: ranks } = useQuery(ranksQuery);
   const b = splitBadge(badge);
   if (!b) return <span className="text-sm text-muted-foreground">Без ранга</span>;
   const rank = ranks?.find((r) => r.tier === b.tier);
   const src = rank?.images[`small_subrank${b.subrank}_webp`] ?? rank?.images[`small_subrank${b.subrank}`] ?? rank?.images.large;
+  const roman = ROMAN[b.subrank] ?? "";
+  const title = `${potential ? "Потенциальный ранг: ~" : ""}${rank?.name ?? `Tier ${b.tier}`} ${roman}`;
   return (
-    <span className="inline-flex items-center gap-2">
-      {src && <img src={src} alt={rank?.name} style={{ width: size, height: size }} className="object-contain" />}
+    <span className={cn("inline-flex items-center gap-2", potential && "opacity-50")} title={title}>
+      <span className="relative inline-block shrink-0" style={{ width: size, height: size }}>
+        {src && <img src={src} alt={rank?.name} style={{ width: size, height: size }} className={cn("object-contain", potential && "grayscale-[40%]")} />}
+        {roman && (
+          <span
+            className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-sm border bg-background/90 px-1 font-display font-extrabold leading-none tracking-wider shadow"
+            style={{ fontSize: Math.max(8, Math.round(size * 0.26)), color: rank?.color, borderColor: rank?.color ? `${rank.color}80` : undefined, paddingTop: 1, paddingBottom: 1 }}
+          >
+            {roman}
+          </span>
+        )}
+        {potential && <span className="absolute -right-1 -top-1 font-display text-[10px] font-bold text-muted-foreground">~</span>}
+      </span>
       {showName && (
         <span className="font-display uppercase tracking-wide" style={{ color: rank?.color }}>
-          {rank?.name ?? `Tier ${b.tier}`} {b.subrank}
+          {potential && "~"}{rank?.name ?? `Tier ${b.tier}`} {roman}
         </span>
       )}
     </span>
   );
+}
+
+/** Estimate a badge for an unranked player from ranked players in the same lobby. */
+export function lobbyBadge(badges: (number | null | undefined)[]): number | null {
+  const v = badges.filter((x): x is number => !!x && x > 10);
+  if (!v.length) return null;
+  const avgTier = v.reduce((s, x) => s + Math.floor(x / 10) * 6 + (x % 10), 0) / v.length;
+  const r = Math.round(avgTier);
+  const tier = Math.floor((r - 1) / 6), sub = ((r - 1) % 6) + 1;
+  return tier * 10 + sub;
 }
 
 export function Stat({ label, value, sub, tone }: { label: string; value: ReactNode; sub?: ReactNode; tone?: "win" | "loss" | "brass" }) {
