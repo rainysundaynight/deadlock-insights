@@ -25,28 +25,22 @@ const PERIODS = [
   { d: 30, label: "30 дней" },
   { d: 90, label: "90 дней" },
 ];
-const BADGES = [
-  { b: 0, label: "Все ранги" },
-  { b: 60, label: "Ритуалист+" },
-  { b: 80, label: "Оракул+" },
-  { b: 100, label: "Вознесённый+" },
-];
 type SortKey = "winrate" | "pickrate" | "matches" | "kda" | "nw";
 
 function HeroesPage() {
   const [period, setPeriod] = useState(7);
-  const [badge, setBadge] = useState(0);
+  const [range, setRange] = useState<RankRange>([0, 11]);
   const [sort, setSort] = useState<SortKey>("winrate");
   const [view, setView] = useState<"table" | "grid">("table");
   const heroes = useHeroMap();
   const heroList = useQuery(heroesQuery);
 
   const q = useQuery({
-    queryKey: ["hero-stats", period, badge],
+    queryKey: ["hero-stats", period, range],
     queryFn: () =>
       api<HeroAnalytics[]>("/v1/analytics/hero-stats", {
         min_unix_timestamp: Math.floor(Date.now() / 1000 / 3600) * 3600 - period * 86400,
-        min_average_badge: badge || undefined,
+        ...rankParams(range),
       }),
   });
 
