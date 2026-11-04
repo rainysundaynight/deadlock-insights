@@ -238,7 +238,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             const a = nwOf(0), b = nwOf(1);
             const pa = winChance(a, b, sec);
             return [0, 1].map((team) => (
-              <div key={team} className={cn("pointer-events-none absolute top-2 rounded-lg border bg-card/85 px-3 py-1.5 backdrop-blur", team === 0 ? "left-2 border-amber-team/60" : "right-2 border-sapphire-team/60 text-right", team === 1 && sel != null && "hidden")}>
+              <div key={team} className={cn("pointer-events-none absolute top-2 rounded-lg border bg-card/85 px-3 py-1.5 backdrop-blur", team === 0 ? "left-2 border-amber-team/60" : "right-2 border-sapphire-team/60 text-right")}>
                 <div className={cn("text-xs font-bold uppercase", team === 0 ? "text-amber-team" : "text-sapphire-team")}>{team === 0 ? "Амбер" : "Сапфир"}</div>
                 <div className="tabular text-sm font-semibold">{fmtK(team === 0 ? a : b)} <span className="text-[10px] font-normal text-muted-foreground">душ</span></div>
                 <div className="tabular text-[11px] text-muted-foreground">победа ≈ {Math.round((team === 0 ? pa : 1 - pa) * 100)}%</div>

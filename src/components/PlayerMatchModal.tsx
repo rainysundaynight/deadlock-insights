@@ -33,7 +33,7 @@ export function PlayerMatchModal({ player, name, sec, hp, onClose }: { player: M
   const border = player.team === 0 ? "border-amber-team/60" : "border-sapphire-team/60";
 
   return (
-    <div className={cn("absolute right-2 top-2 z-10 w-72 rounded-xl border bg-card/95 p-3 shadow-xl backdrop-blur", border)}>
+    <div className={cn("absolute right-2 top-[84px] z-10 w-72 rounded-xl border bg-card/95 p-3 shadow-xl backdrop-blur", border)}>
       <div className="flex items-center gap-2">
         <HeroIcon heroId={player.hero_id} size={36} className={player.team === 0 ? "border-amber-team" : "border-sapphire-team"} />
         <div className="min-w-0 flex-1">
