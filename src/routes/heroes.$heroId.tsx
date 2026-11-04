@@ -8,6 +8,7 @@ import { api, type HeroAnalytics, type Item } from "@/lib/api";
 import { fmtAgo, fmtInt, fmtK, kda, stripHtml, winrate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { BuildEntry } from "./builds";
+import { HeroRankWinrates } from "@/components/RankMeta";
 
 export const Route = createFileRoute("/heroes/$heroId")({
   head: () => ({
@@ -122,6 +123,11 @@ function HeroPage() {
           </div>
         </section>
       )}
+
+      <section>
+        <SectionTitle>Винрейт по рангам</SectionTitle>
+        <HeroRankWinrates heroId={id} />
+      </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
         <MatchupList title="Силён против" rows={vs.best} loading={counters.isLoading} />

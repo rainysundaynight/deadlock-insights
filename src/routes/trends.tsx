@@ -8,6 +8,7 @@ import { Chip, ErrorBox, RankFilter, rankParams, HeroIcon, Loading, PageHeader, 
 import { api } from "@/lib/api";
 import { heroTrends, type DayRow } from "@/lib/trends";
 import { cn } from "@/lib/utils";
+import { RankMetaGrid } from "@/components/RankMeta";
 
 export const Route = createFileRoute("/trends")({
   head: () => ({
@@ -94,6 +95,11 @@ function Trends() {
           </div>
         </>
       )}
+      <section className="space-y-3">
+        <h2 className="font-display text-lg font-semibold uppercase tracking-wider">Мета по рангам</h2>
+        <p className="text-sm text-muted-foreground">Топ-5 героев по винрейту в каждом ранге за 14 дней.</p>
+        <RankMetaGrid />
+      </section>
     </div>
   );
 }
