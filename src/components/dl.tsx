@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, Loader2 } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
+import { AlertTriangle, Check, ChevronDown, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { api, heroesQuery, itemsQuery, ranksQuery, type Hero, type Item, type SteamProfile } from "@/lib/api";
 import { splitBadge } from "@/lib/format";
@@ -224,18 +224,54 @@ export function useSteamProfiles(ids: number[]) {
 export const rankParams = (tier: number | null) =>
   tier == null ? {} : { min_average_badge: tier * 10 + 1, max_average_badge: tier * 10 + 6 };
 
-/** Single-rank selector; "all ranks" by default. */
+/** Single-rank selector with rank icons; "all ranks" by default. */
 export function RankFilter({ value, onChange }: { value: number | null; onChange: (v: number | null) => void }) {
   const { data: ranks } = useQuery(ranksQuery);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+  const icon = (tier: number) => ranks?.find((r) => r.tier === tier)?.images.large_webp ?? ranks?.find((r) => r.tier === tier)?.images.large;
+  const name = (tier: number) => ranks?.find((r) => r.tier === tier)?.name ?? `Tier ${tier}`;
+  const cur = value == null ? null : ranks?.find((r) => r.tier === value);
   return (
-    <span className="flex items-center gap-2 text-xs text-muted-foreground">
+    <span ref={ref} className="relative flex items-center gap-2 text-xs text-muted-foreground">
       Ранг
-      <select className={selectClass} value={value ?? "all"} onChange={(e) => onChange(e.target.value === "all" ? null : +e.target.value)}>
-        <option value="all">Все ранги</option>
-        {Array.from({ length: 12 }, (_, t) => (
-          <option key={t} value={t}>{ranks?.find((r) => r.tier === t)?.name ?? `Tier ${t}`}</option>
-        ))}
-      </select>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-10 items-center gap-2 rounded-md border border-input bg-secondary px-3 text-sm text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring"
+      >
+        {cur ? <img src={cur.images.large_webp ?? cur.images.large} alt="" className="h-6 w-6 object-contain" /> : <span className="flex h-6 w-6 items-center justify-center text-muted-foreground">✦</span>}
+        <span>{cur?.name ?? "Все ранги"}</span>
+        <ChevronDown className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-50 mt-1 max-h-80 w-56 overflow-y-auto rounded-md border border-border bg-card p-1 shadow-xl">
+          <button
+            onClick={() => { onChange(null); setOpen(false); }}
+            className={cn("flex w-full items-center gap-2.5 rounded px-2 py-1.5 text-sm hover:bg-secondary", value == null && "bg-primary/10 text-primary")}
+          >
+            <span className="flex h-7 w-7 items-center justify-center text-muted-foreground">✦</span>
+            Все ранги
+            {value == null && <Check className="ml-auto h-3.5 w-3.5" />}
+          </button>
+          {Array.from({ length: 12 }, (_, t) => (
+            <button
+              key={t}
+              onClick={() => { onChange(t); setOpen(false); }}
+              className={cn("flex w-full items-center gap-2.5 rounded px-2 py-1.5 text-sm hover:bg-secondary", value === t && "bg-primary/10 text-primary")}
+            >
+              {icon(t) ? <img src={icon(t)} alt="" className="h-7 w-7 object-contain" /> : <span className="h-7 w-7" />}
+              {name(t)}
+              {value === t && <Check className="ml-auto h-3.5 w-3.5" />}
+            </button>
+          ))}
+        </div>
+      )}
     </span>
   );
 }
