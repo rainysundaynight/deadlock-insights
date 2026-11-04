@@ -96,7 +96,7 @@ function PlayerPage() {
           <TabsTrigger value="enemies">Соперники</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4">
-          <PlayerInsights history={history.data ?? []} />
+          <PlayerInsights history={history.data ?? []} badge={rank.data?.badge} />
         </TabsContent>
         <TabsContent value="matches" className="mt-4">
           <MatchList matches={history.data ?? []} />
