@@ -112,28 +112,88 @@ function PlayerPage() {
   );
 }
 
-function MatchList({ matches }: { matches: MatchHistoryEntry[] }) {
+function streaks(ms: MatchHistoryEntry[]) {
+  // ms sorted newest first
+  let cur = 0;
+  const first = ms[0] ? ms[0].match_result === ms[0].player_team : true;
+  for (const m of ms) { if ((m.match_result === m.player_team) === first) cur++; else break; }
+  let best = 0, run = 0;
+  for (const m of ms) { if (m.match_result === m.player_team) { run++; best = Math.max(best, run); } else run = 0; }
+  return { cur, win: first, best };
+}
+
+function MatchList({ matches: all }: { matches: MatchHistoryEntry[] }) {
   const [limit, setLimit] = useState(30);
+  const [hero, setHero] = useState<number | "all">("all");
+  const [res, setRes] = useState<"all" | "win" | "loss">("all");
+  const [mode, setMode] = useState<"all" | "ranked" | "normal" | "brawl">("all");
   const heroes = useHeroMap();
-  if (!matches.length) return <Empty>Матчей пока нет</Empty>;
+  const gq = useQuery(globalAvgQuery);
+  const ga = gq.data ? globalAverages(gq.data) : null;
+  const heroIds = useMemo(() => {
+    const c = new Map<number, number>();
+    all.forEach((m) => c.set(m.hero_id, (c.get(m.hero_id) ?? 0) + 1));
+    return [...c.entries()].sort((a, b) => b[1] - a[1]);
+  }, [all]);
+  const matches = all.filter((m) => {
+    const won = m.match_result === m.player_team;
+    if (hero !== "all" && m.hero_id !== hero) return false;
+    if (res === "win" && !won) return false;
+    if (res === "loss" && won) return false;
+    if (mode === "brawl" && m.game_mode !== 4) return false;
+    if (mode === "ranked" && (m.game_mode === 4 || m.match_mode !== 4)) return false;
+    if (mode === "normal" && (m.game_mode === 4 || m.match_mode === 4)) return false;
+    return true;
+  });
+  const st = streaks(all);
+  if (!all.length) return <Empty>Матчей пока нет</Empty>;
+  const chip = (on: boolean) => cn("rounded-full border px-3 py-1 text-xs", on ? "border-primary/60 bg-primary/15 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground");
   return (
     <div className="space-y-2">
+      <div className="panel flex flex-wrap items-center gap-3 p-3">
+        <span className={cn("rounded-md px-3 py-1 text-sm font-semibold", st.win ? "bg-win/15 text-win" : "bg-loss/15 text-loss")}>
+          {st.win ? "🔥" : "❄️"} {st.cur} {st.win ? "побед" : "поражений"} подряд
+        </span>
+        <span className="text-xs text-muted-foreground">Рекорд: {st.best} побед подряд</span>
+        <span className="mx-1 h-5 w-px bg-border" />
+        <select value={String(hero)} onChange={(e) => setHero(e.target.value === "all" ? "all" : Number(e.target.value))} className="rounded-md border border-border bg-secondary px-2 py-1 text-xs">
+          <option value="all">Все герои</option>
+          {heroIds.map(([h, n]) => <option key={h} value={h}>{heroes.get(h)?.name ?? h} ({n})</option>)}
+        </select>
+        {([["all", "Все"], ["win", "Победы"], ["loss", "Поражения"]] as const).map(([k, l]) => <button key={k} className={chip(res === k)} onClick={() => setRes(k)}>{l}</button>)}
+        <span className="mx-1 h-5 w-px bg-border" />
+        {([["all", "Все режимы"], ["ranked", "Рейтинговый"], ["normal", "Обычный"], ["brawl", "Street Brawl"]] as const).map(([k, l]) => <button key={k} className={chip(mode === k)} onClick={() => setMode(k)}>{l}</button>)}
+      </div>
+      {!matches.length && <Empty>Нет матчей под фильтр</Empty>}
       {matches.slice(0, limit).map((m) => {
         const won = m.match_result === m.player_team;
+        const g = ga ? gradeHistory(m, ga) : null;
+        const k = (m.player_kills + m.player_assists) / Math.max(1, m.player_deaths);
+        const badges: string[] = [];
+        if (g?.grade === "S+") badges.push("MVP");
+        if (m.player_deaths === 0 && m.player_kills + m.player_assists >= 5) badges.push("Неудержимый");
+        else if (k >= 6) badges.push("Высокий KDA");
+        if (m.match_duration_s && (m.net_worth / (m.match_duration_s / 60)) >= 1500) badges.push("Топ-фарм");
         return (
           <Link
             key={m.match_id}
             to="/matches/$matchId"
             params={{ matchId: String(m.match_id) }}
-            className={cn("panel panel-hover grid grid-cols-[4px_auto_1fr_auto] items-center gap-4 overflow-hidden p-3 pl-0 md:grid-cols-[4px_auto_1fr_repeat(4,auto)]")}
+            className={cn("panel panel-hover grid grid-cols-[4px_auto_1fr_auto] items-center gap-4 overflow-hidden p-3 pl-0 md:grid-cols-[4px_auto_1fr_repeat(5,auto)]")}
           >
             <span className={cn("h-full", won ? "bg-win" : "bg-loss")} />
             <HeroIcon heroId={m.hero_id} size={44} />
             <div>
-              <p className="font-medium">{heroes.get(m.hero_id)?.name}</p>
-              <p className={cn("text-xs", won ? "text-win" : "text-loss")}>
-                {won ? "Победа" : "Поражение"} · <span className="text-muted-foreground">{fmtAgo(m.start_time)}</span>
+              <p className="flex flex-wrap items-center gap-1.5 font-medium">
+                {heroes.get(m.hero_id)?.name}
+                {badges.map((b) => <span key={b} className="rounded border border-primary/40 bg-primary/10 px-1.5 text-[10px] font-semibold uppercase text-primary">{b}</span>)}
               </p>
+              <p className={cn("text-xs", won ? "text-win" : "text-loss")}>
+                {won ? "Победа" : "Поражение"} · <span className="text-muted-foreground">{m.game_mode === 4 ? "Street Brawl" : m.match_mode === 4 ? "Рейтинговый" : "Обычный"} · {fmtAgo(m.start_time)}</span>
+              </p>
+            </div>
+            <div className="hidden md:block">
+              {g && <span title={`${g.score.toFixed(0)}/100`} className={cn("inline-grid h-9 w-10 place-items-center rounded-md border border-border bg-secondary font-display text-sm font-extrabold", gradeTone(g.grade))}>{g.grade}</span>}
             </div>
             <div className="tabular text-right">
               <p>
