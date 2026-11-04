@@ -4,11 +4,12 @@ import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Too
 import { useMemo, useState } from "react";
 
 import { Link } from "@tanstack/react-router";
-import { HeroIcon, Loading, RankBadge, lobbyBadge, useHeroMap, useSteamProfiles } from "@/components/dl";
+import { HeroIcon, Loading, RankBadge, useHeroMap, useSteamProfiles } from "@/components/dl";
 import { LiveMap } from "@/components/LiveMap";
 import { api } from "@/lib/api";
 import { fmtDuration, fmtK, REGIONS } from "@/lib/format";
 import { useLiveScoreboard, type LiveEvent } from "@/lib/liveStream";
+import { fetchPotentialBadge } from "@/lib/potentialRank";
 import { cn } from "@/lib/utils";
 
 const TEAMS = ["Амбер", "Сапфир"];
@@ -28,6 +29,20 @@ function useRanks(roster: Roster[], ranked: boolean) {
     queryFn: async () => (await Promise.all(REGIONS.map((r) => api<{ entries: LbEntry[] }>(`/v1/leaderboard/${r.id}`).then((d) => d.entries.filter((e) => e.rank <= 250)).catch(() => [])))).flat(),
   });
   return { badge: (i: number) => ranks[i]?.data?.badge, lb: lb.data ?? [] };
+}
+
+/** Per-player estimated rank for unranked players, from their own match history (cached 24h). */
+function usePotentialBadges(roster: Roster[], badge: (i: number) => number | null | undefined) {
+  const qs = useQueries({
+    queries: roster.map((r, i) => ({
+      queryKey: ["pot-rank", r.account_id],
+      queryFn: () => fetchPotentialBadge(r.account_id),
+      enabled: badge(i) == null,
+      staleTime: 86_400_000,
+      retry: false,
+    })),
+  });
+  return (i: number) => qs[i]?.data ?? null;
 }
 
 const EV_ICON: Record<LiveEvent["kind"], typeof Swords> = { kill: Swords, death: Skull, level: TrendingUp, streak: Flame, lead: Crown, sync: History };
