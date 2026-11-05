@@ -106,7 +106,7 @@ export function RankMetaGrid() {
   );
 }
 
-const COLORS = ["var(--primary)", "var(--team-sapphire)", "#4ade80", "#f472b6", "#a78bfa"];
+const COLORS = ["var(--telemetry)", "var(--team-sapphire)", "var(--win)", "var(--primary)", "var(--loss)"];
 
 /** Compare win rates of several heroes across every rank tier. */
 export function HeroRankCompare({ days }: { days: number }) {
