@@ -105,7 +105,10 @@ function HeroesPage() {
                 <div className="relative aspect-[3/4]">
                   <div className="hero-card-bg absolute inset-0 overflow-hidden" />
                   <span className="absolute right-2 top-2 z-0 font-mono text-[9px] uppercase text-foreground/70">№ {String(h.id).padStart(3, "0")}</span>
-                  <img src={h.images.icon_hero_card_webp ?? h.images.icon_hero_card} alt={h.name} className="hero-card-pop absolute inset-x-0 bottom-0 z-[1] h-full w-full object-cover object-bottom" loading="lazy" />
+                  <div className="hero-card-clip absolute inset-0 z-[1]">
+                    <img src={h.images.icon_hero_card_webp ?? h.images.icon_hero_card} alt={h.name} className="hero-pose hero-pose-idle absolute inset-0 h-full w-full object-cover object-bottom" loading="lazy" />
+                    {(h.images.hero_card_gloat_webp ?? h.images.hero_card_gloat) && <img src={h.images.hero_card_gloat_webp ?? h.images.hero_card_gloat} alt="" aria-hidden className="hero-pose hero-pose-alt absolute inset-0 h-full w-full object-cover object-bottom" loading="lazy" />}
+                  </div>
                   <div className="absolute inset-x-0 bottom-0 z-[2] flex flex-wrap justify-center gap-1 bg-gradient-to-t from-background via-background/80 to-transparent px-2 pb-2 pt-8">
                     <p className="w-full text-center font-display text-xl uppercase leading-none tracking-wide text-foreground drop-shadow">{h.name}</p>
                     {(h.tags ?? []).slice(0, 3).map((t) => <span key={t} className="hero-tag">{t}</span>)}

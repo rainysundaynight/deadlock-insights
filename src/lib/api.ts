@@ -28,7 +28,7 @@ export interface Hero {
   in_development: boolean;
   complexity?: number;
   description?: { lore?: string; role?: string; playstyle?: string };
-  images: { icon_image_small?: string; icon_image_small_webp?: string; icon_hero_card?: string; icon_hero_card_webp?: string; background_image_webp?: string; [k: string]: string | undefined };
+  images: { hero_card_gloat?: string; hero_card_gloat_webp?: string; icon_image_small?: string; icon_image_small_webp?: string; icon_hero_card?: string; icon_hero_card_webp?: string; background_image_webp?: string; [k: string]: string | undefined };
   colors?: { style_hex?: string };
   tags?: string[];
   items?: Record<string, string>;
