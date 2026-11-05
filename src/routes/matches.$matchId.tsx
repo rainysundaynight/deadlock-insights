@@ -7,6 +7,7 @@ import { fmtDate, fmtDuration, fmtK, GAME_MODES, MATCH_MODES } from "@/lib/forma
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { MatchAnalysis } from "@/components/MatchAnalysis";
+import { LaneDuelBoard, PlayerDossier } from "@/components/PlayerDossier";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DamageView, ItemsTimeline } from "@/components/MatchDeep";
 import { LaneMinutes } from "@/components/LaneMinutes";
@@ -18,7 +19,7 @@ import { MatchDetails } from "@/components/MatchDetails";
 import { MatchReplay, type MatchObjective, type MatchPaths } from "@/components/MatchReplay";
 import { MatchActions, SpectateButton } from "@/components/ShareCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Coins, Map, Swords, Crosshair, Package, Lightbulb } from "lucide-react";
+import { BarChart3, Coins, Map, Swords, Crosshair, Package, Lightbulb, UserRound } from "lucide-react";
 
 export const Route = createFileRoute("/matches/$matchId")({
   head: ({ params }) => ({
@@ -116,7 +117,7 @@ function MatchPage() {
       <MatchActions matchId={m.match_id} players={players} winner={m.winning_team} duration={m.duration_s} names={profiles.data} />
       <Tabs value={tab} onValueChange={setTab}>
       <TabsList>
-        {([["table", "Таблица", BarChart3], ["details", "Экономика", Coins], ["map", "Карта", Map], ["lanes", "Линии и график", Swords], ["damage", "Урон", Crosshair], ["items", "Предметы", Package], ["tips", "Советы", Lightbulb]] as const).map(([k, l, Icon]) => (
+        {([["table", "Таблица", BarChart3], ["player", "Игрок", UserRound], ["details", "Экономика", Coins], ["map", "Карта", Map], ["lanes", "Линии и график", Swords], ["damage", "Урон", Crosshair], ["items", "Предметы", Package], ["tips", "Советы", Lightbulb]] as const).map(([k, l, Icon]) => (
           <TabsTrigger key={k} value={k}><Icon className="h-4 w-4" />{l}</TabsTrigger>
         ))}
       </TabsList><TabsContent key={tab} value={tab} className="mt-6">
@@ -125,6 +126,8 @@ function MatchPage() {
       {tab === "damage" && <DamageView players={players} names={profiles.data} />}
       {tab === "items" && <ItemsTimeline players={players} names={profiles.data} />}
       {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} objectives={m.objectives} midBoss={m.mid_boss} winner={m.winning_team} />}
+      {tab === "player" && <PlayerDossier players={players} names={profiles.data} durationS={m.duration_s} winner={m.winning_team} />}
+      {tab === "lanes" && <div className="my-8"><LaneDuelBoard players={players} names={profiles.data} durationS={m.duration_s} /></div>}
       {tab === "lanes" && <LaneMinutes players={players} names={profiles.data} />}
       {tab === "table" && [0, 1].map((team) => (
         <TeamTable
