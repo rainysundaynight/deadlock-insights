@@ -160,7 +160,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   const mvpSlot = (() => {
     const rows = players.map((p) => {
       const s0 = snapAtSec(p) as Record<string, number> | undefined;
-      const teamK = players.filter((q) => q.team === p.team).reduce((a, q) => a + ((snapAtSec(q) as Record<string, number> | undefined)?.kills ?? 0), 0);
+      const teamK = players.filter((q) => q.team === p.team).reduce((a, q) => a + ((snapAtSec(q) as Record<string, number> | undefined)?.["kills"] ?? 0), 0);
       const g = (k: string) => s0?.[k] ?? 0;
       return { slot: p.player_slot, v: { nw: g("net_worth"), k: g("kills"), a: g("assists"), dmg: g("player_damage"), heal: g("player_healing") + g("teammate_healing") + g("teammate_barriering"), obj: g("boss_damage"), kp: teamK ? (g("kills") + g("assists")) / teamK : 0, d: g("deaths") } };
     });
