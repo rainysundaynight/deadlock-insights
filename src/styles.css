@@ -308,3 +308,9 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 .hero-plate { padding: 3px 10px 2px; color: var(--primary); background: linear-gradient(180deg, color-mix(in oklab, var(--background) 70%, var(--hero)), var(--background)); border: 1px solid color-mix(in oklab, var(--primary) 70%, transparent); box-shadow: 0 0 0 2px var(--background), 0 0 0 3px color-mix(in oklab, var(--primary) 35%, transparent), 0 4px 14px color-mix(in oklab, var(--hero) 40%, transparent); clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%); }
 /* ui.deadlock-api.com image variant sized by wrapper */
 .game-item-image dl-item-card { width: var(--gi-size); height: var(--gi-size); display: block; }
+
+/* tier list: keep poses inside the frame (no overflow over the border) */
+.tier-card .hero-card-clip { clip-path: none; }
+.tier-card .hero-pose-alt { -webkit-mask-image: none; mask-image: none; }
+.tier-card:hover .hero-pose-alt { transform: scale(1.04); }
+.tier-card:hover .hero-pose-idle { transform: scale(1.04); }
