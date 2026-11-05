@@ -7,6 +7,8 @@ const SHADOW_FIX = `
 .mod-name{font-family:"PT Serif",Georgia,serif!important;font-size:10.5px!important;line-height:1.05!important;hyphens:auto;overflow-wrap:anywhere;padding:0 3px!important}
 .mod-name.name-size-sm,.mod-name.name-size-xs{font-size:9.5px!important}
 .mod-name-container{overflow:hidden}
+`;
+const TIP_FIX = `
 .stats-block-props{flex-wrap:wrap!important;row-gap:4px}
 .block-prop-item{min-width:0!important;flex:1 1 45%!important;overflow:visible!important}
 .block-prop-item .attribute-name{white-space:normal!important;overflow-wrap:anywhere}
@@ -18,10 +20,10 @@ export function GameItemsProvider({ children }: { children: ReactNode }) {
 
 function injectAll(root: ShadowRoot | Document | null | undefined) {
   if (!root) return;
-  if (root instanceof ShadowRoot && !root.querySelector("style[data-fix]")) {
+  if (root instanceof ShadowRoot && !root.querySelector("style[data-tip]")) {
     const st = document.createElement("style");
-    st.setAttribute("data-fix", "1");
-    st.textContent = SHADOW_FIX;
+    st.setAttribute("data-tip", "1");
+    st.textContent = TIP_FIX;
     root.appendChild(st);
   }
   root.querySelectorAll("*").forEach((e) => e.shadowRoot && injectAll(e.shadowRoot));
