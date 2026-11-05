@@ -120,7 +120,7 @@ function MatchPage() {
           <TabsTrigger key={k} value={k}><Icon className="h-4 w-4" />{l}</TabsTrigger>
         ))}
       </TabsList><TabsContent key={tab} value={tab} className="mt-6">
-      {tab === "map" && <MatchReplay paths={m.match_paths} players={players} names={profiles.data} objectives={m.objectives} midBoss={m.mid_boss} winner={m.winning_team} />}
+      {tab === "map" && <MatchReplay paths={m.match_paths} players={players} names={profiles.data} objectives={m.objectives} midBoss={m.mid_boss} />}
       {tab === "details" && <MatchDetails players={players} names={profiles.data} durationS={m.duration_s} />}
       {tab === "damage" && <DamageView players={players} names={profiles.data} />}
       {tab === "items" && <ItemsTimeline players={players} names={profiles.data} />}
