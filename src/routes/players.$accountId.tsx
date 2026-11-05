@@ -275,7 +275,7 @@ function PlayerHeroes({ id }: { id: number }) {
   if (q.error) return <ErrorBox error={q.error} />;
   const rows = [...(q.data ?? [])].sort((a, b) => b.matches_played - a.matches_played);
   if (!rows.length) return <Empty>Нет данных по героям</Empty>;
-  const max = rows[0].matches_played;
+  const max = rows[0]?.matches_played ?? 1;
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
       {rows.map((r, i) => {

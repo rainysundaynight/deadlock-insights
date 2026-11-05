@@ -51,7 +51,7 @@ export function PlayerItems({ id, history }: { id: number; history: MatchHistory
     }
     const rows = [...map.values()];
     const bySlot = { weapon: 0, vitality: 0, spirit: 0 } as Record<string, number>;
-    rows.forEach((r) => { const s = r.item.item_slot_type ?? ""; if (s in bySlot) bySlot[s] += r.n; });
+    rows.forEach((r) => { const s = r.item.item_slot_type ?? ""; if (s in bySlot) bySlot[s] = (bySlot[s] ?? 0) + r.n; });
     return { rows, games, bySlot };
   }, [q.data, items, id]);
 
@@ -91,7 +91,7 @@ export function PlayerItems({ id, history }: { id: number; history: MatchHistory
           <p className="mb-4 font-mono text-[10px] uppercase tracking-widest text-primary">◆ Профиль покупок</p>
           <div className="space-y-3">
             {Object.entries(SLOT).map(([k, s]) => {
-              const pct = (data.bySlot[k] / total) * 100;
+              const pct = ((data.bySlot[k] ?? 0) / total) * 100;
               return (
                 <div key={k}>
                   <div className="mb-1 flex justify-between text-xs"><span>{s.label}</span><span className="tabular font-mono">{pct.toFixed(0)}%</span></div>
