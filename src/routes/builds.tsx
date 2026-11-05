@@ -100,8 +100,8 @@ function BuildCard({ b }: { b: BuildEntry }) {
           const mods = c.mods.map((m) => items.get(m.ability_id)).filter(Boolean);
           if (!mods.length) return null;
           return (
-            <div key={i} className="flex items-center gap-3">
-              <span className="w-24 shrink-0 truncate text-xs uppercase tracking-wider text-muted-foreground">{c.name}</span>
+            <div key={i} className="flex items-start gap-3">
+              <span className="w-24 shrink-0 truncate pt-1 text-xs uppercase tracking-wider text-muted-foreground">{c.name}</span>
               <div className="flex flex-wrap gap-1.5">
                 {mods.map((it, j) => (
                   <GameItem key={j} item={it!} size={74} />
