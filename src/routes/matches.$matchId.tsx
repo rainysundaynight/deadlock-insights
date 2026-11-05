@@ -127,7 +127,7 @@ function MatchPage() {
       {tab === "items" && <ItemsTimeline players={players} names={profiles.data} />}
       {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} objectives={m.objectives} midBoss={m.mid_boss} winner={m.winning_team} />}
       {tab === "player" && <PlayerDossier players={players} names={profiles.data} durationS={m.duration_s} winner={m.winning_team} />}
-      {tab === "lanes" && <div className="mb-6"><LaneDuelBoard players={players} names={profiles.data} durationS={m.duration_s} /></div>}
+      {tab === "lanes" && <div className="my-8"><LaneDuelBoard players={players} names={profiles.data} durationS={m.duration_s} /></div>}
       {tab === "lanes" && <LaneMinutes players={players} names={profiles.data} />}
       {tab === "table" && [0, 1].map((team) => (
         <TeamTable
