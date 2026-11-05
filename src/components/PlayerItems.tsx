@@ -134,7 +134,7 @@ export function PlayerItems({ id, history }: { id: number; history: MatchHistory
             const wr = (r.wins / r.n) * 100;
             const pick = (r.n / data.games) * 100;
             return (
-              <div key={r.item.id} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-2.5 transition-colors hover:bg-accent/30 md:grid-cols-[auto_1.2fr_1fr_1fr_auto_auto]">
+              <div key={r.item.id} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-4 py-2.5 transition-colors hover:bg-accent/30 md:grid-cols-[36px_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_84px_72px]">
                 <ItemImg item={r.item} size={36} />
                 <div className="min-w-0">
                   <p className="truncate font-medium">{r.item.name}</p>
