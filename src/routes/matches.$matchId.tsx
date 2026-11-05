@@ -102,6 +102,13 @@ function MatchPage() {
 
   return (
     <div className="space-y-8">
+      {from
+        ? <button onClick={() => void navigate({ to: from })} className="group inline-flex items-center gap-2 border border-border bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary">
+            <span className="transition-transform group-hover:-translate-x-0.5">←</span> Назад
+          </button>
+        : <button onClick={() => (window.history.length > 1 ? window.history.back() : void navigate({ to: "/" }))} className="group inline-flex items-center gap-2 border border-border bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary">
+            <span className="transition-transform group-hover:-translate-x-0.5">←</span> Назад
+          </button>}
       <MatchHero m={m} players={players} names={profiles.data} />
       <MatchActions matchId={m.match_id} players={players} winner={m.winning_team} duration={m.duration_s} names={profiles.data} />
       <Tabs value={tab} onValueChange={setTab}>
