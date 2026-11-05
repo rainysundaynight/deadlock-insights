@@ -275,3 +275,6 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 
 /* Deadlock UI item cards: original look, just centered */
 .game-item { display: block; margin-inline: auto; width: fit-content; }
+/* home hero lineup: 3D tilt + drop-shadow filter render a dark box, so skip the filter */
+.hero-side .hero-pose { filter: none !important; }
+.hero-side .hero-card-clip { clip-path: none; }
