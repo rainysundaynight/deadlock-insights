@@ -6,6 +6,6 @@ export function GameItemsProvider({ children }: { children: ReactNode }) {
   return <DlProvider language={"russian" as never} tooltipPlacement="auto" tooltipDelay={250}>{children}</DlProvider>;
 }
 
-export default function GameItemCard({ itemId }: { itemId: number }) {
-  return <DlItemCard itemId={itemId} variant="card" hoverEffect="scale" showTierBadge tooltipTrigger="hover" />;
+export default function GameItemCard({ itemId, data }: { itemId: number; data?: unknown }) {
+  return <DlItemCard itemId={itemId} itemData={data as never} variant="card" hoverEffect="scale" showTierBadge tooltipTrigger="hover" />;
 }

@@ -82,7 +82,7 @@ function ItemsPage() {
                     return (
                       <button key={i.id} onClick={() => setOpen(i)} className={cn("panel panel-hover flex flex-col items-center gap-1 p-2 text-center")}>
                         {hydrated ? (
-                          <Suspense fallback={<span className="h-24 w-full" />}><LazyCard itemId={i.id} /></Suspense>
+                          <Suspense fallback={<span className="h-24 w-full" />}><LazyCard itemId={i.id} data={i} /></Suspense>
                         ) : (
                           <>
                             <span className={cn("grid h-14 w-14 place-items-center rounded-md border", slotTone[i.item_slot_type ?? ""])}>
