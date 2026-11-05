@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ExternalLink, Package, RefreshCw, Activity, Swords, Users, Crosshair, BookOpen, GitCompare } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Empty, ErrorBox, useSteamProfiles, useItemMap, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
 import { FollowButton } from "@/components/FollowButton";
@@ -57,14 +57,55 @@ function PlayerPage() {
     try {
       const fresh = await api<MatchHistoryEntry[]>(`/v1/players/${id}/match-history`, { force_refetch: true });
       localStorage.setItem(key, String(Date.now()));
+      setLastForce(Date.now());
+      pendingSrc.current = "steam";
       const before = history.data?.length ?? 0;
       qc.setQueryData(["history", id], fresh);
       const added = fresh.length - before;
-      toast.success(added > 0 ? `Найдено новых матчей: ${added}` : "Новых матчей нет — история актуальна");
+      if (added <= 0) toast.success("Новых матчей нет — история актуальна");
     } catch {
       toast.error("Steam временно не отдаёт историю (лимит запросов). Попробуйте позже.");
     } finally { setRefetching(false); }
   };
+
+  // ---- sources, new-match alerts, refresh status ----
+  const srcKey = `dl-src-${id}`;
+  const [sources, setSources] = useState<Record<number, "steam" | "archive">>({});
+  const pendingSrc = useRef<"steam" | "archive">("archive");
+  const seen = useRef<Set<number> | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const [lastForce, setLastForce] = useState(0);
+  useEffect(() => {
+    try { setSources(JSON.parse(localStorage.getItem(srcKey) ?? "{}")); } catch { /* ignore */ }
+    setLastForce(Number(localStorage.getItem(`dl-force-refetch-${id}`) ?? 0));
+    seen.current = null;
+    const t = setInterval(() => setNow(Date.now()), 15_000);
+    return () => clearInterval(t);
+  }, [id, srcKey]);
+  useEffect(() => {
+    const list = history.data;
+    if (!list) return;
+    const ids = list.map((m) => m.match_id);
+    if (seen.current) {
+      const fresh = list.filter((m) => !seen.current!.has(m.match_id));
+      if (fresh.length) {
+        const src = pendingSrc.current;
+        setSources((prev) => {
+          const next = { ...prev };
+          fresh.forEach((m) => { next[m.match_id] = src; });
+          localStorage.setItem(srcKey, JSON.stringify(next));
+          return next;
+        });
+        const name = profile?.personaname ?? `#${id}`;
+        const text = `${name}: ${fresh.length === 1 ? "новый матч" : `новых матчей — ${fresh.length}`}`;
+        toast.success(text, { description: src === "steam" ? "Получено напрямую из Steam" : "Появилось в архиве" });
+        if (typeof Notification !== "undefined" && Notification.permission === "granted" && document.hidden) new Notification("The Deadlock", { body: text });
+      }
+    }
+    seen.current = new Set(ids);
+    pendingSrc.current = "archive";
+  }, [history.data, id, srcKey, profile?.personaname]);
+  const cooldownLeft = Math.max(0, 3600_000 - (now - lastForce));
 
   const summary = useMemo(() => {
     const h = history.data ?? [];
@@ -115,6 +156,29 @@ function PlayerPage() {
         </div>
       )}
 
+      <div className="refresh-ledger grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-4">
+        <div className="bg-card px-4 py-3">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Статус</p>
+          <p className="mt-1 flex items-center gap-2 text-sm">
+            <span className={cn("h-2 w-2 rounded-full", history.isFetching || refetching ? "animate-pulse bg-primary" : history.isError ? "bg-loss" : "bg-win")} />
+            {refetching ? "Запрос в Steam…" : history.isFetching ? "Проверяем архив…" : history.isError ? "Ошибка загрузки" : "История актуальна"}
+          </p>
+        </div>
+        <div className="bg-card px-4 py-3">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Последняя проверка</p>
+          <p className="tabular mt-1 text-sm">{history.dataUpdatedAt ? `${Math.max(0, Math.round((now - history.dataUpdatedAt) / 60000))} мин назад` : "—"} <span className="text-muted-foreground">· авто каждые 2 мин</span></p>
+        </div>
+        <div className="bg-card px-4 py-3">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Ручное обновление из Steam</p>
+          <p className={cn("tabular mt-1 text-sm", cooldownLeft ? "text-muted-foreground" : "text-win")}>{cooldownLeft ? `через ${Math.ceil(cooldownLeft / 60000)} мин` : "доступно сейчас"}</p>
+          <div className="mt-1.5 h-0.5 bg-secondary"><div className="h-full bg-primary transition-all" style={{ width: `${100 - (cooldownLeft / 3600_000) * 100}%` }} /></div>
+        </div>
+        <div className="bg-card px-4 py-3">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Последний матч</p>
+          <p className="mt-1 text-sm">{history.data?.[0] ? fmtAgo(history.data[0].start_time) : "—"} {history.data?.[0] && <SourceTag src={sources[history.data[0].match_id]} />}</p>
+        </div>
+      </div>
+
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview"><BookOpen className="h-4 w-4" />Обзор</TabsTrigger>
@@ -128,7 +192,7 @@ function PlayerPage() {
           <PlayerInsights history={history.data ?? []} badge={rank.data?.badge} />
         </TabsContent>
         <TabsContent value="matches" className="mt-4">
-          <MatchList matches={history.data ?? []} accountId={id} />
+          <MatchList matches={history.data ?? []} accountId={id} sources={sources} />
         </TabsContent>
         <TabsContent value="heroes" className="mt-4">
           <PlayerHeroes id={id} />
@@ -159,7 +223,13 @@ function streaks(ms: MatchHistoryEntry[]) {
 
 interface RowMeta { match_id: number; players: { account_id: number; hero_id: number; team: string; items?: { item_id: number; sold_time_s: number }[] }[] }
 
-function MatchList({ matches: all, accountId }: { matches: MatchHistoryEntry[]; accountId: number }) {
+function SourceTag({ src }: { src?: "steam" | "archive" }) {
+  return src === "steam"
+    ? <span title="Матч получен напрямую из Steam" className="ml-1 rounded-sm border border-primary/50 bg-primary/10 px-1 font-mono text-[9px] uppercase text-primary">Steam</span>
+    : <span title="Матч из архива Deadlock API" className="ml-1 rounded-sm border border-border px-1 font-mono text-[9px] uppercase text-muted-foreground">Архив</span>;
+}
+
+function MatchList({ matches: all, accountId, sources }: { matches: MatchHistoryEntry[]; accountId: number; sources: Record<number, "steam" | "archive"> }) {
   const [limit, setLimit] = useState(30);
   const [hero, setHero] = useState<number | "all">("all");
   const [res, setRes] = useState<"all" | "win" | "loss">("all");
@@ -252,7 +322,7 @@ function MatchList({ matches: all, accountId }: { matches: MatchHistoryEntry[]; 
                 {badges.map((b) => <span key={b} className="rounded-sm border border-primary/40 bg-primary/10 px-1.5 font-mono text-[9px] font-semibold uppercase text-primary">{b}</span>)}
               </p>
               <p className={cn("font-mono text-[10px] uppercase", won ? "text-win" : "text-loss")}>
-                {won ? "Победа" : "Поражение"} · <span className="text-muted-foreground">{m.game_mode === 4 ? "Street Brawl" : m.match_mode === 4 ? "Рейтинговый" : "Обычный"} · {fmtAgo(m.start_time)} · {fmtDuration(m.match_duration_s)}</span>
+                {won ? "Победа" : "Поражение"} · <span className="text-muted-foreground">{m.game_mode === 4 ? "Street Brawl" : m.match_mode === 4 ? "Рейтинговый" : "Обычный"} · {fmtAgo(m.start_time)} · {fmtDuration(m.match_duration_s)}</span><SourceTag src={sources[m.match_id]} />
               </p>
             </div>
             <div className="tabular text-right">
