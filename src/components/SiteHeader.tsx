@@ -2,7 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
   Activity, BarChart3, Calculator, Crown, GitCompare, Hammer, Home, LayoutGrid, Menu, Package, ScrollText, Swords, TrendingUp, Trophy, Tv, Users, X,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useRef, useState, type ReactNode } from "react";
 
 import { InkBackground } from "@/components/InkBackground";
@@ -13,6 +13,7 @@ import { PlayerSearch } from "@/components/PlayerSearch";
 import { SteamButton } from "@/components/SteamButton";
 import { startSteamLogin, useAuth, useMyProfile } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const GROUPS = [
   {
@@ -50,10 +51,10 @@ const GROUPS = [
 
 function Nav({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <nav className="space-y-6">
+    <nav className="space-y-5">
       {GROUPS.map((g) => (
         <div key={g.title}>
-          <p className="mb-2 border-b border-foreground/60 px-3 pb-1 font-display text-[11px] font-bold uppercase tracking-[0.25em]">{g.title}</p>
+          <p className="mb-2 border-b border-border px-3 pb-2 font-masthead text-[10px] font-semibold uppercase text-primary">{g.title}</p>
           <div className="space-y-0.5">
             {g.items.map((n) => (
               <Link
@@ -62,11 +63,11 @@ function Nav({ onNavigate }: { onNavigate?: () => void }) {
                 onClick={onNavigate}
                 activeOptions={{ exact: n.to === "/" }}
                 className="group flex items-center gap-3 border-l-2 border-transparent px-3 py-1.5 text-sm text-muted-foreground transition-all hover:translate-x-0.5 hover:text-foreground"
-                activeProps={{ className: "!border-primary !text-foreground font-bold italic" }}
+                activeProps={{ className: "!border-primary !text-primary bg-primary/10 font-semibold" }}
               >
                 <n.icon className="h-4 w-4" />
                 <span className="flex-1">{n.label}</span>
-                {"live" in n && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-loss" />}
+                {"live" in n && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-telemetry" />}
               </Link>
             ))}
           </div>
@@ -80,8 +81,8 @@ function Logo() {
   return (
     <Link to="/" className="flex items-center gap-2.5">
       <span className="leading-none">
-        <span className="font-masthead block text-[28px]">The Deadlock</span>
-        <span className="block border-t border-foreground pt-0.5 text-[9px] font-bold uppercase tracking-[0.35em] text-primary">Stats · Gazette</span>
+        <span className="font-masthead block text-[20px] text-primary">Deadlocked</span>
+        <span className="block border-t border-border pt-1 text-[9px] font-medium uppercase text-muted-foreground">The Gazette · Est. 1930</span>
       </span>
     </Link>
   );
@@ -112,41 +113,49 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
   const path = useLocation({ select: (l) => l.pathname });
+  const reduce = useReducedMotion();
   useRevealCards(mainRef);
   return (
     <div className="relative min-h-screen lg:pl-60">
       <InkBackground />
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r-4 border-double border-foreground/70 bg-sidebar px-3 py-5 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-sidebar px-3 py-6 lg:flex">
         <div className="px-2"><Logo /></div>
         <div className="mt-8 flex-1 overflow-y-auto"><Nav /></div>
         <p className="px-3 text-[10px] leading-relaxed text-muted-foreground/70">Данные deadlock-api.com · Фан-проект, не связан с Valve</p>
       </aside>
 
-      <header className="sticky top-0 z-30 border-b-4 border-double border-foreground/70 bg-background/85 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 lg:px-8">
-          <button className="lg:hidden" onClick={() => setOpen(true)} aria-label="Меню"><Menu /></button>
+          <Button variant="ghost" size="icon" className="shrink-0 lg:hidden" onClick={() => setOpen(true)} aria-label="Меню"><Menu /></Button>
           <div className="lg:hidden"><Logo /></div>
           <Dateline />
-          <div className="ml-auto w-full max-w-md"><PlayerSearch compact /></div>
+          <div className="ml-auto hidden w-full max-w-sm sm:block"><PlayerSearch compact /></div>
           <Account />
         </div>
       </header>
 
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+      <AnimatePresence>{open && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-background/80 backdrop-blur" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-64 border-r border-border bg-sidebar p-4">
-            <div className="mb-6 flex items-center justify-between"><Logo /><button onClick={() => setOpen(false)} aria-label="Закрыть"><X /></button></div>
+          <motion.aside initial={{ x: -256 }} animate={{ x: 0 }} exit={{ x: -256 }} className="absolute inset-y-0 left-0 w-64 overflow-y-auto border-r border-border bg-sidebar p-4">
+            <div className="mb-6 flex items-center justify-between"><Logo /><Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Закрыть"><X /></Button></div>
             <Nav onNavigate={() => setOpen(false)} />
-          </aside>
-        </div>
-      )}
+          </motion.aside>
+        </motion.div>
+      )}</AnimatePresence>
 
       <main ref={mainRef} className={cn("relative z-10 mx-auto min-h-[80vh] max-w-7xl px-4 py-8 lg:px-8")}>
-        <motion.div key={path} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
+        <motion.div key={path} initial={reduce ? false : { opacity: 0, y: 10, filter: "blur(4px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
           {children}
         </motion.div>
       </main>
+      <footer className="relative z-10 border-t border-border bg-sidebar px-4 py-8 lg:px-8">
+        <div className="mx-auto grid max-w-7xl gap-6 text-xs text-muted-foreground sm:grid-cols-3">
+          <div><p className="mb-3 font-masthead text-sm text-primary">The Deadlocked Gazette</p><p>Независимое издание о Deadlock.<br />Фан-проект. Не связан с Valve.</p></div>
+          <div className="sm:border-l sm:border-border sm:pl-6"><p className="mb-3 font-masthead text-primary">Архив редакции</p><div className="flex flex-col gap-2"><Link to="/patches" className="hover:text-primary">Хроника патчей</Link><Link to="/heroes" className="hover:text-primary">Досье героев</Link><Link to="/streams" className="hover:text-primary">Прямые эфиры</Link></div></div>
+          <div className="sm:border-l sm:border-border sm:pl-6"><p className="mb-3 font-masthead text-primary">Источники</p><a href="https://deadlock-api.com" target="_blank" rel="noreferrer" className="hover:text-primary">Deadlock API ↗</a><p className="mt-2">Deadlock и изображения героев принадлежат Valve. Иллюстрация города создана для этого издания.</p></div>
+        </div>
+      </footer>
     </div>
   );
 }

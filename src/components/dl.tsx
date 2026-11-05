@@ -6,6 +6,8 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { api, heroesQuery, itemsQuery, ranksQuery, type Hero, type Item, type SteamProfile } from "@/lib/api";
 import { splitBadge } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { motion, useReducedMotion } from "framer-motion";
 
 export function useHeroMap() {
   const { data } = useQuery(heroesQuery);
@@ -19,8 +21,8 @@ export function useItemMap() {
 
 export function PageHeader({ eyebrow, title, children }: { eyebrow?: string; title: ReactNode; children?: ReactNode }) {
   return (
-    <div className="mb-8 border-b border-foreground/80 pb-5">
-      {eyebrow && <p className="mb-3 border-y border-foreground/70 py-1 text-[11px] font-bold uppercase tracking-[0.3em] text-primary">{eyebrow}</p>}
+    <div className="mb-8 border-b border-primary/40 pb-5">
+      {eyebrow && <p className="mb-3 flex items-center gap-3 text-[11px] font-medium uppercase text-primary"><span className="h-px w-8 bg-primary" />{eyebrow}<span className="text-primary/60">◆</span></p>}
       <h1 className="font-display text-4xl font-black leading-[1.05] md:text-5xl">{title}</h1>
       {children && <div className="mt-3 max-w-2xl italic text-muted-foreground">{children}</div>}
     </div>
@@ -29,7 +31,7 @@ export function PageHeader({ eyebrow, title, children }: { eyebrow?: string; tit
 
 export function SectionTitle({ children, right }: { children: ReactNode; right?: ReactNode }) {
   return (
-    <div className="mb-4 flex items-end justify-between gap-4 border-b border-foreground/60 pb-2">
+    <div className="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-border pb-3">
       <h2 className="font-display text-xl font-bold">{children}</h2>
       {right}
     </div>
@@ -164,17 +166,21 @@ export function Empty({ children }: { children: ReactNode }) {
 }
 
 export function Chip({ active, onClick, children }: { active?: boolean; onClick?: () => void; children: ReactNode }) {
+  const reduce = useReducedMotion();
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      aria-pressed={!!active}
       onClick={onClick}
       className={cn(
-        "rounded-full border px-3 py-1 text-sm transition-colors",
-        active ? "border-primary/60 bg-primary/15 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground",
+        "relative overflow-hidden rounded-sm border px-3 py-1 text-sm transition-colors",
+        active ? "border-primary/60 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground",
       )}
     >
-      {children}
-    </button>
+      {active && <motion.span initial={reduce ? false : { opacity: 0, scaleX: 0.8 }} animate={{ opacity: 1, scaleX: 1 }} className="absolute inset-0 bg-primary/15" />}
+      <span className="relative inline-flex items-center gap-1">{children}</span>
+    </Button>
   );
 }
 
@@ -289,7 +295,7 @@ export function PlayerRank({ accountId, size = 26 }: { accountId: number; size?:
     queryFn: () => import("@/lib/potentialRank").then((m) => m.fetchPotentialBadge(accountId)),
     enabled: real.isFetched && !has, staleTime: 86_400_000, retry: false,
   });
-  const b = has ? real.data!.badge : pot.data;
+  const b = has ? real.data?.badge : pot.data;
   if (!b) return null;
   return <span title={has ? undefined : "Потенциальный ранг по последним матчам игрока"}><RankBadge badge={b} size={size} showName={false} potential={!has} /></span>;
 }
