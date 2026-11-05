@@ -13,6 +13,7 @@ const TIP_FIX = `
 .block-prop-item{min-width:0!important;flex:1 1 45%!important;overflow:visible!important}
 .mod-info-label{display:block!important;white-space:normal!important}
 .mod-info-label span:not(.keybind):not(.InlineKey):not(.inline-attribute-icon):not(.InlineAttributeIcon){display:inline!important;width:auto!important;max-width:none!important;flex:none!important;white-space:normal!important}
+.mod-info-label panel{display:inline!important;width:auto!important;height:auto!important;background:none!important;-webkit-mask:none!important;mask:none!important;vertical-align:baseline!important}
 .mod-info-label p,.mod-info-label div{display:block!important;width:auto!important;max-width:100%!important}
 .block-prop-item .attribute-name{white-space:normal!important;overflow-wrap:anywhere}
 `;
