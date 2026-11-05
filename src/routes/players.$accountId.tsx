@@ -3,7 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ExternalLink, Activity, Swords, Users, Crosshair, BookOpen, GitCompare } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { Empty, ErrorBox, useSteamProfiles, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
+import { Empty, ErrorBox, useSteamProfiles, useItemMap, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
 import { FollowButton } from "@/components/FollowButton";
 import { PotentialRank } from "@/components/PotentialRank";
 import { PlayerInsights } from "@/components/PlayerInsights";
@@ -126,7 +126,9 @@ function streaks(ms: MatchHistoryEntry[]) {
   return { cur, win: first, best };
 }
 
-function MatchList({ matches: all }: { matches: MatchHistoryEntry[] }) {
+interface RowMeta { match_id: number; players: { account_id: number; hero_id: number; team: string; items?: { item_id: number; sold_time_s: number }[] }[] }
+
+function MatchList({ matches: all, accountId }: { matches: MatchHistoryEntry[]; accountId: number }) {
   const [limit, setLimit] = useState(30);
   const [hero, setHero] = useState<number | "all">("all");
   const [res, setRes] = useState<"all" | "win" | "loss">("all");
@@ -150,6 +152,23 @@ function MatchList({ matches: all }: { matches: MatchHistoryEntry[] }) {
     return true;
   });
   const st = streaks(all);
+  const pageIds = matches.slice(0, limit).map((m) => m.match_id);
+  const metaQ = useQuery({
+    queryKey: ["match-rows-meta", pageIds.join(",")],
+    enabled: pageIds.length > 0,
+    staleTime: Infinity,
+    retry: false,
+    queryFn: async () => {
+      const out = new Map<number, RowMeta>();
+      for (let i = 0; i < pageIds.length; i += 30) {
+        const chunk = pageIds.slice(i, i + 30);
+        const r = await api<RowMeta[]>("/v1/matches/metadata", { include_player_info: true, include_player_items: true, match_ids: chunk.join(","), limit: chunk.length });
+        r.forEach((x) => out.set(x.match_id, x));
+      }
+      return out;
+    },
+  });
+  const items = useItemMap();
   if (!all.length) return <Empty>Матчей пока нет</Empty>;
   const chip = (on: boolean) => cn("rounded-full border px-3 py-1 text-xs", on ? "border-primary/60 bg-primary/15 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground");
   return (
@@ -178,44 +197,60 @@ function MatchList({ matches: all }: { matches: MatchHistoryEntry[] }) {
         if (m.player_deaths === 0 && m.player_kills + m.player_assists >= 5) badges.push("Неудержимый");
         else if (k >= 6) badges.push("Высокий KDA");
         if (m.match_duration_s && (m.net_worth / (m.match_duration_s / 60)) >= 1500) badges.push("Топ-фарм");
+        const meta = metaQ.data?.get(m.match_id);
+        const me = meta?.players.find((p) => p.account_id === accountId);
+        const build = (me?.items ?? []).filter((it) => !it.sold_time_s && items.get(it.item_id)?.type === "upgrade").map((it) => items.get(it.item_id)!).filter((it, i, a) => a.findIndex((x) => x.id === it.id) === i).slice(-6);
+        const myTeam = me?.team;
+        const allies = meta?.players.filter((p) => p.team === myTeam) ?? [];
+        const foes = meta?.players.filter((p) => p.team !== myTeam) ?? [];
         return (
           <Link
             key={m.match_id}
             to="/matches/$matchId"
             params={{ matchId: String(m.match_id) }}
-            className={cn("panel panel-hover grid grid-cols-[4px_auto_1fr_auto] items-center gap-4 overflow-hidden p-3 pl-0 md:grid-cols-[4px_auto_1fr_repeat(5,auto)]")}
+            className="panel panel-hover grid grid-cols-[4px_auto_1fr_auto] items-center gap-4 overflow-hidden p-3 pl-0 lg:grid-cols-[4px_auto_minmax(140px,1fr)_auto_auto_auto_auto_auto]"
           >
             <span className={cn("h-full", won ? "bg-win" : "bg-loss")} />
-            <HeroIcon heroId={m.hero_id} size={44} />
-            <div>
-              <p className="flex flex-wrap items-center gap-1.5 font-medium">
-                {heroes.get(m.hero_id)?.name}
-                {badges.map((b) => <span key={b} className="rounded border border-primary/40 bg-primary/10 px-1.5 text-[10px] font-semibold uppercase text-primary">{b}</span>)}
-              </p>
-              <p className={cn("text-xs", won ? "text-win" : "text-loss")}>
-                {won ? "Победа" : "Поражение"} · <span className="text-muted-foreground">{m.game_mode === 4 ? "Street Brawl" : m.match_mode === 4 ? "Рейтинговый" : "Обычный"} · {fmtAgo(m.start_time)}</span>
-              </p>
+            <div className="relative">
+              <HeroIcon heroId={m.hero_id} size={48} />
+              <span className="absolute -bottom-1 -right-1 rounded-sm border border-border bg-background px-1 font-mono text-[9px]">{m.hero_level}</span>
             </div>
-            <div className="hidden md:block">
-              {g && <span title={`${g.score.toFixed(0)}/100`} className={cn("inline-grid h-9 w-10 place-items-center rounded-md border border-border bg-secondary font-display text-sm font-extrabold", gradeTone(g.grade))}>{g.grade}</span>}
+            <div className="min-w-0">
+              <p className="flex flex-wrap items-center gap-1.5 font-display font-semibold">
+                {heroes.get(m.hero_id)?.name}
+                {badges.map((b) => <span key={b} className="rounded-sm border border-primary/40 bg-primary/10 px-1.5 font-mono text-[9px] font-semibold uppercase text-primary">{b}</span>)}
+              </p>
+              <p className={cn("font-mono text-[10px] uppercase", won ? "text-win" : "text-loss")}>
+                {won ? "Победа" : "Поражение"} · <span className="text-muted-foreground">{m.game_mode === 4 ? "Street Brawl" : m.match_mode === 4 ? "Рейтинговый" : "Обычный"} · {fmtAgo(m.start_time)} · {fmtDuration(m.match_duration_s)}</span>
+              </p>
             </div>
             <div className="tabular text-right">
-              <p>
-                {m.player_kills}/<span className="text-loss">{m.player_deaths}</span>/{m.player_assists}
+              <p className="font-display text-lg font-bold">
+                {m.player_kills}<span className="text-muted-foreground">/</span><span className="text-loss">{m.player_deaths}</span><span className="text-muted-foreground">/</span>{m.player_assists}
               </p>
-              <p className="text-xs text-muted-foreground">KDA {kda(m.player_kills, m.player_deaths, m.player_assists)}</p>
+              <p className="font-mono text-[10px] text-muted-foreground">KDA {kda(m.player_kills, m.player_deaths, m.player_assists)} · {fmtK(m.net_worth)} душ</p>
             </div>
-            <div className="tabular hidden text-right md:block">
-              <p className="text-primary">{fmtK(m.net_worth)}</p>
-              <p className="text-xs text-muted-foreground">души</p>
+            <div className="hidden lg:block">
+              {g && <span title={`${g.score.toFixed(0)}/100`} className={cn("inline-grid h-10 w-10 place-items-center border border-primary/40 bg-secondary font-display text-base font-black", gradeTone(g.grade))}>{g.grade}</span>}
             </div>
-            <div className="tabular hidden text-right md:block">
+            <div className="hidden w-[168px] grid-cols-6 gap-0.5 lg:grid">
+              {Array.from({ length: 6 }).map((_, i) => {
+                const it = build[i];
+                return it ? <img key={i} src={it.shop_image_webp ?? it.shop_image ?? it.image_webp ?? it.image} alt={it.name} title={it.name} loading="lazy" className="h-7 w-7 border border-border bg-secondary object-contain" />
+                  : <span key={i} className={cn("h-7 w-7 border border-dashed border-border/60", !meta && metaQ.isLoading && "animate-pulse bg-secondary")} />;
+              })}
+            </div>
+            <div className="hidden grid-cols-[auto_auto] gap-x-2 gap-y-0.5 xl:grid">
+              {[allies, foes].map((team, ti) => (
+                <div key={ti} className="flex gap-0.5">
+                  {team.length ? team.map((p) => <HeroIcon key={p.account_id} heroId={p.hero_id} size={20} className={cn(p.account_id === accountId && "ring-1 ring-primary", ti === 1 && "opacity-70")} />)
+                    : Array.from({ length: 6 }).map((_, i) => <span key={i} className="h-5 w-5 bg-secondary/60" />)}
+                </div>
+              ))}
+            </div>
+            <div className="tabular hidden text-right lg:block">
               <p>{m.last_hits}</p>
-              <p className="text-xs text-muted-foreground">крипов</p>
-            </div>
-            <div className="tabular hidden text-right md:block">
-              <p>{fmtDuration(m.match_duration_s)}</p>
-              <p className="text-xs text-muted-foreground">#{m.match_id}</p>
+              <p className="font-mono text-[10px] text-muted-foreground">#{m.match_id}</p>
             </div>
           </Link>
         );
