@@ -14,6 +14,8 @@ export const Route = createFileRoute("/ranks")({
       { name: "description", content: "Все ранги Deadlock и распределение игроков по ним." },
       { property: "og:title", content: "Ранги Deadlock" },
       { property: "og:description", content: "Распределение игроков Deadlock по рангам." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: RanksPage,

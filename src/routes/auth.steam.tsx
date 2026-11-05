@@ -15,6 +15,8 @@ export const Route = createFileRoute("/auth/steam")({
       { name: "description", content: "Завершение входа через Steam." },
       { property: "og:title", content: "Вход через Steam" },
       { property: "og:description", content: "Завершение входа через Steam." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SteamReturn,

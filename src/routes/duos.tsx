@@ -7,6 +7,7 @@ import { Empty, HeroIcon, Loading, PageHeader, useHeroMap } from "@/components/d
 import { api } from "@/lib/api";
 import { fmtInt, fmtK } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { RollingNumber } from "@/components/GazetteMotion";
 
 export const Route = createFileRoute("/duos")({
   head: () => ({
@@ -138,8 +139,9 @@ function Duos() {
   const tips = useMemo(() => {
     if (!matchups.length) return { us: [], them: [] };
     const us: string[] = [], them: string[] = [];
-    const worst = [...matchups].sort((x, y) => x.wr - y.wr)[0]!;
-    const best = [...matchups].sort((x, y) => y.wr - x.wr)[0]!;
+    const worst = [...matchups].sort((x, y) => x.wr - y.wr)[0];
+    const best = [...matchups].sort((x, y) => y.wr - x.wr)[0];
+    if (!worst || !best) return { us, them };
     if (worst.wr < 0.48) { us.push(`${name(worst.a)} проигрывает ${name(worst.e)} (${(worst.wr * 100).toFixed(1)}%) — держитесь ближе к союзнику и не размениваетесь 1 на 1.`); them.push(`${name(worst.e)}, давите на ${name(worst.a)} — это ваш самый выгодный матчап.`); }
     if (best.wr > 0.52) { us.push(`${name(best.a)} сильнее ${name(best.e)} — ищите размены и фокус именно на нём.`); them.push(`${name(best.e)}, избегайте ${name(best.a)} в одиночку, фармите под башней.`); }
     const avg = (f: (m: (typeof matchups)[0]) => number) => matchups.reduce((s, m) => s + f(m), 0) / matchups.length;
@@ -166,20 +168,20 @@ function Duos() {
       <PageHeader eyebrow="Мета" title="Дуо-линии">Двое ваших героев против двух соперников на одной линии — данные за 30 дней.</PageHeader>
       <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
         {[0, 1].map((side) => (
-          <section key={side} className={cn("panel space-y-3 p-4", side === 0 ? "border-amber-team/40 md:order-1" : "border-sapphire-team/40 md:order-3")}>
+          <section key={side} className={cn("gazette-frame space-y-4 border-t-2 bg-card/50 p-5", side === 0 ? "border-amber-team/40 md:order-1" : "border-sapphire-team/40 md:order-3")}>
             <h2 className={cn("font-display text-sm uppercase tracking-wider", side === 0 ? "text-amber-team" : "text-sapphire-team")}>{side === 0 ? "Ваша пара" : "Пара соперников"}</h2>
             {[side * 2, side * 2 + 1].map((i) => (
               <HeroPicker key={i} value={sel[i] ?? null} onChange={set(i)} exclude={chosen} tone={side === 0 ? "amber" : "sapphire"} />
             ))}
           </section>
         ))}
-        <div className="font-display text-2xl font-bold text-muted-foreground md:order-2">VS</div>
+        <div className="tier-seal mx-auto grid h-14 w-14 place-items-center text-xl font-bold md:order-2">VS</div>
       </div>
 
       {allies.length < 2 ? <Empty>Выберите двух героев своей пары (и соперников — для разбора линии).</Empty> : ours.isLoading || counters.isLoading ? <Loading /> : (
         <>
           {verdict && (
-            <section className="panel p-5">
+            <section className="border-y border-border py-6">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">{allies.map((a) => <HeroIcon key={a} heroId={a} size={48} />)}</div>
@@ -196,7 +198,7 @@ function Duos() {
                 <div className="h-full bg-amber-team transition-all" style={{ width: `${verdict.score}%` }} />
                 <div className="absolute inset-y-0 left-1/2 w-px bg-background" />
               </div>
-              <div className="mt-1 flex justify-between text-xs text-muted-foreground"><span>Сила линии {verdict.score.toFixed(0)}</span><span>{(100 - verdict.score).toFixed(0)}</span></div>
+              <div className="mt-1 flex justify-between text-xs text-muted-foreground"><span>Сила линии <RollingNumber value={verdict.score} /></span><span><RollingNumber value={100 - verdict.score} /></span></div>
 
               <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
                 <Tile label="Винрейт пары" value={usWr != null ? `${(usWr * 100).toFixed(1)}%` : "—"} good={usWr != null && usWr >= 0.5} sub={ours.data ? `${fmtInt(ours.data.matches)} матчей` : "по матчапам"} />

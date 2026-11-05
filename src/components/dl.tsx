@@ -6,6 +6,9 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { api, heroesQuery, itemsQuery, ranksQuery, type Hero, type Item, type SteamProfile } from "@/lib/api";
 import { splitBadge } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { motion, useReducedMotion } from "framer-motion";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export function useHeroMap() {
   const { data } = useQuery(heroesQuery);
@@ -19,8 +22,8 @@ export function useItemMap() {
 
 export function PageHeader({ eyebrow, title, children }: { eyebrow?: string; title: ReactNode; children?: ReactNode }) {
   return (
-    <div className="mb-8 border-b border-foreground/80 pb-5">
-      {eyebrow && <p className="mb-3 border-y border-foreground/70 py-1 text-[11px] font-bold uppercase tracking-[0.3em] text-primary">{eyebrow}</p>}
+    <div className="mb-8 border-b border-primary/40 pb-5">
+      {eyebrow && <p className="mb-3 flex items-center gap-3 text-[11px] font-medium uppercase text-primary"><span className="h-px w-8 bg-primary" />{eyebrow}<span className="text-primary/60">◆</span></p>}
       <h1 className="font-display text-4xl font-black leading-[1.05] md:text-5xl">{title}</h1>
       {children && <div className="mt-3 max-w-2xl italic text-muted-foreground">{children}</div>}
     </div>
@@ -29,7 +32,7 @@ export function PageHeader({ eyebrow, title, children }: { eyebrow?: string; tit
 
 export function SectionTitle({ children, right }: { children: ReactNode; right?: ReactNode }) {
   return (
-    <div className="mb-4 flex items-end justify-between gap-4 border-b border-foreground/60 pb-2">
+    <div className="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-border pb-3">
       <h2 className="font-display text-xl font-bold">{children}</h2>
       {right}
     </div>
@@ -164,35 +167,31 @@ export function Empty({ children }: { children: ReactNode }) {
 }
 
 export function Chip({ active, onClick, children }: { active?: boolean; onClick?: () => void; children: ReactNode }) {
+  const reduce = useReducedMotion();
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      aria-pressed={!!active}
       onClick={onClick}
       className={cn(
-        "rounded-full border px-3 py-1 text-sm transition-colors",
-        active ? "border-primary/60 bg-primary/15 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground",
+        "relative overflow-hidden rounded-sm border px-3 py-1 text-sm transition-colors",
+        active ? "border-primary/60 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground",
       )}
     >
-      {children}
-    </button>
+      {active && <motion.span initial={reduce ? false : { opacity: 0, scaleX: 0.8 }} animate={{ opacity: 1, scaleX: 1 }} className="absolute inset-0 bg-primary/15" />}
+      <span className="relative inline-flex items-center gap-1">{children}</span>
+    </Button>
   );
 }
 
 export function HeroSelect({ value, onChange, allowAll = true }: { value: number | null; onChange: (v: number | null) => void; allowAll?: boolean }) {
   const { data } = useQuery(heroesQuery);
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const hero = data?.find((h) => h.id === value);
   return (
-    <select
-      value={value ?? ""}
-      onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
-      className="h-10 rounded-md border border-input bg-secondary px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-    >
-      {allowAll && <option value="">Все герои</option>}
-      {data?.map((h) => (
-        <option key={h.id} value={h.id}>
-          {h.name}
-        </option>
-      ))}
-    </select>
+    <Popover open={open} onOpenChange={setOpen}><PopoverTrigger asChild><Button variant="outline" className="h-10 justify-between bg-secondary">{hero && <HeroIcon heroId={hero.id} size={26} />}<span>{hero?.name ?? "Все герои"}</span><ChevronDown /></Button></PopoverTrigger><PopoverContent align="start" className="w-80 max-w-[90vw] border-primary/40 bg-popover p-3"><input aria-label="Поиск героя" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Имя в досье…" className={inputClass} />{allowAll && <Button variant="ghost" className="mt-2 w-full" onClick={() => { onChange(null); setOpen(false); }}>Все герои</Button>}<div className="mt-3 grid max-h-72 grid-cols-4 gap-1 overflow-y-auto">{data?.filter((h) => h.name.toLowerCase().includes(search.toLowerCase())).map((h) => <Button key={h.id} variant="ghost" className={cn("h-auto flex-col gap-1 p-2", h.id === value && "bg-primary/15 text-primary")} onClick={() => { onChange(h.id); setOpen(false); }}><HeroIcon heroId={h.id} size={40} /><span className="w-full truncate text-[10px]">{h.name}</span></Button>)}</div></PopoverContent></Popover>
   );
 }
 
@@ -289,7 +288,7 @@ export function PlayerRank({ accountId, size = 26 }: { accountId: number; size?:
     queryFn: () => import("@/lib/potentialRank").then((m) => m.fetchPotentialBadge(accountId)),
     enabled: real.isFetched && !has, staleTime: 86_400_000, retry: false,
   });
-  const b = has ? real.data!.badge : pot.data;
+  const b = has ? real.data?.badge : pot.data;
   if (!b) return null;
   return <span title={has ? undefined : "Потенциальный ранг по последним матчам игрока"}><RankBadge badge={b} size={size} showName={false} potential={!has} /></span>;
 }

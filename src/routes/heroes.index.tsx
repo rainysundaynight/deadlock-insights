@@ -8,6 +8,7 @@ import { api, heroesQuery, type HeroAnalytics } from "@/lib/api";
 import { fmtInt, fmtK, fmtPct, kda, winrate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { HeroRankCompare } from "@/components/RankMeta";
+import { LayoutItem } from "@/components/GazetteMotion";
 
 export const Route = createFileRoute("/heroes/")({
   head: () => ({
@@ -16,6 +17,8 @@ export const Route = createFileRoute("/heroes/")({
       { name: "description", content: "Актуальная мета героев Deadlock: винрейт, пикрейт, KDA по рангам и периодам." },
       { property: "og:title", content: "Герои Deadlock — винрейт и пикрейт" },
       { property: "og:description", content: "Мета героев Deadlock по рангам и периодам." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HeroesPage,
@@ -99,15 +102,16 @@ function HeroesPage() {
           {[...(heroList.data ?? [])].filter((h) => !rows.length || rows.some((r) => r.hero_id === h.id)).sort((a, b) => rows.findIndex((r) => r.hero_id === a.id) - rows.findIndex((r) => r.hero_id === b.id)).map((h) => {
             const s = rows.find((r) => r.hero_id === h.id);
             return (
-              <Link key={h.id} to="/heroes/$heroId" params={{ heroId: String(h.id) }} className="panel panel-hover group overflow-hidden">
-                <div className="aspect-[3/4] overflow-hidden bg-muted">
+              <LayoutItem key={h.id}><Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} className="panel panel-hover gazette-frame group block overflow-hidden">
+                <div className="flex justify-between border-b border-border px-3 py-2 font-mono text-[9px] uppercase text-primary"><span>Досье</span><span>№ {String(h.id).padStart(3, "0")}</span></div>
+                <div className="dossier-art aspect-[3/4] overflow-hidden">
                   <img src={h.images.icon_hero_card_webp ?? h.images.icon_hero_card} alt={h.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                 </div>
                 <div className="p-3">
                   <p className="font-display uppercase">{h.name}</p>
-                  {s && <p className={cn("tabular text-xs", s.wr >= 0.5 ? "text-win" : "text-loss")}>{fmtPct(s.wr)}</p>}
+                  {s && <><p className={cn("tabular mt-1 text-sm", s.wr >= 0.5 ? "text-win" : "text-loss")}>{fmtPct(s.wr)} <span className="text-[9px] text-muted-foreground">ПОБЕД</span></p><div className="mt-2 flex justify-between border-t border-border pt-2 text-[9px] text-muted-foreground"><span>{fmtInt(s.matches)} игр</span><span>KDA {s.kdaV.toFixed(1)}</span></div></>}
                 </div>
-              </Link>
+              </Link></LayoutItem>
             );
           })}
         </div>

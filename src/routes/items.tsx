@@ -15,6 +15,8 @@ export const Route = createFileRoute("/items")({
       { name: "description", content: "Все предметы магазина Deadlock: оружие, живучесть, духовность — с ценой и винрейтом." },
       { property: "og:title", content: "Предметы Deadlock" },
       { property: "og:description", content: "Каталог предметов Deadlock с винрейтом." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ItemsPage,

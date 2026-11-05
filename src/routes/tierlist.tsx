@@ -7,6 +7,7 @@ import { api, type HeroAnalytics } from "@/lib/api";
 import { fmtInt } from "@/lib/format";
 import { buildTierList, type Tier } from "@/lib/tier";
 import { cn } from "@/lib/utils";
+import { LayoutGroup, motion } from "framer-motion";
 
 export const Route = createFileRoute("/tierlist")({
   head: () => ({
@@ -15,6 +16,8 @@ export const Route = createFileRoute("/tierlist")({
       { name: "description", content: "Актуальный тир-лист героев Deadlock по рангам: винрейт, популярность, тиры S–D." },
       { property: "og:title", content: "Тир-лист героев Deadlock" },
       { property: "og:description", content: "Кто сильнее всех в текущей мете Deadlock — по данным реальных матчей." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: TierPage,
@@ -60,26 +63,26 @@ function TierPage() {
         </span>
       </div>
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} /> : view === "tiers" ? (
-        <div className="space-y-3">
+        <LayoutGroup><div className="space-y-6">
           {(["S", "A", "B", "C", "D"] as Tier[]).map((t) => {
             const list = rows.filter((r) => r.tier === t);
             if (!list.length) return null;
             return (
-              <div key={t} className="panel flex overflow-hidden">
-                <div className={cn("grid w-20 shrink-0 place-items-center font-display text-4xl font-extrabold", TIER_STYLE[t])}>{t}</div>
+              <div key={t} className="flex border-t border-primary/30 pt-4">
+                <div className="flex w-16 shrink-0 items-start justify-center pt-4"><span className={cn("tier-seal grid h-11 w-11 place-items-center text-2xl font-bold", t === "S" && "tier-seal-high")}>{t}</span></div>
                 <div className="flex flex-1 flex-wrap gap-3 p-4">
                   {list.map((r) => (
-                    <Link key={r.hero_id} to="/heroes/$heroId" params={{ heroId: String(r.hero_id) }} className="group w-20 text-center">
-                      <HeroIcon heroId={r.hero_id} size={64} className="mx-auto rounded-xl transition-transform group-hover:scale-105 group-hover:border-primary" />
+                    <motion.div layout layoutId={`tier-hero-${r.hero_id}`} key={r.hero_id}><Link to="/heroes/$heroId" params={{ heroId: String(r.hero_id) }} className="gazette-frame group block w-24 bg-card p-2 text-center">
+                      <HeroIcon heroId={r.hero_id} size={64} className="mx-auto rounded-sm transition-transform group-hover:scale-105 group-hover:border-primary" />
                       <p className="mt-1 truncate text-xs font-medium">{heroes.get(r.hero_id)?.name}</p>
                       <p className={cn("tabular text-[11px]", r.winrate >= 0.5 ? "text-win" : "text-loss")}>{(r.winrate * 100).toFixed(1)}%</p>
-                    </Link>
+                    </Link></motion.div>
                   ))}
                 </div>
               </div>
             );
           })}
-        </div>
+        </div></LayoutGroup>
       ) : (
         <div className="panel overflow-x-auto">
           <table className="w-full text-sm">

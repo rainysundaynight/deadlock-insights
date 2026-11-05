@@ -15,6 +15,8 @@ export const Route = createFileRoute("/leaderboard")({
       { name: "description", content: "Официальный лидерборд Deadlock по регионам и героям." },
       { property: "og:title", content: "Лидерборд Deadlock" },
       { property: "og:description", content: "Топ игроков Deadlock по регионам и героям." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: LeaderboardPage,

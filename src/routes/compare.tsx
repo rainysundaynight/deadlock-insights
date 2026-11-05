@@ -25,6 +25,8 @@ export const Route = createFileRoute("/compare")({
       { name: "description", content: "Сравните двух игроков Deadlock: ранг, винрейт, KDA, фарм, стиль игры и любимых героев." },
       { property: "og:title", content: "Сравнение игроков Deadlock" },
       { property: "og:description", content: "Два профиля Deadlock бок о бок." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: ComparePage,

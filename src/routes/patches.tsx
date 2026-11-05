@@ -14,6 +14,8 @@ export const Route = createFileRoute("/patches")({
       { name: "description", content: "Последние обновления и патчноуты Deadlock." },
       { property: "og:title", content: "Патчи Deadlock" },
       { property: "og:description", content: "Последние изменения в Deadlock." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PatchesPage,
