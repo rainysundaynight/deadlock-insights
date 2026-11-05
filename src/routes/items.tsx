@@ -1,6 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
+
+const LazyCard = lazy(() => import("@/components/GameItemCard"));
+const LazyProvider = lazy(() => import("@/components/GameItemCard").then((m) => ({ default: m.GameItemsProvider })));
+function useHydratedFlag() { const [h, setH] = useState(false); useEffect(() => setH(true), []); return h; }
+function MaybeProvider({ on, children }: { on: boolean; children: ReactNode }) {
+  return on ? <Suspense fallback={children}><LazyProvider>{children}</LazyProvider></Suspense> : <>{children}</>;
+}
 
 import { Chip, ErrorBox, Loading, PageHeader, WinrateBar, inputClass } from "@/components/dl";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -50,9 +57,10 @@ function ItemsPage() {
     [items.data, slot, q],
   );
   const tiers = [1, 2, 3, 4];
+  const hydrated = useHydratedFlag();
 
   return (
-    <div>
+    <MaybeProvider on={hydrated}><div>
       <PageHeader eyebrow="Магазин" title="Предметы">Нажмите на предмет, чтобы увидеть описание и статистику за 14 дней.</PageHeader>
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <Chip active={!slot} onClick={() => setSlot(null)}>Все</Chip>
@@ -73,10 +81,16 @@ function ItemsPage() {
                     const wr = s ? winrate(s.wins, s.matches) : null;
                     return (
                       <button key={i.id} onClick={() => setOpen(i)} className={cn("panel panel-hover flex flex-col items-center gap-1 p-2 text-center")}>
-                        <span className={cn("grid h-14 w-14 place-items-center rounded-md border", slotTone[i.item_slot_type ?? ""])}>
-                          <img src={i.shop_image_webp ?? i.image_webp} alt="" className="h-10 w-10 object-contain" loading="lazy" />
-                        </span>
-                        <span className="line-clamp-2 text-xs leading-tight">{i.name}</span>
+                        {hydrated ? (
+                          <Suspense fallback={<span className="h-24 w-full" />}><LazyCard itemId={i.id} data={i} /></Suspense>
+                        ) : (
+                          <>
+                            <span className={cn("grid h-14 w-14 place-items-center rounded-md border", slotTone[i.item_slot_type ?? ""])}>
+                              <img src={i.shop_image_webp ?? i.image_webp} alt="" className="h-10 w-10 object-contain" loading="lazy" />
+                            </span>
+                            <span className="line-clamp-2 text-xs leading-tight">{i.name}</span>
+                          </>
+                        )}
                         {wr != null && <span className={cn("tabular text-[10px]", wr >= 0.5 ? "text-win" : "text-loss")}>{(wr * 100).toFixed(1)}%</span>}
                       </button>
                     );
@@ -115,6 +129,6 @@ function ItemsPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </div></MaybeProvider>
   );
 }
