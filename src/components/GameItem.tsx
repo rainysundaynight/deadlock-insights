@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 const LazyCard = lazy(() => import("@/components/GameItemCard"));
 
 /** Deadlock UI item (client-only) with the original ui.deadlock-api.com tooltip on hover. */
-export function GameItem({ item, size = 72, variant = "card", className, dim }: { item: Item; size?: number; variant?: "card" | "image"; className?: string; dim?: boolean; hint?: boolean }) {
+export function GameItem({ item, size = 72, variant = "card", className, dim }: { item: Item; size?: number; variant?: "card" | "image"; className?: string | undefined; dim?: boolean | undefined; hint?: boolean }) {
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
   const img = item.shop_image_webp ?? item.shop_image ?? item.image_webp ?? item.image;
