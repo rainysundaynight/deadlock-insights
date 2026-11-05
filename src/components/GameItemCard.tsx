@@ -11,6 +11,9 @@ const SHADOW_FIX = `
 const TIP_FIX = `
 .stats-block-props{flex-wrap:wrap!important;row-gap:4px}
 .block-prop-item{min-width:0!important;flex:1 1 45%!important;overflow:visible!important}
+.mod-info-label{display:block!important;white-space:normal!important}
+.mod-info-label span:not(.keybind):not(.InlineKey):not(.inline-attribute-icon):not(.InlineAttributeIcon){display:inline!important;width:auto!important;max-width:none!important;flex:none!important;white-space:normal!important}
+.mod-info-label p,.mod-info-label div{display:block!important;width:auto!important;max-width:100%!important}
 .block-prop-item .attribute-name{white-space:normal!important;overflow-wrap:anywhere}
 `;
 
