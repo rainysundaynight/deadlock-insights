@@ -83,7 +83,7 @@ function ItemsPage() {
                     return (
                       <button key={i.id} onClick={() => setOpen(i)} className={cn("panel panel-hover group flex flex-col items-center gap-1 p-2 text-center")}>
                         {hydrated ? (
-                          <ItemHint item={i} className="flex w-full justify-center"><Suspense fallback={<span className="block h-24 w-full" />}><LazyCard itemId={i.id} data={i} /></Suspense></ItemHint>
+                          <span className="flex w-full justify-center"><Suspense fallback={<span className="block h-24 w-full" />}><LazyCard itemId={i.id} data={i} /></Suspense></span>
                         ) : (
                           <>
                             <span className={cn("grid h-14 w-14 place-items-center rounded-md border", slotTone[i.item_slot_type ?? ""])}>

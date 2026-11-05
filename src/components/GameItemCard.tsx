@@ -10,10 +10,10 @@ const SHADOW_FIX = `
 `;
 
 export function GameItemsProvider({ children }: { children: ReactNode }) {
-  return <DlProvider language={"russian" as never} tooltipTrigger={"none" as never}>{children}</DlProvider>;
+  return <DlProvider language={"russian" as never} tooltipTrigger={"hover" as never}>{children}</DlProvider>;
 }
 
-export default function GameItemCard({ itemId, data, variant = "card" }: { itemId: number; data?: unknown; variant?: "card" | "icon" }) {
+export default function GameItemCard({ itemId, data, variant = "card" }: { itemId: number; data?: unknown; variant?: "card" | "icon" | "image" }) {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     let tries = 0;
@@ -29,5 +29,5 @@ export default function GameItemCard({ itemId, data, variant = "card" }: { itemI
     }, 50);
     return () => clearInterval(t);
   }, []);
-  return <DlItemCard ref={ref as never} lang="ru" className="game-item" itemId={itemId} itemData={data as never} variant={variant} hoverEffect="scale" showTierBadge={variant === "card"} tooltipTrigger="none" />;
+  return <DlItemCard ref={ref as never} lang="ru" className="game-item" itemId={itemId} itemData={data as never} variant={variant} hoverEffect="scale" showTierBadge={variant === "card"} tooltipTrigger="hover" />;
 }
