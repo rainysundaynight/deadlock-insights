@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { fmtDate, fmtDuration, fmtK, GAME_MODES, MATCH_MODES } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { MatchHero } from "@/components/MatchHero";
 import { MatchAnalysis } from "@/components/MatchAnalysis";
 import { LaneDuelBoard, PlayerDossier } from "@/components/PlayerDossier";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -96,24 +97,7 @@ function MatchPage() {
 
   return (
     <div className="space-y-8">
-      <div className="border-y border-primary/40 py-6">
-        <h1 className="mb-6 font-mono text-xs uppercase text-primary">Итоги матча / Дело № {m.match_id}</h1>
-        <div className="grid grid-cols-2 items-center gap-3">{[0,1].map((t) => <div key={t} className={cn("min-w-0", t === 1 && "text-right")}><p className={cn("font-display text-xl font-bold sm:text-3xl", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{t === 0 ? "Hidden King" : "Archmother"}</p><div className={cn("mt-3 flex items-center gap-3", t === 1 && "justify-end")}><span className="font-mono text-2xl">{players.filter((p) => p.team === t).reduce((s,p) => s+p.kills,0)}</span><span className={cn("font-mono text-[10px] uppercase", m.winning_team === t ? "text-win" : "text-muted-foreground")}>{m.winning_team === t ? "Победа" : "Поражение"}</span></div></div>)}</div>
-      </div>
-      <div className="grid grid-cols-2 gap-px bg-border md:grid-cols-4">
-        <Stat label="Длительность" value={fmtDuration(m.duration_s)} />
-        <Stat label="Начало" value={<span className="text-lg">{fmtDate(m.start_time)}</span>} />
-        <Stat label="Режим" value={<span className="text-lg">{GAME_MODES[m.game_mode] ?? m.game_mode} · {MATCH_MODES[m.match_mode] ?? m.match_mode}</span>} />
-        <Stat
-          label="Средний ранг"
-          value={
-            <span className="flex flex-col gap-1 text-sm">
-              <RankBadge badge={m.average_badge_team0} size={24} />
-              <RankBadge badge={m.average_badge_team1} size={24} />
-            </span>
-          }
-        />
-      </div>
+      <MatchHero m={m} players={players} names={profiles.data} />
       <MatchActions matchId={m.match_id} players={players} winner={m.winning_team} duration={m.duration_s} names={profiles.data} />
       <Tabs value={tab} onValueChange={setTab}>
       <TabsList>
