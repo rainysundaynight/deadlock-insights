@@ -117,7 +117,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const reduce = useReducedMotion();
   useRevealCards(mainRef);
   return (
-    <div className="relative min-h-screen lg:pl-60">
+    <div className="relative min-h-screen [container-type:inline-size] lg:pl-60">
       <InkBackground />
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-sidebar px-3 py-6 lg:flex">
         <div className="px-2"><Logo /></div>
