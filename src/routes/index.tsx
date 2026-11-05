@@ -48,14 +48,15 @@ function Index() {
   return (
     <div className="space-y-12">
       <section className="hud-grid relative -mx-4 -mt-8 overflow-hidden border-b border-border px-4 pb-14 pt-16 lg:-mx-8 lg:px-8">
-        {bg && <img src={bg} alt="" className="pointer-events-none absolute -right-20 top-0 h-full w-2/3 object-cover opacity-20 [mask-image:linear-gradient(to_left,black,transparent)]" />}
+        {bg && <img src={bg} alt="" className="pointer-events-none absolute -right-20 top-0 h-full w-2/3 object-cover opacity-25 grayscale contrast-125 mix-blend-multiply [mask-image:linear-gradient(to_left,black,transparent)]" />}
         <div className="relative max-w-2xl">
           <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-secondary/60 px-3 py-1 text-xs text-muted-foreground">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-win" />
             {live.data ? `${live.data.length} матчей идут прямо сейчас` : "Данные в реальном времени"}
           </p>
-          <h1 className="font-display text-4xl font-extrabold leading-[1.05] md:text-6xl">
-            Играй умнее.<br /><span className="text-brass">Побеждай чаще.</span>
+          <p className="mb-3 border-y-4 border-double border-foreground/80 py-1 text-[11px] font-bold uppercase tracking-[0.35em]">Экстренный выпуск · Мета недели</p>
+          <h1 className="font-display text-5xl font-black leading-[0.95] md:text-7xl">
+            Играй умнее.<br /><span className="italic text-primary">Побеждай чаще.</span>
           </h1>
           <p className="mt-5 max-w-lg text-lg text-muted-foreground">Разбор каждого матча по линиям, персональные советы, живая статистика игроков и мета по рангам.</p>
           <div className="mt-8"><PlayerSearch autoFocus /></div>
