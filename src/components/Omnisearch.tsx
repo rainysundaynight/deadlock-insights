@@ -45,13 +45,13 @@ export function Omnisearch() {
       ids: isNum ? 2 : 0,
     };
     const total = counts.heroes + counts.items + counts.players + counts.ids;
-    const base = { query_kind: isNum ? "number" : "text", query_length: d.length };
+    const base = { input_type: isNum ? "number" : "text", char_count: d.length };
     window.__lovableEvents?.track?.("project.omnisearch_query", { ...base, result_count: total, hero_count: counts.heroes, item_count: counts.items, player_count: counts.players });
     if (total === 0) window.__lovableEvents?.track?.("project.omnisearch_no_results", base);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deb, settled, open]);
   const go = (fn: () => void, kind: string, position: number) => {
-    window.__lovableEvents?.track?.("project.omnisearch_result_selected", { result_kind: kind, position, query_length: q.trim().length });
+    window.__lovableEvents?.track?.("project.omnisearch_result_selected", { result_kind: kind, position, char_count: q.trim().length });
     fn(); setOpen(false); setQ("");
   };
 
