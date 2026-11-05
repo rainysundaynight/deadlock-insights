@@ -57,7 +57,7 @@ function Index() {
 
   return (
     <div className="space-y-12">
-      <section onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", String((e.clientX - r.left) / r.width - 0.5)); e.currentTarget.style.setProperty("--my", String((e.clientY - r.top) / r.height - 0.5)); }} onMouseLeave={(e) => { e.currentTarget.style.setProperty("--mx", "0"); e.currentTarget.style.setProperty("--my", "0"); }} className="relative mx-[calc(50%-50cqw)] -mt-8 overflow-x-clip border-b border-border px-4 pb-8 pt-10 lg:-mx-8 lg:px-8">
+      <section onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", String((e.clientX - r.left) / r.width - 0.5)); e.currentTarget.style.setProperty("--my", String((e.clientY - r.top) / r.height - 0.5)); }} onMouseLeave={(e) => { e.currentTarget.style.setProperty("--mx", "0"); e.currentTarget.style.setProperty("--my", "0"); }} className="relative mx-[calc(50%-50cqw)] -mt-8 overflow-x-clip border-b border-border px-4 pb-8 pt-10 lg:px-8">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <img src={cityArtwork} alt="" width={1920} height={1024} className="h-full w-full object-cover object-center" />
           <div className="gazette-hero absolute inset-0" />
@@ -118,7 +118,7 @@ function Index() {
                     <img src={h.images.icon_hero_card_webp ?? h.images.icon_hero_card} alt={h.name} loading="lazy" className="hero-pose hero-pose-idle absolute inset-0 h-full w-full object-cover object-bottom" />
                   </div></div>
                   <div className="hero-plate absolute bottom-1 left-1/2 -translate-x-1/2"><span className="font-masthead text-xs leading-none">№{i + 1}</span></div>
-                  <p className="mt-2 truncate text-center font-display text-xs uppercase text-foreground">{h.name}</p>
+                  <p className="mt-4 truncate text-center font-display text-xs uppercase text-foreground">{h.name}</p>
                   <p className="tabular text-center text-[10px] text-win">{(r.winrate * 100).toFixed(1)}%</p>
                 </Link>
               ); })}
