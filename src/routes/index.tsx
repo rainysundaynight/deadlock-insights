@@ -63,7 +63,7 @@ function Index() {
           <div className="gazette-hero absolute inset-0" />
         </div>
         {tiers.length >= 4 && (["left", "right"] as const).map((side) => (
-          <div key={side} style={{ transform: `translate(calc(var(--mx, 0) * ${side === "left" ? 14 : 14}px), calc(var(--my, 0) * 6px))` }} className={cn("absolute bottom-0 z-[3] hidden items-end transition-transform duration-700 ease-out min-[1400px]:flex", side === "left" ? "left-6 2xl:left-12" : "right-6 flex-row-reverse 2xl:right-12")}>
+          <div key={side} style={{ transform: `translate(calc(var(--mx, 0) * ${side === "left" ? 14 : 14}px), calc(var(--my, 0) * 6px))` }} className={cn("absolute bottom-0 z-[3] hidden items-end transition-transform duration-700 ease-out min-[1400px]:flex", side === "left" ? "left-0" : "right-0 flex-row-reverse")}>
             <div aria-hidden className="hero-stage pointer-events-none absolute inset-x-0 bottom-0 top-[-30%]">
               <div className="hero-stage-beam absolute inset-0" />
               <div className="absolute inset-x-[10%] bottom-0 h-6 rounded-[50%] blur-md" style={{ background: "radial-gradient(closest-side, color-mix(in oklab, var(--primary) 45%, transparent), transparent)" }} />
