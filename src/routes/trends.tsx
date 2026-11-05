@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { Chip, ErrorBox, RankFilter, rankParams, HeroIcon, Loading, PageHeader, useHeroMap } from "@/components/dl";
 import { api } from "@/lib/api";
@@ -72,19 +72,20 @@ function Trends() {
               <div className="mb-3 flex items-center gap-3">
                 <HeroIcon heroId={sel} size={36} />
                 <Link to="/heroes/$heroId" params={{ heroId: String(sel) }} className="font-display font-semibold hover:text-primary">{heroes.get(sel)?.name}</Link>
-                <span className="text-xs text-muted-foreground">по дням · <span className="text-primary">винрейт</span> · <span className="text-secondary-foreground">популярность</span></span>
+                <span className="text-xs text-muted-foreground">по дням · <span className="text-telemetry">винрейт</span> · <span className="text-sapphire-team">популярность</span></span>
               </div>
               <div className="h-64">
                 <ResponsiveContainer>
-                  <LineChart data={series}>
+                  <ComposedChart data={series}>
+                    <defs><linearGradient id="meta-souls" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--telemetry)" stopOpacity={0.22} /><stop offset="100%" stopColor="var(--telemetry)" stopOpacity={0} /></linearGradient></defs>
                     <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
                     <XAxis dataKey="d" stroke="var(--muted-foreground)" fontSize={11} />
                     <YAxis yAxisId="wr" stroke="var(--muted-foreground)" fontSize={11} domain={["auto", "auto"]} unit="%" />
                     <YAxis yAxisId="pk" orientation="right" stroke="var(--muted-foreground)" fontSize={11} unit="%" />
                     <Tooltip contentStyle={{ background: "var(--card)", border: "1px solid var(--border)" }} />
-                    <Line yAxisId="wr" dataKey="wr" name="Винрейт" stroke="var(--primary)" strokeWidth={2} dot={false} />
+                    <Area yAxisId="wr" dataKey="wr" name="Винрейт" type="monotone" stroke="var(--telemetry)" fill="url(#meta-souls)" strokeWidth={2} />
                     <Line yAxisId="pk" dataKey="pick" name="Популярность" stroke="var(--team-sapphire)" strokeWidth={2} dot={false} />
-                  </LineChart>
+                  </ComposedChart>
                 </ResponsiveContainer>
               </div>
             </section>
