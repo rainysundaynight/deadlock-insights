@@ -77,6 +77,8 @@ const TEAMS = ["Hidden King", "Archmother"];
 
 function MatchPage() {
   const { matchId } = Route.useParams();
+  const { from } = Route.useSearch();
+  const navigate = useNavigate();
   const q = useQuery({ queryKey: ["match", matchId], queryFn: () => api<MatchMeta>(`/v1/matches/${matchId}/metadata`), staleTime: Infinity, retry: false });
   const live = useQuery({
     queryKey: ["active"],
