@@ -64,6 +64,12 @@ function Index() {
         </div>
         {tiers.length >= 4 && (["left", "right"] as const).map((side) => (
           <div key={side} className={cn("absolute bottom-0 z-[3] hidden items-end min-[1400px]:flex", side === "left" ? "left-6 2xl:left-12" : "right-6 flex-row-reverse 2xl:right-12")}>
+            <div aria-hidden className="hero-stage pointer-events-none absolute inset-x-[-15%] bottom-0 top-[-30%]">
+              <div className="hero-stage-beam absolute inset-0" />
+              <div className="absolute inset-x-[10%] bottom-0 h-6 rounded-[50%] blur-md" style={{ background: "radial-gradient(closest-side, color-mix(in oklab, var(--primary) 45%, transparent), transparent)" }} />
+              <div className="absolute inset-x-[5%] bottom-0 h-px" style={{ background: "linear-gradient(90deg, transparent, var(--primary), transparent)" }} />
+              {Array.from({ length: 8 }).map((_, k) => <span key={k} className="hero-ember" style={{ left: `${10 + k * 11}%`, animationDelay: `${(k * 0.9) % 6}s`, animationDuration: `${5 + (k % 3)}s` }} />)}
+            </div>
             {tiers.slice(side === "left" ? 0 : 2, side === "left" ? 2 : 4).map((r, i) => {
               const h = heroes.get(r.hero_id);
               if (!h) return null;
@@ -74,7 +80,7 @@ function Index() {
                   <Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as CSSProperties} className={cn("group relative block transition-transform duration-500 hover:-translate-y-2", i === 0 ? "w-44 2xl:w-52" : "w-36 2xl:w-44")}>
                     <div className="hero-side relative aspect-[3/4]" style={{ transform: side === "left" ? "perspective(700px) rotateY(24deg)" : "perspective(700px) rotateY(-24deg) scaleX(-1)" }}>
                       <div className="absolute inset-x-2 bottom-0 h-2/3 rounded-t-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-70" style={{ background: "var(--hero)" }} />
-                      <div className="hero-card-clip absolute inset-0">
+                      <div className="hero-card-clip hero-breathe absolute inset-0" style={{ animationDelay: `${i * 1.3}s` }}>
                         <img src={h.images.icon_hero_card_webp ?? h.images.icon_hero_card} alt={h.name} className="hero-pose hero-pose-idle absolute inset-0 h-full w-full object-cover object-bottom" />
                         {alt && <img src={alt} alt="" aria-hidden className="hero-pose hero-pose-alt absolute inset-0 h-full w-full object-cover object-bottom" />}
                       </div>
