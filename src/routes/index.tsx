@@ -57,7 +57,7 @@ function Index() {
 
   return (
     <div className="space-y-12">
-      <section onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", String((e.clientX - r.left) / r.width - 0.5)); e.currentTarget.style.setProperty("--my", String((e.clientY - r.top) / r.height - 0.5)); }} onMouseLeave={(e) => { e.currentTarget.style.setProperty("--mx", "0"); e.currentTarget.style.setProperty("--my", "0"); }} className="relative -mx-4 -mt-8 border-b border-border px-4 pb-8 pt-10 lg:-mx-8 lg:px-8">
+      <section onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", String((e.clientX - r.left) / r.width - 0.5)); e.currentTarget.style.setProperty("--my", String((e.clientY - r.top) / r.height - 0.5)); }} onMouseLeave={(e) => { e.currentTarget.style.setProperty("--mx", "0"); e.currentTarget.style.setProperty("--my", "0"); }} className="relative -mx-4 -mt-8 overflow-x-clip border-b border-border px-4 pb-8 pt-10 lg:-mx-8 lg:px-8">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <img src={cityArtwork} alt="" width={1920} height={1024} className="h-full w-full object-cover object-center" />
           <div className="gazette-hero absolute inset-0" />
