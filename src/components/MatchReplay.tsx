@@ -93,7 +93,7 @@ function StructIcon({ kind, fill }: { kind: StructKind; fill: string }) {
   return <g><circle r={17} {...st} strokeWidth={2.5} /><path d="M-9,4 L-10,-6 L-4,-1 L0,-9 L4,-1 L10,-6 L9,4 Z" fill="black" opacity={0.7} /></g>;
 }
 
-type Layer = "zip" | "camps" | "obj" | "buffs" | "shops" | "move";
+type Layer = "trail" | "zip" | "camps" | "obj" | "buffs" | "shops" | "move";
 const LAYERS: [Layer, string][] = [["obj", "Башни"], ["zip", "Зиплайны"], ["camps", "Лагеря"], ["buffs", "Урна · рифт · баффы"], ["shops", "Магазины"], ["move", "Тропы"]];
 const SPEEDS = [1, 2, 5, 10, 20, 80, 200, 500];
 
