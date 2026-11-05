@@ -116,8 +116,7 @@ function Index() {
                   <div aria-hidden className="hero-spot pointer-events-none absolute inset-0" />
                   <div className="hero-side relative aspect-[3/4]"><div className="hero-card-clip absolute inset-0">
                     <img src={h.images.icon_hero_card_webp ?? h.images.icon_hero_card} alt={h.name} loading="lazy" className="hero-pose hero-pose-idle absolute inset-0 h-full w-full object-cover object-bottom" />
-                  </div></div>
-                  <div className="hero-plate absolute bottom-1 left-1/2 -translate-x-1/2"><span className="font-masthead text-xs leading-none">№{i + 1}</span></div>
+                  </div><div className="hero-plate absolute -bottom-2 left-1/2 z-10 -translate-x-1/2"><span className="font-masthead text-xs leading-none">№{i + 1}</span></div></div>
                   <p className="mt-4 truncate text-center font-display text-xs uppercase text-foreground">{h.name}</p>
                   <p className="tabular text-center text-[10px] text-win">{(r.winrate * 100).toFixed(1)}%</p>
                 </Link>
