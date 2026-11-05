@@ -114,6 +114,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   const [quality, setQuality] = useState<keyof typeof QUALITY>("high");
   const Q = QUALITY[quality];
   const [sel, setSel] = useState<number | null>(null);
+  const [mvpInfo, setMvpInfo] = useState(true);
   const [layers, setLayers] = useState<Set<Layer>>(new Set(["trail", "obj", "zip", "camps", "buffs"]));
   const on = (l: Layer) => layers.has(l);
   const stepS = (mult * Q.tick / 1000) / (paths?.interval_s || 1);
@@ -157,24 +158,40 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
     return kills.filter((k) => k.killer === slot && k.t <= sec && k.t > lastDeath).length;
   };
   const snapAtSec = (p: P) => [...(p.stats ?? [])].reverse().find((x) => x.time_stamp_s <= sec);
-  const mvpSlot = (() => {
+  const MVP_W = [["nw", "Души", 0.24], ["dmg", "Урон по героям", 0.16], ["k", "Убийства", 0.14], ["kp", "Участие в убийствах", 0.12], ["a", "Помощь", 0.1], ["heal", "Лечение и щиты", 0.08], ["obj", "Урон по боссам", 0.08], ["d", "Смерти", -0.12]] as const;
+  type MvpKey = (typeof MVP_W)[number][0];
+  const scoreAt = (time: number) => {
+    const snap = (p: P) => [...(p.stats ?? [])].reverse().find((x) => x.time_stamp_s <= time) as Record<string, number> | undefined;
     const rows = players.map((p) => {
-      const s0 = snapAtSec(p) as Record<string, number> | undefined;
-      const teamK = players.filter((q) => q.team === p.team).reduce((a, q) => a + ((snapAtSec(q) as Record<string, number> | undefined)?.["kills"] ?? 0), 0);
+      const s0 = snap(p);
+      const teamK = players.filter((q) => q.team === p.team).reduce((acc, q) => acc + (snap(q)?.["kills"] ?? 0), 0);
       const g = (k: string) => s0?.[k] ?? 0;
-      return { slot: p.player_slot, v: { nw: g("net_worth"), k: g("kills"), a: g("assists"), dmg: g("player_damage"), heal: g("player_healing") + g("teammate_healing") + g("teammate_barriering"), obj: g("boss_damage"), kp: teamK ? (g("kills") + g("assists")) / teamK : 0, d: g("deaths") } };
+      const v: Record<MvpKey, number> = { nw: g("net_worth"), k: g("kills"), a: g("assists"), dmg: g("player_damage"), heal: g("player_healing") + g("teammate_healing") + g("teammate_barriering"), obj: g("boss_damage"), kp: teamK ? (g("kills") + g("assists")) / teamK : 0, d: g("deaths") };
+      return { slot: p.player_slot, v, k: g("kills"), a: g("assists"), d: g("deaths") };
     });
     if (!rows.some((r) => r.v.nw > 0)) return null;
-    const mx = (k: keyof (typeof rows)[0]["v"]) => Math.max(1e-9, ...rows.map((r) => r.v[k]));
-    const W = { nw: 0.24, k: 0.14, a: 0.1, dmg: 0.16, heal: 0.08, obj: 0.08, kp: 0.12 } as const;
-    let best: { slot: number; sc: number } | null = null;
-    for (const r of rows) {
-      let sc = Object.entries(W).reduce((a, [k, w]) => a + w * (r.v[k as keyof typeof W] / mx(k as keyof typeof W)), 0);
-      sc -= 0.12 * (r.v.d / mx("d"));
-      if (!best || sc > best.sc) best = { slot: r.slot, sc };
+    const mx = Object.fromEntries(MVP_W.map(([k]) => [k, Math.max(1e-9, ...rows.map((r) => r.v[k]))])) as Record<MvpKey, number>;
+    const scored = rows.map((r) => {
+      const parts = MVP_W.map(([k, label, w]) => ({ k, label, w, raw: r.v[k], pts: w * (r.v[k] / mx[k]) * 100 }));
+      return { ...r, parts, sc: parts.reduce((x, q) => x + q.pts, 0) };
+    }).sort((x, y) => y.sc - x.sc);
+    return scored;
+  };
+  const mvpRows = scoreAt(sec);
+  const mvpSlot = mvpRows?.[0]?.slot ?? null;
+  const mvpHistory = (() => {
+    if (mvpSlot == null) return [];
+    const p = bySlot.get(mvpSlot); const times = (p?.stats ?? []).map((x) => x.time_stamp_s).filter((x) => x <= sec);
+    const out: { t: number; dk: number; da: number; dd: number; dsc: number; sc: number }[] = [];
+    let prev = null as null | { k: number; a: number; d: number; sc: number };
+    for (const tm of times) {
+      const r = scoreAt(tm)?.find((x) => x.slot === mvpSlot); if (!r) continue;
+      if (prev && (r.k !== prev.k || r.a !== prev.a || r.d !== prev.d)) out.push({ t: tm, dk: r.k - prev.k, da: r.a - prev.a, dd: r.d - prev.d, dsc: r.sc - prev.sc, sc: r.sc });
+      prev = { k: r.k, a: r.a, d: r.d, sc: r.sc };
     }
-    return best?.slot ?? null;
+    return out.slice(-5).reverse();
   })();
+  const [mvpOpen, setMvpOpen] = [mvpInfo, setMvpInfo];
   const selP = sel != null ? players.find((p) => p.player_slot === sel) ?? null : null;
   const selW = sel != null ? world.find((w) => w.slot === sel) : undefined;
 
@@ -330,6 +347,41 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
               </div>;
             })}
           </div>
+          {mvpRows && mvpSlot != null && (() => {
+            const top = mvpRows[0]!, second = mvpRows[1];
+            const p = bySlot.get(top.slot)!;
+            const nm0 = names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name;
+            const fmtRaw = (k: string, v: number) => k === "kp" ? `${Math.round(v * 100)}%` : k === "nw" || k === "dmg" || k === "heal" || k === "obj" ? fmtK(v) : String(v);
+            if (!mvpOpen) return <button onClick={() => setMvpOpen(true)} className="absolute bottom-3 left-3 border border-primary/60 bg-card/90 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-primary backdrop-blur">♛ почему корона</button>;
+            return <div className="absolute bottom-3 left-3 w-64 border border-primary/50 bg-card/92 p-2.5 text-[11px] backdrop-blur">
+              <div className="mb-1.5 flex items-center gap-2">
+                <span className="text-primary">♛</span><HeroIcon heroId={p.hero_id} size={22} className={p.team === 0 ? "border-amber-team" : "border-sapphire-team"} />
+                <span className="min-w-0 flex-1 truncate font-display text-sm font-bold">{nm0}</span>
+                <span className="tabular font-display text-sm font-bold text-primary">{top.sc.toFixed(0)}</span>
+                <button onClick={() => setMvpOpen(false)} aria-label="Скрыть" className="text-muted-foreground hover:text-foreground">×</button>
+              </div>
+              {second && <p className="mb-1.5 font-mono text-[10px] text-muted-foreground">отрыв от №2: +{(top.sc - second.sc).toFixed(1)} очк.</p>}
+              <div className="space-y-0.5">
+                {top.parts.map((q) => (
+                  <div key={q.k} className="grid grid-cols-[1fr_2.6rem_3.2rem] items-center gap-1.5">
+                    <span className="truncate text-muted-foreground">{q.label}</span>
+                    <span className="tabular text-right">{fmtRaw(q.k, q.raw)}</span>
+                    <span className={cn("tabular text-right font-semibold", q.pts < 0 ? "text-loss" : "text-win")}>{q.pts >= 0 ? "+" : ""}{q.pts.toFixed(1)}</span>
+                  </div>
+                ))}
+              </div>
+              {mvpHistory.length > 0 && <div className="mt-2 border-t border-border pt-1.5">
+                <p className="mb-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Изменение оценки</p>
+                {mvpHistory.map((h) => (
+                  <div key={h.t} className="grid grid-cols-[2.4rem_1fr_3rem] gap-1.5">
+                    <span className="tabular text-muted-foreground">{fmtDuration(h.t)}</span>
+                    <span className="truncate">{[h.dk && `+${h.dk} уб.`, h.da && `+${h.da} пом.`, h.dd && `+${h.dd} см.`].filter(Boolean).join(", ")}</span>
+                    <span className={cn("tabular text-right font-semibold", h.dsc < 0 ? "text-loss" : "text-win")}>{h.dsc >= 0 ? "+" : ""}{h.dsc.toFixed(1)}</span>
+                  </div>
+                ))}
+              </div>}
+            </div>;
+          })()}
           <PlayerMatchModal player={selP} name={selP?.account_id ? names?.get(selP.account_id)?.personaname : undefined} sec={sec} hp={selW?.health?.[Math.min(ti, selW.pts.length - 1)] ?? 100} onClose={() => setSel(null)} />
           {!md && <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">Загрузка карты…</div>}
         </div>
