@@ -94,7 +94,7 @@ function StructIcon({ kind, fill }: { kind: StructKind; fill: string }) {
 }
 
 type Layer = "trail" | "zip" | "camps" | "obj" | "buffs" | "shops" | "move";
-const LAYERS: [Layer, string][] = [["obj", "Башни"], ["zip", "Зиплайны"], ["camps", "Лагеря"], ["buffs", "Урна · рифт · баффы"], ["shops", "Магазины"], ["move", "Тропы"]];
+const LAYERS: [Layer, string][] = [["trail", "Следы 40с"], ["obj", "Башни"], ["zip", "Зиплайны"], ["camps", "Лагеря"], ["buffs", "Урна · рифт · баффы"], ["shops", "Магазины"], ["move", "Тропы"]];
 const SPEEDS = [1, 2, 5, 10, 20, 80, 200, 500];
 
 export function MatchReplay({ paths, players, names, objectives, midBoss }: {
@@ -114,7 +114,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
   const [quality, setQuality] = useState<keyof typeof QUALITY>("high");
   const Q = QUALITY[quality];
   const [sel, setSel] = useState<number | null>(null);
-  const [layers, setLayers] = useState<Set<Layer>>(new Set(["obj", "zip", "camps", "buffs"]));
+  const [layers, setLayers] = useState<Set<Layer>>(new Set(["trail", "obj", "zip", "camps", "buffs"]));
   const on = (l: Layer) => layers.has(l);
   const stepS = (mult * Q.tick / 1000) / (paths?.interval_s || 1);
 
@@ -174,19 +174,34 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-      <div className="panel p-3">
-        <div className="mb-3 flex flex-wrap gap-1.5">
+      <div className="panel relative overflow-hidden p-3">
+        <span aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-amber-team via-primary to-sapphire-team" />
+        <div className="mb-3 flex flex-wrap items-center gap-1.5">
+          <span className="mr-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Слои</span>
           {LAYERS.map(([k, l]) => (
             <button key={k} onClick={() => setLayers((s) => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n; })}
-              className={cn("rounded-full border px-3 py-1 text-xs", on(k) ? "border-primary/60 bg-primary/15 text-primary" : "border-border text-muted-foreground")}>{l}</button>
+              className={cn("border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors", on(k) ? "border-primary/70 bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground")}>{l}</button>
           ))}
         </div>
-        <div className="relative overflow-hidden rounded-xl bg-background">
+        <div className="relative overflow-hidden border border-border bg-background">
           <svg viewBox={`0 0 ${S} ${S}`} className="aspect-square w-full">
             {md && <image href={md.images.minimap} x={0} y={0} width={S} height={S} opacity={0.95} />}
             {on("move") && world.map((w) => {
               const p = bySlot.get(w.slot);
               return <polyline key={w.slot} points={w.pts.slice(0, ti + 1).filter((_, i) => i % 3 === 0).map((q) => q.join(",")).join(" ")} fill="none" stroke={p ? teamCol(p.team) : "white"} strokeOpacity={0.35} strokeWidth={2} />;
+            })}
+            {on("trail") && world.map((w) => {
+              const p = bySlot.get(w.slot); if (!p) return null;
+              const tail = Math.max(2, Math.round(40 / (paths!.interval_s || 1)));
+              const end = Math.min(ti, w.pts.length - 1), start = Math.max(0, end - tail);
+              const seg = w.pts.slice(start, end + 1);
+              const parts = 5, n = Math.ceil(seg.length / parts);
+              return <g key={`tr${w.slot}`} strokeLinecap="round" strokeLinejoin="round">
+                {Array.from({ length: parts }, (_, k) => {
+                  const pts = seg.slice(k * n, (k + 1) * n + 1); if (pts.length < 2) return null;
+                  return <polyline key={k} points={pts.map((q) => q.join(",")).join(" ")} fill="none" stroke={teamCol(p.team)} strokeOpacity={0.15 + 0.17 * k} strokeWidth={2 + k * 1.2} />;
+                })}
+              </g>;
             })}
             {md && on("zip") && md.zipline_paths.map((z, i) => (
               <polyline key={i} points={z.P0_points.map((pt) => toSvg((z.origin[0] ?? 0) + (pt[0] ?? 0), (z.origin[1] ?? 0) + (pt[1] ?? 0)).join(",")).join(" ")}
@@ -261,19 +276,57 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             const sides = [...new Set(rifts.map((r) => (r.left_relative < 0.4 ? "левой" : r.left_relative > 0.6 ? "правой" : "центральной")))];
             return <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-foreground px-4 py-1.5 text-sm font-semibold text-background shadow-lg">Открылись рифты{sides.length ? ` · на ${sides.join(" и ")} линии` : ""}</div>;
           })()}
+          {(() => {
+            const ev = [...objEvents.filter((e) => e.team >= 0), ...fights.map((f) => ({ t: f.start, team: f.amber > f.sapph ? 0 : f.amber < f.sapph ? 1 : -1, text: `Файт: ${f.amber}:${f.sapph}` }))].filter((e) => e.t <= sec && e.t > sec - 6).at(-1);
+            if (!ev) return null;
+            return <div key={ev.t + ev.text} className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 border bg-card/90 px-4 py-1.5 font-display text-sm font-semibold backdrop-blur animate-in fade-in slide-in-from-bottom-2" style={{ borderColor: ev.team < 0 ? "var(--primary)" : teamCol(ev.team) }}>
+              <span className="mr-2 font-mono text-[10px] text-muted-foreground">{fmtDuration(ev.t)}</span>{ev.text}
+            </div>;
+          })()}
           <PlayerMatchModal player={selP} name={selP?.account_id ? names?.get(selP.account_id)?.personaname : undefined} sec={sec} hp={selW?.health?.[Math.min(ti, selW.pts.length - 1)] ?? 100} onClose={() => setSel(null)} />
           {!md && <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">Загрузка карты…</div>}
         </div>
-        <div className="mt-3 flex items-center gap-3">
-          <button onClick={() => setPlay((v) => !v)} className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">{play ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</button>
-          <input type="range" min={0} max={len - 1} step="any" value={t} onChange={(e) => setT(+e.target.value)} className="flex-1 accent-[var(--primary)]" />
-          <span className="tabular w-14 text-sm">{fmtDuration(sec)}</span>
-          <select value={mult} onChange={(e) => setMult(+e.target.value)} className="rounded-md border border-border bg-secondary px-2 py-1 text-xs">
-            {SPEEDS.map((s) => <option key={s} value={s}>×{s}</option>)}
-          </select>
-          <select value={quality} onChange={(e) => setQuality(e.target.value as keyof typeof QUALITY)} title="Качество воспроизведения" className="rounded-md border border-border bg-secondary px-2 py-1 text-xs">
-            {Object.entries(QUALITY).map(([k, q]) => <option key={k} value={k}>{q.label}</option>)}
-          </select>
+        <div className="mt-3 border border-border bg-card/60 p-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button onClick={() => setPlay((v) => !v)} aria-label={play ? "Пауза" : "Играть"} className="grid h-10 w-10 shrink-0 place-items-center border border-primary bg-primary text-primary-foreground transition-transform hover:scale-105">{play ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</button>
+            <span className="tabular font-display text-2xl font-bold">{fmtDuration(sec)}</span>
+            <span className="tabular font-mono text-[10px] text-muted-foreground">/ {fmtDuration((len - 1) * (paths!.interval_s || 1))}</span>
+            <div className="ml-auto flex items-center gap-1">
+              {[1, 2, 5, 10].map((s2) => (
+                <button key={s2} onClick={() => setMult(s2)} className={cn("border px-2 py-1 font-mono text-[11px]", mult === s2 ? "border-primary bg-primary/15 text-primary" : "border-border text-muted-foreground hover:text-foreground")}>×{s2}</button>
+              ))}
+              <select value={mult} onChange={(e) => setMult(+e.target.value)} aria-label="Скорость" className="border border-border bg-secondary px-1.5 py-1 font-mono text-[11px]">
+                {SPEEDS.map((s2) => <option key={s2} value={s2}>×{s2}</option>)}
+              </select>
+              <select value={quality} onChange={(e) => setQuality(e.target.value as keyof typeof QUALITY)} title="Качество воспроизведения" className="border border-border bg-secondary px-1.5 py-1 font-mono text-[11px]">
+                {Object.entries(QUALITY).map(([k, q]) => <option key={k} value={k}>{q.label}</option>)}
+              </select>
+            </div>
+          </div>
+          {(() => {
+            const dur = Math.max(1, (len - 1) * (paths!.interval_s || 1));
+            const pct = (x: number) => `${Math.min(100, Math.max(0, (x / dur) * 100))}%`;
+            const seek = (x: number) => setT(Math.max(0, Math.round(x / (paths!.interval_s || 1))));
+            const allDeaths = players.flatMap((p) => (p.death_details ?? []).map((d) => ({ t: d.game_time_s, team: p.team })));
+            return <div className="mt-3">
+              <div className="relative h-7">
+                {fights.map((f, i) => <button key={`f${i}`} onClick={() => seek(f.start - 5)} title={`Файт ${fmtDuration(f.start)} · ${f.amber}:${f.sapph}`} className="absolute top-0 h-3 bg-primary/30 hover:bg-primary/60" style={{ left: pct(f.start), width: `max(4px, ${((f.end - f.start) / dur) * 100}%)` }} />)}
+                {objEvents.filter((e) => e.team >= 0).map((e, i) => <button key={`o${i}`} onClick={() => seek(e.t)} title={`${fmtDuration(e.t)} · ${e.text}`} className="absolute top-3.5 h-3 w-3 -translate-x-1/2 rotate-45 border border-background hover:scale-125" style={{ left: pct(e.t), background: teamCol(e.team) }} />)}
+              </div>
+              <div className="relative">
+                <div className="pointer-events-none absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 bg-muted" />
+                <div className="pointer-events-none absolute left-0 top-1/2 h-1.5 -translate-y-1/2 bg-primary" style={{ width: pct(sec) }} />
+                {allDeaths.map((d, i) => <span key={i} aria-hidden className="pointer-events-none absolute top-1/2 h-2.5 w-px -translate-y-1/2" style={{ left: pct(d.t), background: teamCol(d.team === 0 ? 1 : 0), opacity: 0.7 }} />)}
+                <input type="range" min={0} max={len - 1} step="any" value={t} onChange={(e) => setT(+e.target.value)} aria-label="Время матча" className="relative w-full cursor-pointer opacity-0" />
+                <span aria-hidden className="pointer-events-none absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rotate-45 border-2 border-background bg-primary" style={{ left: pct(sec) }} />
+              </div>
+              <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                <span><span className="mr-1 inline-block h-2 w-3 bg-primary/40" />файты</span>
+                <span><span className="mr-1 inline-block h-2 w-2 rotate-45 bg-amber-team" /><span className="mr-1 inline-block h-2 w-2 rotate-45 bg-sapphire-team" />разрушения</span>
+                <span>| убийства</span><span>клик — перейти</span>
+              </div>
+            </div>;
+          })()}
         </div>
         <ValueChart players={players} names={names} sec={sec} sel={sel} onSelect={setSel} fights={fights} onSeek={(s2) => setT(Math.round(s2 / (paths!.interval_s || 1)))} />
         <PlayerCompare players={players} names={names} sec={sec} />
@@ -283,7 +336,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
       </div>
       <div className="space-y-4">
         <div className="panel space-y-1 p-3 text-sm">
-          <p className="mb-2 flex justify-between text-xs uppercase tracking-wider text-muted-foreground"><span>Игроки</span><span>K/D/A · души</span></p>
+          <p className="mb-2 flex justify-between border-b border-border pb-1.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground"><span className="font-display text-sm normal-case tracking-normal text-foreground">Игроки</span><span>K/D/A · души</span></p>
           {[0, 1].map((team) => {
             const tp = players.filter((p) => p.team === team);
             const snapOf = (p: P) => [...(p.stats ?? [])].reverse().find((x) => x.time_stamp_s <= sec);
@@ -317,7 +370,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
         </div>
         {fights.length > 0 && (
           <div className="panel max-h-72 space-y-1 overflow-auto p-3 text-xs">
-            <p className="mb-2 uppercase tracking-wider text-muted-foreground">Ключевые файты</p>
+            <p className="mb-2 border-b border-border pb-1.5 font-display text-sm text-foreground">Ключевые файты</p>
             {fights.map((f, i) => (
               <button key={i} onClick={() => { setT(Math.max(0, Math.round((f.start - 8) / (paths!.interval_s || 1)))); setPlay(true); if (mult > 10) setMult(5); }}
                 className={cn("flex w-full items-center gap-2 rounded px-1 py-1 text-left hover:bg-secondary", sec >= f.start - 8 && sec <= f.end + 2 && "bg-primary/10")}>
@@ -331,7 +384,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
         )}
         {objEvents.length > 0 && (
           <div className="panel max-h-80 space-y-1 overflow-auto p-3 text-xs">
-            <p className="mb-2 uppercase tracking-wider text-muted-foreground">Объекты</p>
+            <p className="mb-2 border-b border-border pb-1.5 font-display text-sm text-foreground">Объекты и события</p>
             {objEvents.map((e, i) => (
               <button key={i} onClick={() => setT(Math.round(e.t / (paths!.interval_s || 1)))} className={cn("flex w-full items-center gap-2 rounded px-1 py-0.5 text-left hover:bg-secondary", e.t > sec && "opacity-40")}>
                 <span className="tabular w-10 text-muted-foreground">{fmtDuration(e.t)}</span>
