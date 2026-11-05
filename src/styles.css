@@ -282,9 +282,13 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 /* home hero lineup: 3D tilt + drop-shadow filter render a dark box, so skip the filter */
 .hero-side .hero-pose { filter: none !important; }
 .hero-side .hero-card-clip { clip-path: none; }
-.hero-side .hero-pose-idle { -webkit-mask-image: linear-gradient(to top, transparent 0, black 18%); mask-image: linear-gradient(to top, transparent 0, black 18%); }
+.hero-side .hero-pose-idle {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 22%, black 78%, transparent 100%), linear-gradient(to top, transparent 0, black 18%);
+  mask-image: linear-gradient(to right, transparent 0, black 22%, black 78%, transparent 100%), linear-gradient(to top, transparent 0, black 18%);
+  -webkit-mask-composite: source-in; mask-composite: intersect;
+}
 .hero-side .hero-pose-alt {
-  -webkit-mask-image: linear-gradient(to right, transparent 0, black 16%, black 84%, transparent 100%), linear-gradient(to top, transparent 0, black 18%);
-  mask-image: linear-gradient(to right, transparent 0, black 16%, black 84%, transparent 100%), linear-gradient(to top, transparent 0, black 18%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 22%, black 78%, transparent 100%), linear-gradient(to top, transparent 0, black 18%);
+  mask-image: linear-gradient(to right, transparent 0, black 22%, black 78%, transparent 100%), linear-gradient(to top, transparent 0, black 18%);
   -webkit-mask-composite: source-in; mask-composite: intersect;
 }
