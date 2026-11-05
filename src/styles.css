@@ -250,6 +250,15 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
   transform: translateY(-12%) scale(1.12);
   filter: drop-shadow(0 -6px 14px color-mix(in oklab, var(--hero) 40%, transparent));
 }
+/* touch screens: no hover, so show the action pose by default */
+@media (hover: none) {
+  .hero-pose-idle { opacity: 0; }
+  .hero-pose-alt {
+    opacity: 1;
+    transform: translateY(-8%) scale(1.06);
+    filter: drop-shadow(0 -4px 10px color-mix(in oklab, var(--hero) 40%, transparent));
+  }
+}
 @media (prefers-reduced-motion: reduce) { .hero-pose { transition: opacity 0.2s; } }
 .hero-tag {
   font-family: var(--font-mono, ui-monospace, monospace);
