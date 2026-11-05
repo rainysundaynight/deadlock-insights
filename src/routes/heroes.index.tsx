@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, LayoutGrid, List, SlidersHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Chip, ErrorBox, RankFilter, rankParams, HeroIcon, Loading, PageHeader, WinrateBar, useHeroMap } from "@/components/dl";
@@ -9,6 +9,8 @@ import { fmtInt, fmtK, fmtPct, kda, winrate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { HeroRankCompare } from "@/components/RankMeta";
 import { LayoutItem } from "@/components/GazetteMotion";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/heroes/")({
   head: () => ({
@@ -76,29 +78,25 @@ function HeroesPage() {
       <PageHeader eyebrow="Мета" title="Герои">
         Статистика по всем героям на основе публичных матчей.
       </PageHeader>
-      <div className="mb-6 flex flex-wrap items-center gap-2">
+      <div className="mb-6 flex flex-wrap items-center gap-3 border-y border-border py-3">
+        <SlidersHorizontal aria-hidden className="h-4 w-4 text-primary" />
+        <div className="flex items-center">
         {PERIODS.map((p) => (
           <Chip key={p.d} active={period === p.d} onClick={() => setPeriod(p.d)}>{p.label}</Chip>
         ))}
-        <span className="mx-2 h-6 w-px bg-border" />
+        </div><span className="mx-2 h-6 w-px bg-border" />
         <RankFilter value={range} onChange={setRange} />
         <span className="ml-auto flex gap-2">
           {view === "grid" && (
-            <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} className="h-9 rounded-md border border-input bg-secondary px-2 text-sm">
-              <option value="winrate">По винрейту</option>
-              <option value="pickrate">По пикрейту</option>
-              <option value="matches">По матчам</option>
-              <option value="kda">По KDA</option>
-              <option value="nw">По душам</option>
-            </select>
+            <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}><SelectTrigger aria-label="Сортировка героев" className="w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="winrate">По винрейту</SelectItem><SelectItem value="pickrate">По пикрейту</SelectItem><SelectItem value="matches">По матчам</SelectItem><SelectItem value="kda">По KDA</SelectItem><SelectItem value="nw">По душам</SelectItem></SelectContent></Select>
           )}
-          <Chip active={view === "grid"} onClick={() => setView("grid")}>Карточки</Chip>
-          <Chip active={view === "table"} onClick={() => setView("table")}>Таблица</Chip>
+          <Button size="icon" variant={view === "grid" ? "secondary" : "ghost"} aria-label="Карточки" title="Карточки" aria-pressed={view === "grid"} onClick={() => setView("grid")}><LayoutGrid className="h-4 w-4" /></Button>
+          <Button size="icon" variant={view === "table" ? "secondary" : "ghost"} aria-label="Таблица" title="Таблица" aria-pressed={view === "table"} onClick={() => setView("table")}><List className="h-4 w-4" /></Button>
         </span>
       </div>
 
-      {view === "grid" ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+      {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} /> : view === "grid" ? (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
           {[...(heroList.data ?? [])].filter((h) => !rows.length || rows.some((r) => r.hero_id === h.id)).sort((a, b) => rows.findIndex((r) => r.hero_id === a.id) - rows.findIndex((r) => r.hero_id === b.id)).map((h) => {
             const s = rows.find((r) => r.hero_id === h.id);
             return (
@@ -109,7 +107,7 @@ function HeroesPage() {
                 </div>
                 <div className="p-3">
                   <p className="font-display uppercase">{h.name}</p>
-                  {s && <><p className={cn("tabular mt-1 text-sm", s.wr >= 0.5 ? "text-win" : "text-loss")}>{fmtPct(s.wr)} <span className="text-[9px] text-muted-foreground">ПОБЕД</span></p><div className="mt-2 flex justify-between border-t border-border pt-2 text-[9px] text-muted-foreground"><span>{fmtInt(s.matches)} игр</span><span>KDA {s.kdaV.toFixed(1)}</span></div></>}
+                  {s && <><div className="mt-3 grid grid-cols-2 gap-2"><div><p className={cn("tabular text-xl", s.wr >= 0.5 ? "text-win" : "text-loss")}>{fmtPct(s.wr)}</p><p className="font-mono text-[9px] text-muted-foreground">ПОБЕДЫ</p></div><div className="text-right"><p className="tabular text-lg text-foreground">{fmtPct(s.pr)}</p><p className="font-mono text-[9px] text-muted-foreground">ПИКРЕЙТ</p></div></div><div className="mt-3 flex justify-between border-t border-border pt-3 text-[10px] text-muted-foreground"><span>{fmtInt(s.matches)} игр</span><span>KDA {s.kdaV.toFixed(1)}</span></div></>}
                 </div>
               </Link></LayoutItem>
             );

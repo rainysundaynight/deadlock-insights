@@ -86,7 +86,7 @@ function Index() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-        <section className="border-t border-primary/40 pt-5 lg:col-span-2">
+        <section className="border-t border-primary/40 pt-5">
           <SectionTitle right={<Link to="/tierlist" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">Тир-лист <ArrowRight className="h-4 w-4" /></Link>}>Мета недели · Oracle+</SectionTitle>
           <div className="space-y-1">
             {tiers.slice(0, 8).map((r, i) => (
