@@ -163,10 +163,18 @@ function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }:
     </th>
   );
   return (
-    <section className="panel overflow-hidden">
-      <div className={cn("flex items-center justify-between border-b border-border px-4 py-3", team === 0 ? "text-amber-team" : "text-sapphire-team")}>
-        <h2 className="font-display text-lg uppercase tracking-wider">{TEAMS[team]}</h2>
-        <span className={cn("text-sm font-semibold uppercase", won ? "text-win" : "text-loss")}>{won ? "Победа" : "Поражение"}</span>
+    <section className={cn("panel relative overflow-hidden", team === 1 && "mt-5")}>
+      <span aria-hidden className={cn("absolute inset-y-0 left-0 w-1", team === 0 ? "bg-amber-team" : "bg-sapphire-team")} />
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border px-5 py-4">
+        <div>
+          <p className={cn("font-mono text-[10px] uppercase tracking-[0.3em]", won ? "text-win" : "text-muted-foreground")}>{won ? "◆ Победа" : "Поражение"}</p>
+          <h2 className={cn("font-display text-2xl font-black uppercase tracking-wide", team === 0 ? "text-amber-team" : "text-sapphire-team")}>{TEAMS[team]}</h2>
+        </div>
+        <div className="flex gap-6 text-right">
+          {[["Убийства", String(rawPlayers.reduce((s, p) => s + p.kills, 0))], ["Души", fmtK(teamNw)], ["Урон", fmtK(teamDmg)]].map(([l, v]) => (
+            <div key={l}><p className="tabular font-display text-xl font-bold">{v}</p><p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{l}</p></div>
+          ))}
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
@@ -183,7 +191,7 @@ function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }:
               const last = p.stats.at(-1);
               const final = p.items.filter((i) => i.sold_time_s === 0 && items.has(i.item_id));
               return (
-                <tr key={p.account_id} className="border-b border-border/50 last:border-0">
+                <tr key={p.account_id} className="border-b border-border/50 transition-colors last:border-0 hover:bg-accent/30">
                   <td className="p-3">
                     <div className="flex items-center gap-3">
                       <HeroIcon heroId={p.hero_id} size={40} />
@@ -217,12 +225,12 @@ function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }:
                   <td className="tabular p-3">{p.kills}/<span className="text-loss">{p.deaths}</span>/{p.assists}</td>
                   <td className={cn("tabular p-3", kp >= 60 ? "text-win" : kp < 35 ? "text-loss" : "")}>{kp}%</td>
                   <td className="tabular p-3">
-                    <span className={team === 0 ? "text-amber-team" : "text-sapphire-team"}>{fmtK(p.net_worth)}</span>
+                    <span className={team === 0 ? "text-amber-team" : "text-sapphire-team"}>{fmtK(p.net_worth)}</span>{p.net_worth === Math.max(...rawPlayers.map((x) => x.net_worth)) && <MaxTag />}
                     <Share pct={nwShare} team={team} />
                   </td>
                   <td className="tabular p-3">{p.last_hits}<span className="text-muted-foreground">/{p.denies}</span></td>
-                  <td className="tabular p-3">{fmtK(last?.player_damage)}<Share pct={dmgShare} team={team} /></td>
-                  <td className="tabular p-3">{fmtK(last?.player_healing)}</td>
+                  <td className="tabular p-3">{fmtK(last?.player_damage)}{(last?.player_damage ?? 0) === Math.max(...rawPlayers.map((x) => x.stats.at(-1)?.player_damage ?? 0)) && <MaxTag />}<Share pct={dmgShare} team={team} /></td>
+                  <td className="tabular p-3">{fmtK(last?.player_healing)}{(last?.player_healing ?? 0) > 0 && (last?.player_healing ?? 0) === Math.max(...rawPlayers.map((x) => x.stats.at(-1)?.player_healing ?? 0)) && <MaxTag />}</td>
                   <td className="p-3">
                     <div className="flex min-w-60 flex-wrap gap-1">
                       {final.map((i) => {
@@ -252,6 +260,10 @@ function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }:
       </div>
     </section>
   );
+}
+
+function MaxTag() {
+  return <span className="ml-1.5 border border-primary/50 px-1 align-middle font-mono text-[8px] uppercase text-primary">max</span>;
 }
 
 interface LiveMatch {
