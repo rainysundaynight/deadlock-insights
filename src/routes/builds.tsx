@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Empty, ErrorBox, HeroIcon, HeroSelect, Loading, PageHeader, inputClass, selectClass, useHeroMap, useItemMap } from "@/components/dl";
+import { GameItem } from "@/components/GameItem";
 import { api } from "@/lib/api";
 import { fmtAgo, fmtK } from "@/lib/format";
 
@@ -99,11 +100,11 @@ function BuildCard({ b }: { b: BuildEntry }) {
           const mods = c.mods.map((m) => items.get(m.ability_id)).filter(Boolean);
           if (!mods.length) return null;
           return (
-            <div key={i} className="flex items-center gap-3">
-              <span className="w-24 shrink-0 truncate text-xs uppercase tracking-wider text-muted-foreground">{c.name}</span>
-              <div className="flex flex-wrap gap-1">
+            <div key={i} className="flex items-start gap-3">
+              <span className="w-24 shrink-0 truncate pt-1 text-xs uppercase tracking-wider text-muted-foreground">{c.name}</span>
+              <div className="flex flex-wrap gap-1.5">
                 {mods.map((it, j) => (
-                  <img key={j} src={it!.shop_image_webp ?? it!.image_webp} alt={it!.name} title={it!.name} className="h-7 w-7 rounded border border-border bg-muted p-0.5" />
+                  <GameItem key={j} item={it!} size={74} />
                 ))}
               </div>
             </div>
