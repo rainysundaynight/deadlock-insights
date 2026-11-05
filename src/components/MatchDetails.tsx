@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 
 import { HeroIcon, useHeroMap } from "@/components/dl";
 import { fmtK } from "@/lib/format";
@@ -36,47 +37,78 @@ export function MatchDetails({ players, names, durationS }: { players: P[]; name
   const max = (f: (r: (typeof rows)[number]) => number) => Math.max(1, ...rows.map(f));
   const mx = { spm: max((r) => r.spm), taken: max((r) => r.taken), lost: max((r) => r.lost) };
 
+  const team = (t: number) => rows.filter((r) => r.p.team === t);
+  const tsum = (t: number, f: (r: (typeof rows)[number]) => number) => team(t).reduce((x, r) => x + f(r), 0);
+  const cards = [
+    { l: "Души в минуту", f: (r: (typeof rows)[number]) => r.spm, fmt: (v: number) => v.toFixed(0) },
+    { l: "Потеряно при смерти", f: (r: (typeof rows)[number]) => r.lost, fmt: fmtK },
+    { l: "Получено урона", f: (r: (typeof rows)[number]) => r.taken, fmt: fmtK },
+    { l: "Урон боссам", f: (r: (typeof rows)[number]) => r.boss, fmt: fmtK },
+  ];
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-        {SOURCES.map((s) => <span key={s.k} className="flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm" style={{ background: s.c }} />{s.l}</span>)}
+    <div className="space-y-6">
+      <div className="grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+        {cards.map((c) => {
+          const a = tsum(0, c.f), b = tsum(1, c.f), tot = a + b || 1;
+          return (
+            <div key={c.l} className="bg-card p-4">
+              <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{c.l}</p>
+              <div className="mt-2 flex items-baseline justify-between font-display text-2xl font-black">
+                <span className="tabular text-amber-team">{c.fmt(a)}</span><span className="tabular text-sapphire-team">{c.fmt(b)}</span>
+              </div>
+              <div className="mt-2 flex h-1 gap-px bg-secondary"><div className="bg-amber-team" style={{ width: `${(a / tot) * 100}%` }} /><div className="ml-auto bg-sapphire-team" style={{ width: `${(b / tot) * 100}%` }} /></div>
+            </div>
+          );
+        })}
       </div>
-      {[0, 1].map((team) => (
-        <section key={team} className="panel overflow-x-auto p-0">
-          <div className={cn("border-b border-border px-4 py-2 text-xs font-semibold uppercase tracking-wider", team === 0 ? "text-amber-team" : "text-sapphire-team")}>{team === 0 ? "Hidden King" : "Archmother"}</div>
-          <table className="w-full min-w-[900px] text-sm">
-            <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-left">
-                <th>Игрок</th><th>Души/мин</th><th className="w-[28%]">Источники душ</th><th>Точность</th><th>Крит</th><th>Получено урона</th><th>Потеряно при смерти</th><th>Урон боссам</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.filter((r) => r.p.team === team).sort((a, b) => b.spm - a.spm).map((r) => (
-                <tr key={r.p.player_slot} className="border-t border-border/50 [&>td]:px-3 [&>td]:py-2">
-                  <td>
-                    <Link to="/players/$accountId" params={{ accountId: String(r.p.account_id) }} className="flex items-center gap-2 hover:text-primary">
-                      <HeroIcon heroId={r.p.hero_id} size={28} />
-                      <span className="max-w-36 truncate">{names?.get(r.p.account_id)?.personaname ?? heroes.get(r.p.hero_id)?.name}</span>
+
+      <div className="flex flex-wrap gap-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+        <span className="text-primary">◆ Источники душ</span>
+        {SOURCES.map((s) => <span key={s.k} className="flex items-center gap-1.5"><i className="h-2.5 w-2.5" style={{ background: s.c }} />{s.l}</span>)}
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-2">
+        {[0, 1].map((t) => {
+          const tSrc = SOURCES.map((_, i) => tsum(t, (r) => r.src[i] ?? 0));
+          const tTot = tSrc.reduce((x, y) => x + y, 0) || 1;
+          return (
+            <section key={t} className="panel relative overflow-hidden">
+              <span aria-hidden className={cn("absolute inset-y-0 left-0 w-1", t === 0 ? "bg-amber-team" : "bg-sapphire-team")} />
+              <div className="border-b border-border px-5 py-4">
+                <div className="flex items-baseline justify-between">
+                  <h3 className={cn("font-display text-xl font-black uppercase", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{t === 0 ? "Hidden King" : "Archmother"}</h3>
+                  <span className="tabular font-mono text-xs text-muted-foreground">{fmtK(tTot)} душ из источников</span>
+                </div>
+                <div className="mt-3 flex h-2.5 overflow-hidden bg-muted">
+                  {tSrc.map((v, i) => <motion.div key={i} initial={{ width: 0 }} animate={{ width: `${(v / tTot) * 100}%` }} transition={{ duration: 0.7, delay: i * 0.05 }} title={`${SOURCES[i]?.l}: ${fmtK(v)}`} style={{ background: SOURCES[i]?.c }} />)}
+                </div>
+              </div>
+              <div className="divide-y divide-border/60">
+                {team(t).sort((a, b) => b.spm - a.spm).map((r) => (
+                  <div key={r.p.player_slot} className="grid grid-cols-[auto_1fr] items-center gap-4 px-5 py-3 transition-colors hover:bg-accent/30 sm:grid-cols-[180px_1fr_auto]">
+                    <Link to="/players/$accountId" params={{ accountId: String(r.p.account_id) }} className="flex min-w-0 items-center gap-2 hover:text-primary">
+                      <HeroIcon heroId={r.p.hero_id} size={34} />
+                      <span className="min-w-0"><span className="block truncate text-sm font-medium">{names?.get(r.p.account_id)?.personaname ?? heroes.get(r.p.hero_id)?.name}</span><span className="tabular font-mono text-[10px] text-muted-foreground">{r.spm.toFixed(0)} душ/мин</span></span>
                     </Link>
-                  </td>
-                  <td><Bar v={r.spm} max={mx.spm} label={r.spm.toFixed(0)} cls="bg-primary" /></td>
-                  <td>
-                    <div className="flex h-3 overflow-hidden rounded-full bg-muted" title={SOURCES.map((s, i) => `${s.l}: ${fmtK(r.src[i] ?? 0)}`).join(" · ")}>
-                      {r.src.map((v, i) => <div key={i} style={{ width: `${(v / r.total) * 100}%`, background: SOURCES[i]?.c }} />)}
+                    <div className="col-span-2 sm:col-span-1">
+                      <div className="flex h-2 overflow-hidden bg-muted" title={SOURCES.map((s, i) => `${s.l}: ${fmtK(r.src[i] ?? 0)}`).join(" · ")}>
+                        {r.src.map((v, i) => <div key={i} style={{ width: `${(v / r.total) * 100}%`, background: SOURCES[i]?.c }} />)}
+                      </div>
+                      <div className="mt-1.5 flex flex-wrap gap-x-3 font-mono text-[10px] text-muted-foreground">
+                        <span>точн. {(r.acc * 100).toFixed(0)}%</span><span>крит {(r.crit * 100).toFixed(0)}%</span><span>получено {fmtK(r.taken)}</span><span className="text-loss">−{fmtK(r.lost)} при смерти</span>
+                      </div>
                     </div>
-                    <p className="tabular mt-1 text-[11px] text-muted-foreground">линия {Math.round(((r.src[0] ?? 0) / r.total) * 100)}% · лагеря {Math.round(((r.src[1] ?? 0) / r.total) * 100)}% · герои {Math.round(((r.src[2] ?? 0) / r.total) * 100)}%</p>
-                  </td>
-                  <td className="tabular">{(r.acc * 100).toFixed(0)}%</td>
-                  <td className="tabular">{(r.crit * 100).toFixed(0)}%</td>
-                  <td><Bar v={r.taken} max={mx.taken} label={fmtK(r.taken)} cls="bg-secondary-foreground/60" /></td>
-                  <td><Bar v={r.lost} max={mx.lost} label={fmtK(r.lost)} cls="bg-loss" /></td>
-                  <td className="tabular">{fmtK(r.boss)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      ))}
+                    <div className="hidden text-right sm:block">
+                      <Bar v={r.spm} max={mx.spm} label="" cls={t === 0 ? "bg-amber-team" : "bg-sapphire-team"} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 }
