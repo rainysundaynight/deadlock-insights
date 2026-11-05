@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Activity, Swords, Users, Crosshair, BookOpen, GitCompare } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Empty, ErrorBox, useSteamProfiles, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
@@ -51,19 +51,18 @@ function PlayerPage() {
 
   return (
     <div className="space-y-8">
-      <div className="panel flex flex-col gap-6 p-6 md:flex-row md:items-center">
+      <div className="player-dossier relative grid gap-6 border-y border-primary/40 py-7 md:grid-cols-[auto_1fr_auto] md:items-center">
         {profile?.avatarfull ? (
-          <img src={profile.avatarfull} alt="" className="h-24 w-24 rounded-md border border-primary/40" />
+          <div className="gazette-frame w-fit p-2"><img src={profile.avatarfull} alt="" className="h-24 w-24 object-cover" /></div>
         ) : (
           <div className="h-24 w-24 rounded-md bg-muted" />
         )}
         <div className="flex-1">
-          <p className="text-xs uppercase tracking-[0.3em] text-primary">Профиль игрока</p>
-          <h1 className="font-display text-4xl font-semibold">{profile?.personaname ?? `Игрок #${id}`}</h1>
+          <p className="mb-3 font-mono text-[10px] uppercase text-primary">Архив игроков / Досье № {id}</p>
+          <h1 className="break-words font-display text-3xl font-semibold sm:text-4xl">{profile?.personaname ?? `Игрок #${id}`}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-            <span>ID {id}</span>
             <FollowButton accountId={id} name={profile?.personaname} />
-            <Link to="/compare" search={{ a: id }} className="hover:text-primary">Сравнить →</Link>
+            <Link to="/compare" search={{ a: id }} className="inline-flex items-center gap-1.5 hover:text-primary"><GitCompare className="h-3.5 w-3.5" />Сравнить</Link>
             {profile?.profileurl && (
               <a href={profile.profileurl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
                 Steam <ExternalLink className="h-3 w-3" />
@@ -71,7 +70,7 @@ function PlayerPage() {
             )}
           </div>
         </div>
-        <div className="md:text-right">
+        <div className="flex flex-col gap-3 border-t border-border pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0"><p className="font-mono text-[10px] uppercase text-muted-foreground">Классификация</p>
           {rank.data?.badge ? <RankBadge badge={rank.data.badge} size={64} /> : rank.isLoading ? null : <PotentialRank accountId={id} history={history.data ?? []} />}
         </div>
       </div>
@@ -81,7 +80,7 @@ function PlayerPage() {
       ) : history.error ? (
         <ErrorBox error={history.error} />
       ) : (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-px bg-border md:grid-cols-4">
           <Stat label="Матчей" value={fmtInt(summary.n)} />
           <Stat label="Винрейт" value={`${(winrate(summary.wins, summary.n) * 100).toFixed(1)}%`} tone={summary.wins / Math.max(1, summary.n) >= 0.5 ? "win" : "loss"} sub={`${summary.wins} побед`} />
           <Stat label="KDA" value={kda(summary.k, summary.d, summary.a)} tone="brass" sub={`${(summary.k / Math.max(1, summary.n)).toFixed(1)} / ${(summary.d / Math.max(1, summary.n)).toFixed(1)} / ${(summary.a / Math.max(1, summary.n)).toFixed(1)}`} />
@@ -90,12 +89,12 @@ function PlayerPage() {
       )}
 
       <Tabs defaultValue="overview">
-        <TabsList className="bg-secondary">
-          <TabsTrigger value="overview">Обзор</TabsTrigger>
-          <TabsTrigger value="matches">Матчи</TabsTrigger>
-          <TabsTrigger value="heroes">Герои</TabsTrigger>
-          <TabsTrigger value="mates">Тиммейты</TabsTrigger>
-          <TabsTrigger value="enemies">Соперники</TabsTrigger>
+        <TabsList>
+          <TabsTrigger value="overview"><BookOpen className="h-4 w-4" />Обзор</TabsTrigger>
+          <TabsTrigger value="matches"><Activity className="h-4 w-4" />Матчи <span className="font-mono text-[10px] opacity-60">{summary.n}</span></TabsTrigger>
+          <TabsTrigger value="heroes"><Swords className="h-4 w-4" />Герои</TabsTrigger>
+          <TabsTrigger value="mates"><Users className="h-4 w-4" />Тиммейты</TabsTrigger>
+          <TabsTrigger value="enemies"><Crosshair className="h-4 w-4" />Соперники</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4">
           <PlayerInsights history={history.data ?? []} badge={rank.data?.badge} />
