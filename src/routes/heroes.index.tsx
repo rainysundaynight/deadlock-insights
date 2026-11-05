@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowDown, LayoutGrid, List, SlidersHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 
 import { Chip, ErrorBox, RankFilter, rankParams, HeroIcon, Loading, PageHeader, WinrateBar, useHeroMap } from "@/components/dl";
 import { api, heroesQuery, type HeroAnalytics } from "@/lib/api";
@@ -100,7 +101,7 @@ function HeroesPage() {
           {[...(heroList.data ?? [])].filter((h) => !rows.length || rows.some((r) => r.hero_id === h.id)).sort((a, b) => rows.findIndex((r) => r.hero_id === a.id) - rows.findIndex((r) => r.hero_id === b.id)).map((h) => {
             const s = rows.find((r) => r.hero_id === h.id);
             return (
-              <LayoutItem key={h.id}><Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as React.CSSProperties} className="panel panel-hover gazette-frame group relative block hover:z-10">
+              <LayoutItem key={h.id}><Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as CSSProperties} className="panel panel-hover gazette-frame group relative block hover:z-10">
                 <div className="relative aspect-[3/4]">
                   <div className="hero-card-bg absolute inset-0 overflow-hidden" />
                   <span className="absolute right-2 top-2 z-0 font-mono text-[9px] uppercase text-foreground/70">№ {String(h.id).padStart(3, "0")}</span>
