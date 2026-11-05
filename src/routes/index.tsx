@@ -64,7 +64,7 @@ function Index() {
         </div>
         {tiers.length >= 4 && (["left", "right"] as const).map((side) => (
           <div key={side} className={cn("absolute bottom-0 z-[3] hidden items-end min-[1400px]:flex", side === "left" ? "left-6 2xl:left-12" : "right-6 flex-row-reverse 2xl:right-12")}>
-            <div aria-hidden className="hero-stage pointer-events-none absolute inset-x-[-15%] bottom-0 top-[-30%]">
+            <div aria-hidden className="hero-stage pointer-events-none absolute inset-x-0 bottom-0 top-[-30%]">
               <div className="hero-stage-beam absolute inset-0" />
               <div className="absolute inset-x-[10%] bottom-0 h-6 rounded-[50%] blur-md" style={{ background: "radial-gradient(closest-side, color-mix(in oklab, var(--primary) 45%, transparent), transparent)" }} />
               <div className="absolute inset-x-[5%] bottom-0 h-px" style={{ background: "linear-gradient(90deg, transparent, var(--primary), transparent)" }} />
