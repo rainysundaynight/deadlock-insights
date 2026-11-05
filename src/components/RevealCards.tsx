@@ -16,15 +16,16 @@ export function useRevealCards(root: RefObject<HTMLElement | null>) {
         seen.add(p);
         stops.push(
           inView(p, () => {
-            const a = animate(p, { opacity: [0, 1], y: [32, 0], filter: ["blur(4px)", "blur(0px)"] }, { duration: 0.7, delay: (i % 6) * 0.075, ease: [0.22, 1, 0.36, 1] });
-            return () => a.stop();
+            // once only, GPU-friendly (no blur/filter), so fast scrolling stays smooth
+            animate(p, { opacity: [0, 1], y: [16, 0] }, { duration: 0.35, delay: (i % 4) * 0.04, ease: "easeOut" });
           }, { amount: 0.05 }),
         );
       });
     };
     scan();
-    const mo = new MutationObserver(scan);
+    let raf = 0;
+    const mo = new MutationObserver(() => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; scan(); }); });
     mo.observe(el, { childList: true, subtree: true });
-    return () => { mo.disconnect(); stops.forEach((s) => s()); };
+    return () => { cancelAnimationFrame(raf); mo.disconnect(); stops.forEach((s) => s()); };
   }, [root, path]);
 }
