@@ -1,8 +1,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ExternalLink, Package, RefreshCw, Activity, Swords, Users, Crosshair, BookOpen, GitCompare } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Empty, ErrorBox, useSteamProfiles, useItemMap, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
 import { FollowButton } from "@/components/FollowButton";
@@ -57,14 +58,55 @@ function PlayerPage() {
     try {
       const fresh = await api<MatchHistoryEntry[]>(`/v1/players/${id}/match-history`, { force_refetch: true });
       localStorage.setItem(key, String(Date.now()));
+      setLastForce(Date.now());
+      pendingSrc.current = "steam";
       const before = history.data?.length ?? 0;
       qc.setQueryData(["history", id], fresh);
       const added = fresh.length - before;
-      toast.success(added > 0 ? `Найдено новых матчей: ${added}` : "Новых матчей нет — история актуальна");
+      if (added <= 0) toast.success("Новых матчей нет — история актуальна");
     } catch {
       toast.error("Steam временно не отдаёт историю (лимит запросов). Попробуйте позже.");
     } finally { setRefetching(false); }
   };
+
+  // ---- sources, new-match alerts, refresh status ----
+  const srcKey = `dl-src-${id}`;
+  const [sources, setSources] = useState<Record<number, "steam" | "archive">>({});
+  const pendingSrc = useRef<"steam" | "archive">("archive");
+  const seen = useRef<Set<number> | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const [lastForce, setLastForce] = useState(0);
+  useEffect(() => {
+    try { setSources(JSON.parse(localStorage.getItem(srcKey) ?? "{}")); } catch { /* ignore */ }
+    setLastForce(Number(localStorage.getItem(`dl-force-refetch-${id}`) ?? 0));
+    seen.current = null;
+    const t = setInterval(() => setNow(Date.now()), 15_000);
+    return () => clearInterval(t);
+  }, [id, srcKey]);
+  useEffect(() => {
+    const list = history.data;
+    if (!list) return;
+    const ids = list.map((m) => m.match_id);
+    if (seen.current) {
+      const fresh = list.filter((m) => !seen.current!.has(m.match_id));
+      if (fresh.length) {
+        const src = pendingSrc.current;
+        setSources((prev) => {
+          const next = { ...prev };
+          fresh.forEach((m) => { next[m.match_id] = src; });
+          localStorage.setItem(srcKey, JSON.stringify(next));
+          return next;
+        });
+        const name = profile?.personaname ?? `#${id}`;
+        const text = `${name}: ${fresh.length === 1 ? "новый матч" : `новых матчей — ${fresh.length}`}`;
+        toast.success(text, { description: src === "steam" ? "Получено напрямую из Steam" : "Появилось в архиве" });
+        if (typeof Notification !== "undefined" && Notification.permission === "granted" && document.hidden) new Notification("The Deadlock", { body: text });
+      }
+    }
+    seen.current = new Set(ids);
+    pendingSrc.current = "archive";
+  }, [history.data, id, srcKey, profile?.personaname]);
+  const cooldownLeft = Math.max(0, 3600_000 - (now - lastForce));
 
   const summary = useMemo(() => {
     const h = history.data ?? [];
@@ -77,7 +119,8 @@ function PlayerPage() {
 
   return (
     <div className="space-y-8">
-      <div className="player-dossier relative grid gap-6 border-y border-primary/40 py-7 md:grid-cols-[auto_1fr_auto] md:items-center">
+      <DossierBackdrop history={history.data ?? []} />
+      <div className="player-dossier relative -mt-8 grid gap-6 border-y border-primary/40 py-7 md:grid-cols-[auto_1fr_auto] md:items-center">
         {profile?.avatarfull ? (
           <div className="gazette-frame w-fit p-2"><img src={profile.avatarfull} alt="" className="h-24 w-24 object-cover" /></div>
         ) : (
@@ -85,7 +128,12 @@ function PlayerPage() {
         )}
         <div className="flex-1">
           <p className="mb-3 font-mono text-[10px] uppercase text-primary">Архив игроков / Досье № {id}</p>
-          <h1 className="break-words font-display text-3xl font-semibold sm:text-4xl">{profile?.personaname ?? `Игрок #${id}`}</h1>
+          <h1 className="break-words font-display text-4xl font-black tracking-tight sm:text-5xl">{profile?.personaname ?? `Игрок #${id}`}</h1>
+          <div className="mt-3 flex gap-1" aria-label="Форма за последние матчи">
+            {(history.data ?? []).slice(0, 15).reverse().map((m, i) => (
+              <motion.span key={m.match_id} initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: i * 0.03 }} title={m.match_result === m.player_team ? "Победа" : "Поражение"} className={cn("h-4 w-2 origin-bottom", m.match_result === m.player_team ? "bg-win" : "bg-loss/70")} />
+            ))}
+          </div>
           <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <FollowButton accountId={id} name={profile?.personaname} />
             <button onClick={forceRefresh} disabled={refetching} title="Запросить свежую историю напрямую из Steam" className="inline-flex items-center gap-1.5 hover:text-primary disabled:opacity-50"><RefreshCw className={cn("h-3.5 w-3.5", refetching && "animate-spin")} />{refetching ? "Обновляем…" : "Обновить матчи"}</button>
@@ -115,6 +163,29 @@ function PlayerPage() {
         </div>
       )}
 
+      <div className="refresh-ledger grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-4">
+        <div className="bg-card px-4 py-3">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Статус</p>
+          <p className="mt-1 flex items-center gap-2 text-sm">
+            <span className={cn("h-2 w-2 rounded-full", history.isFetching || refetching ? "animate-pulse bg-primary" : history.isError ? "bg-loss" : "bg-win")} />
+            {refetching ? "Запрос в Steam…" : history.isFetching ? "Проверяем архив…" : history.isError ? "Ошибка загрузки" : "История актуальна"}
+          </p>
+        </div>
+        <div className="bg-card px-4 py-3">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Последняя проверка</p>
+          <p className="tabular mt-1 text-sm">{history.dataUpdatedAt ? `${Math.max(0, Math.round((now - history.dataUpdatedAt) / 60000))} мин назад` : "—"} <span className="text-muted-foreground">· авто каждые 2 мин</span></p>
+        </div>
+        <div className="bg-card px-4 py-3">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Ручное обновление из Steam</p>
+          <p className={cn("tabular mt-1 text-sm", cooldownLeft ? "text-muted-foreground" : "text-win")}>{cooldownLeft ? `через ${Math.ceil(cooldownLeft / 60000)} мин` : "доступно сейчас"}</p>
+          <div className="mt-1.5 h-0.5 bg-secondary"><div className="h-full bg-primary transition-all" style={{ width: `${100 - (cooldownLeft / 3600_000) * 100}%` }} /></div>
+        </div>
+        <div className="bg-card px-4 py-3">
+          <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Последний матч</p>
+          <p className="mt-1 text-sm">{history.data?.[0] ? fmtAgo(history.data[0].start_time) : "—"} {history.data?.[0] && <SourceTag src={sources[history.data[0].match_id]} />}</p>
+        </div>
+      </div>
+
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview"><BookOpen className="h-4 w-4" />Обзор</TabsTrigger>
@@ -128,7 +199,7 @@ function PlayerPage() {
           <PlayerInsights history={history.data ?? []} badge={rank.data?.badge} />
         </TabsContent>
         <TabsContent value="matches" className="mt-4">
-          <MatchList matches={history.data ?? []} accountId={id} />
+          <MatchList matches={history.data ?? []} accountId={id} sources={sources} />
         </TabsContent>
         <TabsContent value="heroes" className="mt-4">
           <PlayerHeroes id={id} />
@@ -159,7 +230,30 @@ function streaks(ms: MatchHistoryEntry[]) {
 
 interface RowMeta { match_id: number; players: { account_id: number; hero_id: number; team: string; items?: { item_id: number; sold_time_s: number }[] }[] }
 
-function MatchList({ matches: all, accountId }: { matches: MatchHistoryEntry[]; accountId: number }) {
+function DossierBackdrop({ history }: { history: MatchHistoryEntry[] }) {
+  const heroes = useHeroMap();
+  const top = useMemo(() => {
+    const c = new Map<number, number>();
+    history.slice(0, 30).forEach((m) => c.set(m.hero_id, (c.get(m.hero_id) ?? 0) + 1));
+    return [...c.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  }, [history]);
+  const img = top ? heroes.get(top)?.images.background_image_webp ?? heroes.get(top)?.images.icon_hero_card_webp : undefined;
+  return (
+    <div aria-hidden className="pointer-events-none relative -mx-4 h-8 md:-mx-8">
+      {img && (
+        <motion.div initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} className="dossier-backdrop absolute inset-x-0 top-0 h-[320px] bg-cover bg-center" style={{ backgroundImage: `url(${img})` }} />
+      )}
+    </div>
+  );
+}
+
+function SourceTag({ src }: { src?: "steam" | "archive" | undefined }) {
+  return src === "steam"
+    ? <span title="Матч получен напрямую из Steam" className="ml-1 rounded-sm border border-primary/50 bg-primary/10 px-1 font-mono text-[9px] uppercase text-primary">Steam</span>
+    : <span title="Матч из архива Deadlock API" className="ml-1 rounded-sm border border-border px-1 font-mono text-[9px] uppercase text-muted-foreground">Архив</span>;
+}
+
+function MatchList({ matches: all, accountId, sources }: { matches: MatchHistoryEntry[]; accountId: number; sources: Record<number, "steam" | "archive"> }) {
   const [limit, setLimit] = useState(30);
   const [hero, setHero] = useState<number | "all">("all");
   const [res, setRes] = useState<"all" | "win" | "loss">("all");
@@ -252,7 +346,7 @@ function MatchList({ matches: all, accountId }: { matches: MatchHistoryEntry[]; 
                 {badges.map((b) => <span key={b} className="rounded-sm border border-primary/40 bg-primary/10 px-1.5 font-mono text-[9px] font-semibold uppercase text-primary">{b}</span>)}
               </p>
               <p className={cn("font-mono text-[10px] uppercase", won ? "text-win" : "text-loss")}>
-                {won ? "Победа" : "Поражение"} · <span className="text-muted-foreground">{m.game_mode === 4 ? "Street Brawl" : m.match_mode === 4 ? "Рейтинговый" : "Обычный"} · {fmtAgo(m.start_time)} · {fmtDuration(m.match_duration_s)}</span>
+                {won ? "Победа" : "Поражение"} · <span className="text-muted-foreground">{m.game_mode === 4 ? "Street Brawl" : m.match_mode === 4 ? "Рейтинговый" : "Обычный"} · {fmtAgo(m.start_time)} · {fmtDuration(m.match_duration_s)}</span><SourceTag src={sources[m.match_id]} />
               </p>
             </div>
             <div className="tabular text-right">
