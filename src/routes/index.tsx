@@ -63,7 +63,7 @@ function Index() {
           <div className="gazette-hero absolute inset-0" />
         </div>
         {tiers.length >= 4 && (["left", "right"] as const).map((side) => (
-          <div key={side} className={cn("absolute bottom-0 z-[3] hidden items-end xl:flex", side === "left" ? "left-6 2xl:left-12" : "right-6 flex-row-reverse 2xl:right-12")}>
+          <div key={side} className={cn("absolute bottom-0 z-[3] hidden items-end min-[1400px]:flex", side === "left" ? "left-6 2xl:left-12" : "right-6 flex-row-reverse 2xl:right-12")}>
             {tiers.slice(side === "left" ? 0 : 2, side === "left" ? 2 : 4).map((r, i) => {
               const h = heroes.get(r.hero_id);
               if (!h) return null;
