@@ -465,7 +465,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
                   const hp = w?.health?.[Math.min(ti, (w?.pts.length ?? 1) - 1)] ?? 100;
                   const sn = snapOf(p);
                   return (
-                    <button key={p.player_slot} onClick={() => setSel(p.player_slot)} className={cn("w-full rounded px-1 py-0.5 text-left hover:bg-secondary", sel === p.player_slot && "bg-secondary", hp <= 0 && "opacity-40")}>
+                    <button key={p.player_slot} onClick={() => setSel(p.player_slot)} className={cn("w-full rounded px-1 py-0.5 text-left hover:bg-secondary", sel === p.player_slot && "bg-secondary", mvpSlot === p.player_slot && hp > 0 && "bg-primary/10 ring-1 ring-primary/60", hp <= 0 && "opacity-40")}>
                       <div className="flex items-center gap-2">
                         <HeroIcon heroId={p.hero_id} size={24} className={team === 0 ? "border-amber-team" : "border-sapphire-team"} />
                         <span className="min-w-0 flex-1 truncate text-xs">{mvpSlot === p.player_slot && <span title="Сильнейший сейчас" className="mr-1 text-primary">♛</span>}{names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name}</span>
