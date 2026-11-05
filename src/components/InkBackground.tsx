@@ -11,8 +11,8 @@ export function InkBackground() {
     if (!ctx) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const GAP = 22;
-    const ink = getComputedStyle(document.documentElement).getPropertyValue("--foreground").trim() || "#222";
-    const red = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim() || "#a22";
+    const ink = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
+    const red = getComputedStyle(document.documentElement).getPropertyValue("--telemetry").trim();
     let w = 0, h = 0, raf = 0;
     const mouse = { x: -9999, y: -9999, tx: -9999, ty: -9999 };
 
@@ -29,7 +29,7 @@ export function InkBackground() {
       mouse.x += (mouse.tx - mouse.x) * 0.12;
       mouse.y += (mouse.ty - mouse.y) * 0.12;
       ctx.clearRect(0, 0, w, h);
-      const R = 170;
+      const R = 140;
       for (let y = GAP / 2; y < h; y += GAP) {
         for (let x = GAP / 2; x < w; x += GAP) {
           const dx = x - mouse.x, dy = y - mouse.y;
@@ -38,7 +38,7 @@ export function InkBackground() {
           const e = k * k;
           const px = x + (d ? (dx / d) * e * 10 : 0);
           const py = y + (d ? (dy / d) * e * 10 : 0);
-          ctx.globalAlpha = 0.09 + e * 0.5;
+          ctx.globalAlpha = 0.04 + e * 0.3;
           ctx.fillStyle = e > 0.35 ? red : ink;
           ctx.beginPath();
           ctx.arc(px, py, 0.9 + e * 3.2, 0, Math.PI * 2);

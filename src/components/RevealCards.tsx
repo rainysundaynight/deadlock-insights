@@ -11,13 +11,13 @@ export function useRevealCards(root: RefObject<HTMLElement | null>) {
     const seen = new WeakSet<Element>();
     const stops: (() => void)[] = [];
     const scan = () => {
-      const fresh = [...el.querySelectorAll<HTMLElement>(".panel")].filter((p) => !seen.has(p));
+      const fresh = [...el.querySelectorAll<HTMLElement>(".panel, .reveal-item")].filter((p) => !seen.has(p));
       fresh.forEach((p, i) => {
         seen.add(p);
-        p.style.opacity = "0";
         stops.push(
           inView(p, () => {
-            animate(p, { opacity: [0, 1], y: [18, 0], filter: ["blur(3px)", "blur(0px)"] }, { duration: 0.5, delay: (i % 8) * 0.05, ease: [0.22, 1, 0.36, 1] });
+            const a = animate(p, { opacity: [0.35, 1], y: [12, 0] }, { duration: 0.5, delay: (i % 6) * 0.035, ease: [0.22, 1, 0.36, 1] });
+            return () => a.stop();
           }, { amount: 0.05 }),
         );
       });
