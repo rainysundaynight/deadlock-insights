@@ -78,35 +78,73 @@ export function ItemsTimeline({ players, names }: { players: DeepPlayer[]; names
   const [sel, setSel] = useState(players[0]?.account_id);
   const p = players.find((x) => x.account_id === sel) ?? players[0];
   if (!p) return null;
-  const bought = p.items.filter((i) => items.has(i.item_id)).sort((a, b) => a.game_time_s - b.game_time_s);
+  const bought = p.items.filter((i) => items.has(i.item_id) && items.get(i.item_id)?.type === "upgrade").sort((a, b) => a.game_time_s - b.game_time_s);
+  const final = bought.filter((i) => !i.sold_time_s);
+  const end = Math.max(1, p.stats.at(-1)?.time_stamp_s ?? bought.at(-1)?.game_time_s ?? 1);
+  const phases = [["Ранняя игра", "0–10 мин", 0, 600], ["Середина", "10–25 мин", 600, 1500], ["Поздняя", "25+ мин", 1500, 1e9]] as const;
+  const slotBorder = (s?: string) => s === "weapon" ? "border-amber-team/70" : s === "vitality" ? "border-win/70" : s === "spirit" ? "border-chart-5/70" : "border-border";
+  const Img = ({ id, size = 36, dim }: { id: number; size?: number; dim?: boolean }) => {
+    const it = items.get(id)!;
+    return <img src={it.shop_image_webp ?? it.image_webp ?? it.image} alt={it.name} title={it.name} style={{ width: size, height: size }} className={cn("border-2 bg-secondary p-0.5", slotBorder(it.item_slot_type), dim && "opacity-40 grayscale")} />;
+  };
   return (
-    <div className="grid gap-4 lg:grid-cols-[240px_1fr]">
-      <div className="panel space-y-1 p-2">
-        {players.map((x) => (
-          <button key={x.account_id} onClick={() => setSel(x.account_id)} className={cn("flex w-full items-center gap-2 rounded-lg p-2 text-left text-sm", x.account_id === p.account_id ? "bg-primary/15 text-primary" : "hover:bg-accent")}>
-            <span className={cn("h-6 w-1 rounded-full", x.team === 0 ? "bg-amber-team" : "bg-sapphire-team")} />
-            <HeroIcon heroId={x.hero_id} size={26} />
-            <span className="truncate">{names?.get(x.account_id)?.personaname ?? heroes.get(x.hero_id)?.name}</span>
-          </button>
+    <div className="space-y-5">
+      <div className="grid gap-4 md:grid-cols-2">
+        {[0, 1].map((t) => (
+          <div key={t} className="panel relative p-3">
+            <span aria-hidden className={cn("absolute inset-x-0 top-0 h-0.5", t === 0 ? "bg-amber-team" : "bg-sapphire-team")} />
+            <p className={cn("mb-2 font-mono text-[10px] uppercase tracking-widest", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{t === 0 ? "Hidden King" : "Archmother"}</p>
+            <div className="grid grid-cols-6 gap-2">
+              {players.filter((x) => x.team === t).map((x) => (
+                <button key={x.account_id} onClick={() => setSel(x.account_id)} className={cn("group text-center transition-opacity", x.account_id !== p.account_id && "opacity-60 hover:opacity-100")}>
+                  <HeroIcon heroId={x.hero_id} size={44} className={cn("mx-auto", x.account_id === p.account_id && "ring-2 ring-primary")} />
+                  <span className="mt-1 block truncate text-[10px]">{names?.get(x.account_id)?.personaname ?? heroes.get(x.hero_id)?.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
+
       <section className="panel p-5">
-        <SectionTitle>Порядок покупки предметов</SectionTitle>
-        <ol className="relative space-y-3 border-l border-border pl-6">
-          {bought.map((i, idx) => {
-            const it = items.get(i.item_id)!;
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <HeroIcon heroId={p.hero_id} size={48} />
+            <div>
+              <p className="font-display text-xl font-bold">{names?.get(p.account_id)?.personaname ?? heroes.get(p.hero_id)?.name}</p>
+              <p className="font-mono text-[10px] uppercase text-muted-foreground">{heroes.get(p.hero_id)?.name} · {bought.length} покупок · {fmtK(final.reduce((s, i) => s + (items.get(i.item_id)?.cost ?? 0), 0))} душ в сборке</p>
+            </div>
+          </div>
+        </div>
+        <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-primary">◆ Финальная сборка</p>
+        <div className="flex flex-wrap gap-2">
+          {final.map((i, k) => (
+            <div key={k} className="text-center"><Img id={i.item_id} size={52} /><p className="tabular mt-0.5 font-mono text-[10px] text-muted-foreground">{fmtDuration(i.game_time_s)}</p></div>
+          ))}
+        </div>
+
+        <p className="mb-2 mt-6 font-mono text-[10px] uppercase tracking-widest text-primary">◆ Шкала покупок</p>
+        <div className="relative h-14 border-b border-border">
+          {bought.map((i, k) => (
+            <span key={k} className="absolute bottom-1 -translate-x-1/2" style={{ left: `${(i.game_time_s / end) * 100}%`, bottom: (k % 2) * 22 + 2 }}><Img id={i.item_id} size={20} dim={i.sold_time_s > 0} /></span>
+          ))}
+        </div>
+        <div className="flex justify-between font-mono text-[9px] text-muted-foreground"><span>0:00</span><span>{fmtDuration(end / 2)}</span><span>{fmtDuration(end)}</span></div>
+
+        <div className="mt-6 grid gap-3 md:grid-cols-3">
+          {phases.map(([l, sub, from, to]) => {
+            const list = bought.filter((i) => i.game_time_s >= from && i.game_time_s < to);
             return (
-              <li key={`${i.item_id}-${idx}`} className="relative flex items-center gap-3">
-                <span className="absolute -left-[29px] h-2.5 w-2.5 rounded-full border-2 border-background bg-primary" />
-                <span className="tabular w-12 text-xs text-muted-foreground">{fmtDuration(i.game_time_s)}</span>
-                <img src={it.shop_image_webp ?? it.image_webp ?? it.image} alt="" className={cn("h-8 w-8 rounded-md border p-0.5", it.item_slot_type === "weapon" && "border-amber-team/60 bg-amber-team/10", it.item_slot_type === "vitality" && "border-win/60 bg-win/10", it.item_slot_type === "spirit" && "border-chart-5/60 bg-chart-5/10")} />
-                <span className={cn("text-sm", i.sold_time_s > 0 && "text-muted-foreground line-through")}>{it.name}</span>
-                {i.sold_time_s > 0 && <span className="text-xs text-muted-foreground">продан {fmtDuration(i.sold_time_s)}</span>}
-                {it.cost != null && <span className="tabular ml-auto text-xs text-primary">{fmtK(it.cost)}</span>}
-              </li>
+              <div key={l} className="border border-border p-3">
+                <div className="mb-2 flex items-baseline justify-between border-b border-border pb-1.5"><p className="font-display font-bold">{l}</p><p className="font-mono text-[10px] text-muted-foreground">{sub} · {fmtK(list.reduce((s, i) => s + (items.get(i.item_id)?.cost ?? 0), 0))}</p></div>
+                <div className="flex flex-wrap gap-1.5">{list.length ? list.map((i, k) => <Img key={k} id={i.item_id} size={32} dim={i.sold_time_s > 0} />) : <span className="text-xs text-muted-foreground">—</span>}</div>
+              </div>
             );
           })}
-        </ol>
+        </div>
+        {bought.some((i) => i.sold_time_s > 0) && (
+          <p className="mt-4 font-mono text-[10px] uppercase text-muted-foreground">Продано: {bought.filter((i) => i.sold_time_s > 0).map((i) => `${items.get(i.item_id)?.name} (${fmtDuration(i.sold_time_s)})`).join(" · ")}</p>
+        )}
       </section>
     </div>
   );
