@@ -8,6 +8,7 @@ import { splitBadge } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { motion, useReducedMotion } from "framer-motion";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export function useHeroMap() {
   const { data } = useQuery(heroesQuery);
@@ -186,19 +187,11 @@ export function Chip({ active, onClick, children }: { active?: boolean; onClick?
 
 export function HeroSelect({ value, onChange, allowAll = true }: { value: number | null; onChange: (v: number | null) => void; allowAll?: boolean }) {
   const { data } = useQuery(heroesQuery);
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const hero = data?.find((h) => h.id === value);
   return (
-    <select
-      value={value ?? ""}
-      onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
-      className="h-10 rounded-md border border-input bg-secondary px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-    >
-      {allowAll && <option value="">Все герои</option>}
-      {data?.map((h) => (
-        <option key={h.id} value={h.id}>
-          {h.name}
-        </option>
-      ))}
-    </select>
+    <Popover open={open} onOpenChange={setOpen}><PopoverTrigger asChild><Button variant="outline" className="h-10 justify-between bg-secondary">{hero && <HeroIcon heroId={hero.id} size={26} />}<span>{hero?.name ?? "Все герои"}</span><ChevronDown /></Button></PopoverTrigger><PopoverContent align="start" className="w-80 max-w-[90vw] border-primary/40 bg-popover p-3"><input aria-label="Поиск героя" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Имя в досье…" className={inputClass} />{allowAll && <Button variant="ghost" className="mt-2 w-full" onClick={() => { onChange(null); setOpen(false); }}>Все герои</Button>}<div className="mt-3 grid max-h-72 grid-cols-4 gap-1 overflow-y-auto">{data?.filter((h) => h.name.toLowerCase().includes(search.toLowerCase())).map((h) => <Button key={h.id} variant="ghost" className={cn("h-auto flex-col gap-1 p-2", h.id === value && "bg-primary/15 text-primary")} onClick={() => { onChange(h.id); setOpen(false); }}><HeroIcon heroId={h.id} size={40} /><span className="w-full truncate text-[10px]">{h.name}</span></Button>)}</div></PopoverContent></Popover>
   );
 }
 

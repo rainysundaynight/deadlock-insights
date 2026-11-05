@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Empty, ErrorBox, HeroLink, HeroSelect, Loading, PageHeader, SectionTitle, WinrateBar } from "@/components/dl";
 import { api, heroesQuery } from "@/lib/api";
 import { fmtInt } from "@/lib/format";
+import { RollingNumber } from "@/components/GazetteMotion";
 
 export const Route = createFileRoute("/meta")({
   head: () => ({
@@ -60,12 +61,13 @@ function List({ title, rows }: { title: string; rows: { id: number; wr: number; 
     <section>
       <SectionTitle>{title}</SectionTitle>
       {rows.length === 0 ? <Empty>Мало данных</Empty> : (
-        <div className="panel divide-y divide-border">
+        <div className="gazette-frame divide-y divide-border bg-card/50">
           {rows.map((r) => (
             <div key={r.id} className="flex items-center justify-between gap-3 p-3">
               <HeroLink heroId={r.id} size={32} />
               <div className="text-right">
                 <WinrateBar value={r.wr} />
+                <p className="mt-1 font-mono text-[10px] text-primary"><RollingNumber value={(r.wr - 0.5) * 100} decimals={1} suffix=" п.п. к 50%" /></p>
                 <p className="tabular text-xs text-muted-foreground">{fmtInt(r.n)} матчей</p>
               </div>
             </div>
