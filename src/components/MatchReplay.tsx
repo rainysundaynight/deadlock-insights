@@ -14,7 +14,7 @@ export interface MatchPath {
 }
 export interface MatchPaths { interval_s: number; x_resolution: number; y_resolution: number; paths: MatchPath[] }
 export interface MatchObjective { destroyed_time_s: number; team_objective_id: number; team: number }
-type P = ModalPlayer & { death_details?: { game_time_s: number; death_pos: { x: number; y: number } }[] };
+type P = ModalPlayer & { death_details?: { game_time_s: number; killer_player_slot?: number; death_pos: { x: number; y: number } }[] };
 
 type Rel = { left_relative: number; top_relative: number };
 interface MapData {
@@ -151,6 +151,30 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
     ...(md.entities.unstable_rifts ?? []).map((r) => ({ ...cycle(sec, RIFT_FIRST, RIFT_EVERY, RIFT_OPEN), x: rel(r)[0], y: rel(r)[1], c: "oklch(0.7 0.25 310)", short: "R", label: "Рифт" })),
     ...(md.entities.bridge_buffs ?? []).map((r) => ({ ...cycle(sec, RUNE_FIRST, RUNE_EVERY, RUNE_STAY), x: rel(r)[0], y: rel(r)[1], c: "oklch(0.85 0.17 95)", short: "B", label: "Руна (бафф моста)" })),
   ] : [];
+  const kills = players.flatMap((p) => (p.death_details ?? []).map((d) => ({ t: d.game_time_s, victim: p.player_slot, killer: d.killer_player_slot ?? -1, team: p.team }))).sort((a, b) => a.t - b.t);
+  const streakOf = (slot: number) => {
+    const lastDeath = Math.max(-1, ...kills.filter((k) => k.victim === slot && k.t <= sec).map((k) => k.t));
+    return kills.filter((k) => k.killer === slot && k.t <= sec && k.t > lastDeath).length;
+  };
+  const snapAtSec = (p: P) => [...(p.stats ?? [])].reverse().find((x) => x.time_stamp_s <= sec);
+  const mvpSlot = (() => {
+    const rows = players.map((p) => {
+      const s0 = snapAtSec(p) as Record<string, number> | undefined;
+      const teamK = players.filter((q) => q.team === p.team).reduce((a, q) => a + ((snapAtSec(q) as Record<string, number> | undefined)?.["kills"] ?? 0), 0);
+      const g = (k: string) => s0?.[k] ?? 0;
+      return { slot: p.player_slot, v: { nw: g("net_worth"), k: g("kills"), a: g("assists"), dmg: g("player_damage"), heal: g("player_healing") + g("teammate_healing") + g("teammate_barriering"), obj: g("boss_damage"), kp: teamK ? (g("kills") + g("assists")) / teamK : 0, d: g("deaths") } };
+    });
+    if (!rows.some((r) => r.v.nw > 0)) return null;
+    const mx = (k: keyof (typeof rows)[0]["v"]) => Math.max(1e-9, ...rows.map((r) => r.v[k]));
+    const W = { nw: 0.24, k: 0.14, a: 0.1, dmg: 0.16, heal: 0.08, obj: 0.08, kp: 0.12 } as const;
+    let best: { slot: number; sc: number } | null = null;
+    for (const r of rows) {
+      let sc = Object.entries(W).reduce((a, [k, w]) => a + w * (r.v[k as keyof typeof W] / mx(k as keyof typeof W)), 0);
+      sc -= 0.12 * (r.v.d / mx("d"));
+      if (!best || sc > best.sc) best = { slot: r.slot, sc };
+    }
+    return best?.slot ?? null;
+  })();
   const selP = sel != null ? players.find((p) => p.player_slot === sel) ?? null : null;
   const selW = sel != null ? world.find((w) => w.slot === sel) : undefined;
 
@@ -194,7 +218,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
               const p = bySlot.get(w.slot); if (!p) return null;
               const tail = Math.max(2, Math.round(40 / (paths!.interval_s || 1)));
               const end = Math.min(ti, w.pts.length - 1), start = Math.max(0, end - tail);
-              const seg = w.pts.slice(start, end + 1);
+              const seg = w.pts.slice(start, end + 1).filter((_, i) => (w.health?.[start + i] ?? 100) > 0);
               const parts = 5, n = Math.ceil(seg.length / parts);
               return <g key={`tr${w.slot}`} strokeLinecap="round" strokeLinejoin="round">
                 {Array.from({ length: parts }, (_, k) => {
@@ -241,8 +265,12 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             {world.map((w) => {
               const p = bySlot.get(w.slot); if (!p) return null;
               const idx = Math.min(ti, w.pts.length - 1);
-              const a0 = w.pts[idx]; if (!a0) return null;
-              const b0 = w.pts[Math.min(idx + 1, w.pts.length - 1)] ?? a0;
+              const hpNow = w.health?.[idx] ?? 100;
+              let ai = idx;
+              if (hpNow <= 0) { while (ai > 0 && (w.health?.[ai] ?? 100) <= 0) ai--; }
+              const a0 = w.pts[ai]; if (!a0) return null;
+              const nextDead = (w.health?.[Math.min(idx + 1, w.pts.length - 1)] ?? 100) <= 0;
+              const b0 = hpNow <= 0 || nextDead ? a0 : w.pts[Math.min(idx + 1, w.pts.length - 1)] ?? a0;
               const fr = Q.smooth ? Math.min(1, Math.max(0, t - idx)) : 0;
               const pt = [a0[0] + (b0[0] - a0[0]) * fr, a0[1] + (b0[1] - a0[1]) * fr];
               const hp = w.health?.[idx] ?? 100;
@@ -250,8 +278,13 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
               const col = teamCol(p.team);
               return (
                 <g key={w.slot} opacity={hp <= 0 ? 0.25 : 1} style={{ cursor: "pointer" }} transform={`translate(${pt[0]},${pt[1]})`} onClick={() => setSel(w.slot)}>
+                  {mvpSlot === w.slot && hp > 0 && <>
+                    <circle r={27} fill="none" stroke="var(--primary)" strokeWidth={3}><animate attributeName="opacity" values="1;0.35;1" dur="2s" repeatCount="indefinite" /></circle>
+                    <path d="M-12,-30 L-12,-40 L-6,-35 L0,-43 L6,-35 L12,-40 L12,-30 Z" fill="var(--primary)" stroke="black" strokeWidth={1.5} />
+                  </>}
                   <circle r={21} fill="var(--card)" stroke={col} strokeWidth={4} />
                   {img && <image href={img} x={-17} y={-17} width={34} height={34} clipPath="circle(17px)" />}
+                  {hp <= 0 && <text y={7} fontSize={22} textAnchor="middle" fill="var(--loss)" stroke="black" strokeWidth={1} fontWeight={800}>✕</text>}
                   <rect x={-20} y={24} width={40} height={5} rx={2} fill="black" /><rect x={-20} y={24} width={(40 * Math.max(0, hp)) / 100} height={5} rx={2} fill={col} />
                 </g>
               );
@@ -283,6 +316,20 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
               <span className="mr-2 font-mono text-[10px] text-muted-foreground">{fmtDuration(ev.t)}</span>{ev.text}
             </div>;
           })()}
+          <div className="pointer-events-none absolute left-1/2 top-14 flex w-72 -translate-x-1/2 flex-col items-center gap-1">
+            {kills.filter((k) => k.t <= sec && k.t > sec - 12).slice(-5).map((k) => {
+              const kp = bySlot.get(k.killer), vp = bySlot.get(k.victim);
+              const nmOf = (q?: P) => q ? (names?.get(q.account_id ?? 0)?.personaname ?? heroes.get(q.hero_id)?.name ?? "?") : "Нейтралы";
+              const fade = Math.max(0.25, 1 - (sec - k.t) / 12);
+              return <div key={`${k.t}-${k.victim}`} style={{ opacity: fade }} className="flex items-center gap-1.5 border border-border bg-card/90 px-2 py-0.5 text-[11px] backdrop-blur animate-in fade-in slide-in-from-top-1">
+                {kp ? <HeroIcon heroId={kp.hero_id} size={18} className={kp.team === 0 ? "border-amber-team" : "border-sapphire-team"} /> : null}
+                <span className={cn("max-w-24 truncate font-semibold", kp ? (kp.team === 0 ? "text-amber-team" : "text-sapphire-team") : "text-muted-foreground")}>{nmOf(kp)}</span>
+                <span className="text-loss">✕</span>
+                <span className={cn("max-w-24 truncate", vp?.team === 0 ? "text-amber-team" : "text-sapphire-team")}>{nmOf(vp)}</span>
+                {vp && <HeroIcon heroId={vp.hero_id} size={18} className="opacity-70 grayscale" />}
+              </div>;
+            })}
+          </div>
           <PlayerMatchModal player={selP} name={selP?.account_id ? names?.get(selP.account_id)?.personaname : undefined} sec={sec} hp={selW?.health?.[Math.min(ti, selW.pts.length - 1)] ?? 100} onClose={() => setSel(null)} />
           {!md && <div className="absolute inset-0 grid place-items-center text-sm text-muted-foreground">Загрузка карты…</div>}
         </div>
@@ -353,7 +400,8 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
                     <button key={p.player_slot} onClick={() => setSel(p.player_slot)} className={cn("w-full rounded px-1 py-0.5 text-left hover:bg-secondary", sel === p.player_slot && "bg-secondary", hp <= 0 && "opacity-40")}>
                       <div className="flex items-center gap-2">
                         <HeroIcon heroId={p.hero_id} size={24} className={team === 0 ? "border-amber-team" : "border-sapphire-team"} />
-                        <span className="min-w-0 flex-1 truncate text-xs">{names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name}</span>
+                        <span className="min-w-0 flex-1 truncate text-xs">{mvpSlot === p.player_slot && <span title="Сильнейший сейчас" className="mr-1 text-primary">♛</span>}{names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name}</span>
+                        {(() => { const st = streakOf(p.player_slot); return st >= 3 ? <span title={`Серия: ${st} убийств без смерти`} className="tabular text-[11px] font-bold text-primary">🔥{st}</span> : null; })()}
                         <span className="tabular text-[11px] text-muted-foreground">{sn ? `${sn.kills ?? 0}/${sn.deaths ?? 0}/${sn.assists ?? 0}` : "—"}</span>
                         <span className={cn("tabular w-10 text-right text-[11px] font-semibold", team === 0 ? "text-amber-team" : "text-sapphire-team")}>{sn ? fmtK(sn.net_worth ?? 0) : "—"}</span>
                       </div>
