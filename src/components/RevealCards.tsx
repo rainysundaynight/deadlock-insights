@@ -11,7 +11,7 @@ export function useRevealCards(root: RefObject<HTMLElement | null>) {
     const seen = new WeakSet<Element>();
     const stops: (() => void)[] = [];
     const scan = () => {
-      const fresh = [...el.querySelectorAll<HTMLElement>(".panel, .reveal-item")].filter((p) => !seen.has(p) && !p.parentElement?.closest(".panel, .reveal-item"));
+      const fresh = [...el.querySelectorAll<HTMLElement>(".panel, .reveal-item")].filter((p) => !seen.has(p) && !p.closest("[data-motion-owner]") && !p.parentElement?.closest(".panel, .reveal-item"));
       fresh.forEach((p, i) => {
         seen.add(p);
         stops.push(
