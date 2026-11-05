@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "events": {
+    "project.omnisearch_no_results": {
+      "event_schema_version": 1,
+      "description": "A Ctrl+K site search returned nothing.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "input_type",
+          "char_count"
+        ],
+        "properties": {
+          "input_type": {
+            "type": "string",
+            "enum": [
+              "number",
+              "text"
+            ]
+          },
+          "char_count": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "project.omnisearch_query": {
+      "event_schema_version": 1,
+      "description": "A Ctrl+K site search settled with results counted (no raw query text).",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "input_type",
+          "char_count",
+          "result_count"
+        ],
+        "properties": {
+          "input_type": {
+            "type": "string",
+            "enum": [
+              "number",
+              "text"
+            ]
+          },
+          "char_count": {
+            "type": "number"
+          },
+          "result_count": {
+            "type": "number"
+          },
+          "hero_count": {
+            "type": "number"
+          },
+          "item_count": {
+            "type": "number"
+          },
+          "player_count": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "project.omnisearch_result_selected": {
+      "event_schema_version": 1,
+      "description": "A result was picked in the Ctrl+K site search.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "result_kind",
+          "position"
+        ],
+        "properties": {
+          "result_kind": {
+            "type": "string",
+            "enum": [
+              "match",
+              "player_id",
+              "hero",
+              "player",
+              "item"
+            ]
+          },
+          "position": {
+            "type": "number"
+          },
+          "char_count": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}
