@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { GameItem } from "@/components/GameItem";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { ErrorBox, HeroIcon, Loading, PlayerRank, RankBadge, Stat, useHeroMap, useItemMap, useSteamProfiles } from "@/components/dl";
@@ -254,18 +255,7 @@ function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }:
                       {final.map((i) => {
                         const it = items.get(i.item_id)!;
                         return (
-                          <img
-                            key={`${i.item_id}-${i.game_time_s}`}
-                            src={it.shop_image_webp ?? it.image_webp ?? it.image}
-                            alt={it.name}
-                            title={`${it.name} · ${fmtDuration(i.game_time_s)}`}
-                            className={cn(
-                              "h-7 w-7 rounded border p-0.5",
-                              it.item_slot_type === "weapon" && "border-amber-team/60 bg-amber-team/10",
-                              it.item_slot_type === "vitality" && "border-win/60 bg-win/10",
-                              it.item_slot_type === "spirit" && "border-chart-5/60 bg-chart-5/10",
-                            )}
-                          />
+                          <GameItem key={`${i.item_id}-${i.game_time_s}`} item={it} size={28} variant="image" />
                         );
                       })}
                     </div>
