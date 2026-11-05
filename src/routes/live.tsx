@@ -67,7 +67,7 @@ function LivePage() {
       <PageHeader eyebrow="Прямо сейчас" title={<span className="inline-flex items-center gap-3"><span className="h-3 w-3 animate-pulse rounded-full bg-telemetry" /> Live матчи</span>}>
         Топ матчей по рейтингу, которые идут прямо сейчас. Обновляется каждую минуту.
       </PageHeader>
-      <div className="mb-3 flex flex-wrap items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-2 border-b border-border">
         {KINDS.map(([k, l]) => <Chip key={k} active={kind === k} onClick={() => setKind(k)}>{l} {k !== "all" && <span className="text-muted-foreground">{(q.data ?? []).filter((m) => kindOf(m) === k).length}</span>}</Chip>)}
       </div>
       <div className="mb-6 flex flex-wrap items-center gap-2">
@@ -83,19 +83,26 @@ function LivePage() {
             const total = m.net_worth_team_0 + m.net_worth_team_1 || 1;
             return (
               <LayoutItem key={m.match_id}>
-                <article className="panel gazette-frame p-4">
+                <article className="live-match-sheet group overflow-hidden border border-border bg-card/60 transition-colors hover:border-telemetry/50">
+                  <div className="h-0.5 bg-telemetry/60" />
+                  <div className="p-5">
                   <div className="mb-4 flex items-start justify-between gap-3 border-b border-border pb-3">
                     <div><p className="font-mono text-xs text-primary">ДЕЛО № {m.match_id}</p><p className="mt-1 text-[10px] text-muted-foreground">{KINDS.find(([k]) => k === kindOf(m))?.[1]} · {REGION_RU[m.region_mode_parsed] ?? m.region_mode_parsed} · {fmtAgo(m.start_time)}</p></div>
                     <span className="inline-flex shrink-0 items-center gap-2 text-[10px] text-telemetry"><Radio className="h-3 w-3 animate-pulse" /> LIVE <Eye className="h-3 w-3" />{m.spectators}</span>
                   </div>
-                  <div className="flex justify-between font-mono text-sm"><span className="text-amber-team">AMBER · {fmtK(m.net_worth_team_0)}</span><span className="text-sapphire-team">{fmtK(m.net_worth_team_1)} · SAPPHIRE</span></div>
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                    <div><p className="font-mono text-[10px] text-amber-team">THE AMBER HAND</p><p className="mt-2 font-mono text-2xl text-amber-team">{fmtK(m.net_worth_team_0)}</p></div>
+                    <span className="font-display text-xl italic text-muted-foreground/40">vs</span>
+                    <div className="text-right"><p className="font-mono text-[10px] text-sapphire-team">THE SAPPHIRE FLAME</p><p className="mt-2 font-mono text-2xl text-sapphire-team">{fmtK(m.net_worth_team_1)}</p></div>
+                  </div>
                   <div className="mt-3 flex h-1 overflow-hidden rounded-sm"><div className="bg-amber-team" style={{ width: `${(m.net_worth_team_0 / total) * 100}%` }} /><div className="flex-1 bg-sapphire-team" /></div>
-                  <AdvantageSparkline values={history[m.match_id] ?? []} />
+                  {(history[m.match_id]?.length ?? 0) > 1 && <AdvantageSparkline values={history[m.match_id] ?? []} />}
                   <div className="mt-2 flex items-center justify-between border-t border-border pt-3">
                     <Button variant="ghost" className="h-8 px-0 text-xs text-muted-foreground" aria-expanded={open === m.match_id} onClick={() => setOpen(open === m.match_id ? null : m.match_id)}>Боевой отчёт <ChevronDown className={cn("transition-transform", open === m.match_id && "rotate-180")} /></Button>
                     <Button asChild variant="outline" size="sm"><Link to="/matches/$matchId" params={{ matchId: String(m.match_id) }}>В эфир →</Link></Button>
                   </div>
                   <AnimatePresence>{open === m.match_id && <motion.div initial={reduce ? false : { height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden"><div className="space-y-3 border-t border-border pt-4">{[0, 1].map((t) => <div key={t}><p className={cn("mb-2 font-mono text-[10px]", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{t === 0 ? "AMBER" : "SAPPHIRE"}</p><div className="flex flex-wrap gap-2">{m.players.filter((p) => p.team === t).map((p) => <Link key={p.account_id} to="/players/$accountId" params={{ accountId: String(p.account_id) }} className="rounded-sm hover:ring-1 hover:ring-primary" title={`Игрок ${p.account_id}`}><HeroIcon heroId={p.hero_id} size={36} /></Link>)}</div></div>)}</div></motion.div>}</AnimatePresence>
+                  </div>
                 </article>
               </LayoutItem>
             );
