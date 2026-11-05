@@ -279,7 +279,7 @@ function PlayerHeroes({ id }: { id: number }) {
   return (
     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
       {rows.map((r, i) => {
-        const wr = winrate(r.wins, r.matches_played);
+        const wr = winrate(r.wins, r.matches_played) * 100;
         return (
           <Link key={r.hero_id} to="/heroes/$heroId" params={{ heroId: String(r.hero_id) }} className="panel panel-hover group relative overflow-hidden p-4">
             <span className="absolute right-3 top-2 font-display text-3xl font-black text-primary/15">{String(i + 1).padStart(2, "0")}</span>
@@ -333,9 +333,9 @@ function People({ id, kind }: { id: number; kind: "mate" | "enemy" }) {
             <div className="min-w-0">
               <p className="truncate font-display font-bold">{p?.personaname ?? `#${pid}`}</p>
               <p className="font-mono text-[10px] uppercase text-muted-foreground">{r.matches_played} {kind === "mate" ? "вместе" : "против"} · {r.wins}W / {r.matches_played - r.wins}L</p>
-              <div className="mt-1.5 h-1 bg-secondary"><div className={cn("h-full", winrate(r.wins, r.matches_played) >= 50 ? "bg-win" : "bg-loss")} style={{ width: `${winrate(r.wins, r.matches_played)}%` }} /></div>
+              <div className="mt-1.5 h-1 bg-secondary"><div className={cn("h-full", winrate(r.wins, r.matches_played) >= 0.5 ? "bg-win" : "bg-loss")} style={{ width: `${winrate(r.wins, r.matches_played) * 100}%` }} /></div>
             </div>
-            <p className={cn("tabular font-display text-xl font-black", winrate(r.wins, r.matches_played) >= 50 ? "text-win" : "text-loss")}>{winrate(r.wins, r.matches_played).toFixed(0)}%</p>
+            <p className={cn("tabular font-display text-xl font-black", winrate(r.wins, r.matches_played) >= 0.5 ? "text-win" : "text-loss")}>{(winrate(r.wins, r.matches_played) * 100).toFixed(0)}%</p>
           </Link>
         );
       })}
