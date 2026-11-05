@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { ErrorBox, HeroIcon, Loading, PlayerRank, RankBadge, Stat, useHeroMap, useItemMap, useSteamProfiles } from "@/components/dl";
 import { api } from "@/lib/api";
@@ -23,6 +23,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, Coins, Map, Swords, Crosshair, Package, Lightbulb, UserRound } from "lucide-react";
 
 export const Route = createFileRoute("/matches/$matchId")({
+  validateSearch: (s: Record<string, unknown>): { from?: string | undefined } => ({
+    from: typeof s["from"] === "string" && s["from"].startsWith("/") ? s["from"] : undefined,
+  }),
   head: ({ params }) => ({
     meta: [
       { title: `Матч ${params.matchId} — Deadlock Stats` },
