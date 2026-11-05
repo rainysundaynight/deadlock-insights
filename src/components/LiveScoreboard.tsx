@@ -125,6 +125,25 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
         <div className="text-right text-sapphire-team"><p className="text-xs uppercase tracking-wider">{TEAMS[1]}</p><p className="tabular font-display text-3xl font-bold">{fmtK(sum(1, (p) => p.nw))}</p></div>
       </div>
 
+      {(() => {
+        const a = sum(0, (p) => p.nw), b = sum(1, (p) => p.nw);
+        const lead = a + b > 0 ? (a - b) / ((a + b) / 2) : 0;
+        const k = 4 + Math.min(1, gameTime / 1800) * 8;
+        const pa = Math.round((1 / (1 + Math.exp(-lead * k))) * 100);
+        return (
+          <div className="panel p-4">
+            <div className="mb-2 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+              <span className="text-amber-team">{TEAMS[0]} · {pa}%</span>
+              <span className="text-muted-foreground">Шанс на победу · оценка по душам и времени</span>
+              <span className="text-sapphire-team">{100 - pa}% · {TEAMS[1]}</span>
+            </div>
+            <div className="flex h-3 overflow-hidden bg-secondary">
+              <div className="bg-amber-team transition-[width] duration-1000 ease-out" style={{ width: `${pa}%` }} />
+              <div className="flex-1 bg-sapphire-team" />
+            </div>
+          </div>
+        );
+      })()}
       <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
         <div className="panel p-4">
           <div className="mb-3 flex items-center justify-between">
