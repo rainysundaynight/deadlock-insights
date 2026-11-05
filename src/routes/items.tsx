@@ -10,6 +10,7 @@ function MaybeProvider({ on, children }: { on: boolean; children: ReactNode }) {
 }
 
 import { Chip, ErrorBox, Loading, PageHeader, WinrateBar, inputClass } from "@/components/dl";
+import { ItemHint } from "@/components/ItemHint";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api, itemsQuery, type Item } from "@/lib/api";
 import { fmtInt, SLOT_LABELS, stripHtml, winrate } from "@/lib/format";
@@ -80,9 +81,9 @@ function ItemsPage() {
                     const s = statMap.get(i.id);
                     const wr = s ? winrate(s.wins, s.matches) : null;
                     return (
-                      <button key={i.id} onClick={() => setOpen(i)} className={cn("panel panel-hover flex flex-col items-center gap-1 p-2 text-center")}>
+                      <button key={i.id} onClick={() => setOpen(i)} className={cn("panel panel-hover group flex flex-col items-center gap-1 p-2 text-center")}>
                         {hydrated ? (
-                          <Suspense fallback={<span className="h-24 w-full" />}><LazyCard itemId={i.id} data={i} /></Suspense>
+                          <ItemHint item={i} className="w-full"><Suspense fallback={<span className="block h-24 w-full" />}><LazyCard itemId={i.id} data={i} /></Suspense></ItemHint>
                         ) : (
                           <>
                             <span className={cn("grid h-14 w-14 place-items-center rounded-md border", slotTone[i.item_slot_type ?? ""])}>

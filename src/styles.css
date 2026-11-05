@@ -272,3 +272,7 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
   transform: skew(-8deg);
   box-shadow: 1px 1px 0 color-mix(in oklab, var(--hero) 40%, black);
 }
+
+/* Deadlock UI item cards, toned to the gazette palette */
+.game-item { display: block; filter: saturate(0.82) sepia(0.12) contrast(1.04); transition: filter 0.3s ease; }
+.group:hover .game-item, .game-item:hover { filter: none; }
