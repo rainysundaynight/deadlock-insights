@@ -167,8 +167,8 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
     return out.sort((a, b) => b.amber + b.sapph - (a.amber + a.sapph)).slice(0, 12).sort((a, b) => a.start - b.start);
   })();
   const objEvents = [
-    ...(objectives ?? []).filter((o) => STRUCT_OF[o.team_objective_id] && o.destroyed_time_s).map((o) => ({ t: o.destroyed_time_s, team: o.team, text: `${o.team === 0 ? "Амбер" : "Сапфир"} теряет: ${STRUCT_NAME[STRUCT_OF[o.team_objective_id]!]}` })),
-    ...(midBoss ?? []).map((b) => ({ t: b.destroyed_time_s, team: b.team_killed, text: `${b.team_killed === 0 ? "Амбер" : "Сапфир"} убивает Мид-босса` })),
+    ...(objectives ?? []).filter((o) => STRUCT_OF[o.team_objective_id] && o.destroyed_time_s).map((o) => ({ t: o.destroyed_time_s, team: o.team, text: `${o.team === 0 ? "Hidden King" : "Archmother"} теряет: ${STRUCT_NAME[STRUCT_OF[o.team_objective_id]!]}` })),
+    ...(midBoss ?? []).map((b) => ({ t: b.destroyed_time_s, team: b.team_killed, text: `${b.team_killed === 0 ? "Hidden King" : "Archmother"} убивает Мид-босса` })),
     ...timedEvents,
   ].sort((a, b) => a.t - b.t);
 
@@ -219,7 +219,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
               return <g key={s.key} transform={`translate(${s.x},${s.y})`} opacity={dead ? 0.4 : 1}>
                 <StructIcon kind={s.kind} fill={dead ? "var(--muted)" : teamCol(s.team)} />
                 {dead && <text y={6} fontSize={16} textAnchor="middle" fill="var(--loss)" fontWeight={800} stroke="black" strokeWidth={0.8}>✕</text>}
-                <title>{STRUCT_NAME[s.kind]} · {s.team === 0 ? "Амбер" : "Сапфир"}{s.dt ? ` · разрушен ${fmtDuration(s.dt)}` : ""}</title>
+                <title>{STRUCT_NAME[s.kind]} · {s.team === 0 ? "Hidden King" : "Archmother"}{s.dt ? ` · разрушен ${fmtDuration(s.dt)}` : ""}</title>
               </g>;
             })}
             {deaths.map((d, i) => { const [x, y] = toSvg(d.death_pos.x, d.death_pos.y); return <text key={i} x={x} y={y} fontSize={26} textAnchor="middle" fill="var(--loss)" stroke="black" strokeWidth={1}>✕</text>; })}
@@ -248,7 +248,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             const pa = winChance(a, b, sec);
             return [0, 1].map((team) => (
               <div key={team} className={cn("pointer-events-none absolute top-2 rounded-lg border bg-card/85 px-3 py-1.5 backdrop-blur", team === 0 ? "left-2 border-amber-team/60" : "right-2 border-sapphire-team/60 text-right")}>
-                <div className={cn("text-xs font-bold uppercase", team === 0 ? "text-amber-team" : "text-sapphire-team")}>{team === 0 ? "Амбер" : "Сапфир"}</div>
+                <div className={cn("text-xs font-bold uppercase", team === 0 ? "text-amber-team" : "text-sapphire-team")}>{team === 0 ? "Hidden King" : "Archmother"}</div>
                 <div className="tabular text-sm font-semibold">{fmtK(team === 0 ? a : b)} <span className="text-[10px] font-normal text-muted-foreground">душ</span></div>
                 <div className="tabular text-[11px] text-muted-foreground">победа ≈ {Math.round((team === 0 ? pa : 1 - pa) * 100)}%</div>
               </div>
@@ -291,7 +291,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             const maxNw = Math.max(1, ...players.map((p) => snapOf(p)?.net_worth ?? 0));
             return (
               <div key={team} className="mb-2">
-                <div className={cn("mb-1 flex justify-between text-[11px] font-semibold", team === 0 ? "text-amber-team" : "text-sapphire-team")}><span>{team === 0 ? "Амбер" : "Сапфир"}</span><span className="tabular">{fmtK(tot)}</span></div>
+                <div className={cn("mb-1 flex justify-between text-[11px] font-semibold", team === 0 ? "text-amber-team" : "text-sapphire-team")}><span>{team === 0 ? "Hidden King" : "Archmother"}</span><span className="tabular">{fmtK(tot)}</span></div>
                 {tp.map((p) => {
                   const w = world.find((x) => x.slot === p.player_slot);
                   const hp = w?.health?.[Math.min(ti, (w?.pts.length ?? 1) - 1)] ?? 100;
@@ -323,7 +323,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
                 className={cn("flex w-full items-center gap-2 rounded px-1 py-1 text-left hover:bg-secondary", sec >= f.start - 8 && sec <= f.end + 2 && "bg-primary/10")}>
                 <span className="tabular w-10 text-muted-foreground">{fmtDuration(f.start)}</span>
                 <span className="text-amber-team tabular">{f.amber}</span><span className="text-muted-foreground">:</span><span className="text-sapphire-team tabular">{f.sapph}</span>
-                <span className="flex-1 truncate">{f.amber === f.sapph ? "Размен" : f.amber > f.sapph ? "Амбер выигрывает" : "Сапфир выигрывает"} · {f.amber + f.sapph} смертей</span>
+                <span className="flex-1 truncate">{f.amber === f.sapph ? "Размен" : f.amber > f.sapph ? "Hidden King выигрывает" : "Archmother выигрывает"} · {f.amber + f.sapph} смертей</span>
                 <Play className="h-3 w-3 text-primary" />
               </button>
             ))}

@@ -136,7 +136,7 @@ export function DuelMatrix({ players, names }: { players: DuelPlayer[]; names?: 
       <SectionTitle>Матрица дуэлей · кто кого убил</SectionTitle>
       <div className="overflow-x-auto">
         <table className="text-xs">
-          <thead><tr><th className="p-1 text-left font-normal text-muted-foreground">Амбер ↓ убил · Сапфир →</th>{sapph.map((s) => <th key={s.player_slot} className="p-1"><HeroIcon heroId={s.hero_id} size={28} className="border-sapphire-team" /></th>)}</tr></thead>
+          <thead><tr><th className="p-1 text-left font-normal text-muted-foreground">Hidden King ↓ убил · Archmother →</th>{sapph.map((s) => <th key={s.player_slot} className="p-1"><HeroIcon heroId={s.hero_id} size={28} className="border-sapphire-team" /></th>)}</tr></thead>
           <tbody>{amber.map((a) => (
             <tr key={a.player_slot}>
               <td className="flex items-center gap-2 p-1"><HeroIcon heroId={a.hero_id} size={28} className="border-amber-team" /><span className="max-w-28 truncate">{nm(a)}</span></td>

@@ -74,7 +74,7 @@ export function useLiveScoreboard(matchId: number, enabled: boolean) {
           const sum = (tm: number) => list.filter((p) => p.team === tm).reduce((s2, p) => s2 + p.nw, 0);
           const diff = sum(0) - sum(1);
           const lead = Math.abs(diff) < 1500 ? leader : diff > 0 ? 0 : 1;
-          if (lead !== leader && leader !== -1 && lead !== -1) pending.push({ id: seq++, t, kind: "lead", team: lead, hero: 0, name: lead === 0 ? "Амбер" : "Сапфир", text: "выходит вперёд по душам" });
+          if (lead !== leader && leader !== -1 && lead !== -1) pending.push({ id: seq++, t, kind: "lead", team: lead, hero: 0, name: lead === 0 ? "Hidden King" : "Archmother", text: "выходит вперёд по душам" });
           leader = lead;
           hist.push({ t, diff, a: Math.max(0, diff), s: Math.min(0, diff) });
         }

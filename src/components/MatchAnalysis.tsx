@@ -46,9 +46,9 @@ function AdvantageChart({ players }: { players: APlayer[] }) {
         <path d={path} fill="none" className="stroke-primary" strokeWidth="2" vectorEffect="non-scaling-stroke" />
       </svg>
       <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
-        <span className="text-amber-team">▲ Амбер впереди</span>
+        <span className="text-amber-team">▲ Hidden King впереди</span>
         <span>{series.slice(1).map((s) => `${fmtDuration(s.t)}: ${s.diff > 0 ? "+" : ""}${fmtK(s.diff)}`).join(" · ")}</span>
-        <span className="text-sapphire-team">▼ Сапфир впереди</span>
+        <span className="text-sapphire-team">▼ Archmother впереди</span>
       </div>
     </section>
   );
@@ -65,7 +65,7 @@ function Lanes({ players, names }: { players: APlayer[]; names: Names }) {
             <div className="mb-3 flex items-center justify-between">
               <h3 className="font-display uppercase tracking-wider">{LANE_NAMES[l.lane] ?? `Линия ${l.lane}`}</h3>
               <span className={cn("rounded px-2 py-0.5 text-xs font-semibold uppercase", l.winner === 0 ? "bg-amber-team/20 text-amber-team" : l.winner === 1 ? "bg-sapphire-team/20 text-sapphire-team" : "bg-muted text-muted-foreground")}>
-                {l.winner === 0 ? "Амбер" : l.winner === 1 ? "Сапфир" : "Ничья"}
+                {l.winner === 0 ? "Hidden King" : l.winner === 1 ? "Archmother" : "Ничья"}
               </span>
             </div>
             <div className="grid grid-cols-2 gap-3">

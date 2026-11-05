@@ -56,7 +56,7 @@ export function LaneMinutes({ players, names }: { players: APlayer[]; names?: Ma
           </tr>
         </tbody>
       </table>
-      <p className="mt-3 text-xs text-muted-foreground">Красным — минута, на которой игрок умер. Перевес считается по команде Амбер.</p>
+      <p className="mt-3 text-xs text-muted-foreground">Красным — минута, на которой игрок умер. Перевес считается по команде Hidden King.</p>
     </section>
   );
 }
