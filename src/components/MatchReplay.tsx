@@ -423,7 +423,19 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
             const pct = (x: number) => `${Math.min(100, Math.max(0, (x / dur) * 100))}%`;
             const seek = (x: number) => setT(Math.max(0, Math.round(x / (paths!.interval_s || 1))));
             const allDeaths = players.flatMap((p) => (p.death_details ?? []).map((d) => ({ t: d.game_time_s, team: p.team })));
+            const fb = allDeaths.length ? Math.min(...allDeaths.map((d) => d.t)) : null;
+            const boss = (midBoss ?? [])[0];
+            const big = [...fights].sort((a, b) => b.amber + b.sapph - (a.amber + a.sapph))[0];
+            const highlights = [
+              fb != null && { label: "Первая кровь", t: fb - 4 },
+              boss && { label: "Мид-босс", t: boss.destroyed_time_s - 10 },
+              big && { label: `Крупнейший файт ${big.amber}:${big.sapph}`, t: big.start - 6 },
+            ].filter(Boolean) as { label: string; t: number }[];
             return <div className="mt-3">
+              {highlights.length > 0 && <div className="mb-2 flex flex-wrap gap-1.5">
+                <span className="self-center font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Хайлайты:</span>
+                {highlights.map((h) => <button key={h.label} onClick={() => { seek(Math.max(0, h.t)); setPlay(true); if (mult > 5) setMult(2); }} className="border border-border bg-secondary px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground hover:border-primary/60 hover:text-primary">▶ {h.label} · {fmtDuration(Math.max(0, h.t))}</button>)}
+              </div>}
               <div className="relative h-7">
                 {fights.map((f, i) => <button key={`f${i}`} onClick={() => seek(f.start - 5)} title={`Файт ${fmtDuration(f.start)} · ${f.amber}:${f.sapph}`} className="absolute top-0 h-3 bg-primary/30 hover:bg-primary/60" style={{ left: pct(f.start), width: `max(4px, ${((f.end - f.start) / dur) * 100}%)` }} />)}
                 {objEvents.filter((e) => e.team >= 0).map((e, i) => <button key={`o${i}`} onClick={() => seek(e.t)} title={`${fmtDuration(e.t)} · ${e.text}`} className="absolute top-3.5 h-3 w-3 -translate-x-1/2 rotate-45 border border-background hover:scale-125" style={{ left: pct(e.t), background: teamCol(e.team) }} />)}

@@ -10,6 +10,7 @@ import { useRevealCards } from "@/components/RevealCards";
 
 import { FriendNotifier } from "@/components/FriendNotifier";
 import { PlayerSearch } from "@/components/PlayerSearch";
+import { Omnisearch } from "@/components/Omnisearch";
 import { SteamButton } from "@/components/SteamButton";
 import { startSteamLogin, useAuth, useMyProfile } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -130,6 +131,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="lg:hidden"><Logo /></div>
           <Dateline />
           <div className="ml-auto hidden w-full max-w-sm sm:block"><PlayerSearch compact /></div>
+          <Omnisearch />
           <Account />
         </div>
       </header>

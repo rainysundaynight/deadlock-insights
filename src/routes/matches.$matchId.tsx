@@ -20,7 +20,8 @@ import { MatchDetails } from "@/components/MatchDetails";
 import { MatchReplay, type MatchObjective, type MatchPaths } from "@/components/MatchReplay";
 import { MatchActions, SpectateButton } from "@/components/ShareCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart3, Coins, Map, Swords, Crosshair, Package, Lightbulb, UserRound } from "lucide-react";
+import { BarChart3, Coins, Map, Swords, Crosshair, Package, Lightbulb, UserRound, Newspaper } from "lucide-react";
+import { MatchStory } from "@/components/MatchStory";
 
 export const Route = createFileRoute("/matches/$matchId")({
   validateSearch: (s: Record<string, unknown>): { from?: string | undefined } => ({
@@ -117,10 +118,11 @@ function MatchPage() {
       <MatchActions matchId={m.match_id} players={players} winner={m.winning_team} duration={m.duration_s} names={profiles.data} />
       <Tabs value={tab} onValueChange={setTab}>
       <TabsList>
-        {([["table", "Таблица", BarChart3], ["player", "Игрок", UserRound], ["details", "Экономика", Coins], ["map", "Карта", Map], ["lanes", "Линии и график", Swords], ["damage", "Урон", Crosshair], ["items", "Предметы", Package], ["tips", "Советы", Lightbulb]] as const).map(([k, l, Icon]) => (
+        {([["table", "Таблица", BarChart3], ["story", "Разбор", Newspaper], ["player", "Игрок", UserRound], ["details", "Экономика", Coins], ["map", "Карта", Map], ["lanes", "Линии и график", Swords], ["damage", "Урон", Crosshair], ["items", "Предметы", Package], ["tips", "Советы", Lightbulb]] as const).map(([k, l, Icon]) => (
           <TabsTrigger key={k} value={k}><Icon className="h-4 w-4" />{l}</TabsTrigger>
         ))}
       </TabsList><TabsContent key={tab} value={tab} className="mt-6">
+      {tab === "story" && <MatchStory players={players} names={profiles.data} durationS={m.duration_s} winner={m.winning_team} midBoss={m.mid_boss} />}
       {tab === "map" && <MatchReplay paths={m.match_paths} players={players} names={profiles.data} objectives={m.objectives} midBoss={m.mid_boss} />}
       {tab === "details" && <MatchDetails players={players} names={profiles.data} durationS={m.duration_s} />}
       {tab === "damage" && <DamageView players={players} names={profiles.data} />}

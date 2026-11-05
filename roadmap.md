@@ -7,3 +7,9 @@
 - [x] Live cards with sampled advantage charts and expandable reports.
 - [x] Duo/counter presentation and themed charts.
 - [x] Verify desktop/mobile, interactions, tests and route metadata.
+# Competitive features
+- [x] Match "Разбор": turning point, teamfight reports, ability order, item timings vs lobby, anti-heal tips
+- [x] Profile: playstyle DNA, rank dynamics, hero mastery
+- [x] Map highlight jumps; live win-chance bar
+- [x] Ctrl/Cmd+K global search
+- [ ] Urn tracker, map presence heatmap — match data has no urn/zone info
