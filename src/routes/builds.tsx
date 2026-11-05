@@ -102,9 +102,9 @@ function BuildCard({ b }: { b: BuildEntry }) {
           return (
             <div key={i} className="flex items-center gap-3">
               <span className="w-24 shrink-0 truncate text-xs uppercase tracking-wider text-muted-foreground">{c.name}</span>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1.5">
                 {mods.map((it, j) => (
-                  <GameItem key={j} item={it!} size={56} />
+                  <GameItem key={j} item={it!} size={74} />
                 ))}
               </div>
             </div>
