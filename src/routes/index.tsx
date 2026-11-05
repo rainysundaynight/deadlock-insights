@@ -57,7 +57,7 @@ function Index() {
 
   return (
     <div className="space-y-12">
-      <section onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", String((e.clientX - r.left) / r.width - 0.5)); e.currentTarget.style.setProperty("--my", String((e.clientY - r.top) / r.height - 0.5)); }} onMouseLeave={(e) => { e.currentTarget.style.setProperty("--mx", "0"); e.currentTarget.style.setProperty("--my", "0"); }} className="relative -mx-4 -mt-8 overflow-x-clip border-b border-border px-4 pb-8 pt-10 lg:-mx-8 lg:px-8">
+      <section onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", String((e.clientX - r.left) / r.width - 0.5)); e.currentTarget.style.setProperty("--my", String((e.clientY - r.top) / r.height - 0.5)); }} onMouseLeave={(e) => { e.currentTarget.style.setProperty("--mx", "0"); e.currentTarget.style.setProperty("--my", "0"); }} className="relative mx-[calc(50%-50cqw)] -mt-8 overflow-x-clip border-b border-border px-4 pb-8 pt-10 lg:-mx-8 lg:px-8">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <img src={cityArtwork} alt="" width={1920} height={1024} className="h-full w-full object-cover object-center" />
           <div className="gazette-hero absolute inset-0" />
@@ -109,6 +109,21 @@ function Index() {
             <input aria-label="ID матча" value={matchId} onChange={(e) => setMatchId(e.target.value)} placeholder="Номер дела · ID матча" className={cn(inputClass, "bg-background/80")} />
             <MagneticButton type="submit" variant="outline" className="h-10 border-primary/40 text-primary">Открыть <ArrowRight /></MagneticButton>
           </form>
+          {tiers.length >= 4 && (
+            <div className="mx-auto mt-8 grid max-w-xl grid-cols-4 items-end gap-1 min-[1400px]:hidden">
+              {tiers.slice(0, 4).map((r, i) => { const h = heroes.get(r.hero_id); if (!h) return null; return (
+                <Link key={r.hero_id} to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as CSSProperties} className="group relative block">
+                  <div aria-hidden className="hero-spot pointer-events-none absolute inset-0" />
+                  <div className="hero-side relative aspect-[3/4]"><div className="hero-card-clip absolute inset-0">
+                    <img src={h.images.icon_hero_card_webp ?? h.images.icon_hero_card} alt={h.name} loading="lazy" className="hero-pose hero-pose-idle absolute inset-0 h-full w-full object-cover object-bottom" />
+                  </div></div>
+                  <div className="hero-plate absolute bottom-1 left-1/2 -translate-x-1/2"><span className="font-masthead text-xs leading-none">№{i + 1}</span></div>
+                  <p className="mt-2 truncate text-center font-display text-xs uppercase text-foreground">{h.name}</p>
+                  <p className="tabular text-center text-[10px] text-win">{(r.winrate * 100).toFixed(1)}%</p>
+                </Link>
+              ); })}
+            </div>
+          )}
           <div className="mx-auto mt-7 grid max-w-xl grid-cols-3 divide-x divide-border border-y border-border py-4">
             <div><p className="tabular text-xl text-primary">{totalMatches ? fmtK(totalMatches) : "—"}</p><p className="mt-1 text-[10px] uppercase text-muted-foreground">матчей Oracle+ / нед.</p></div>
             <div><p className="tabular text-xl text-foreground">{heroes.size ? <RollingNumber value={heroes.size} /> : "—"}</p><p className="mt-1 text-[10px] uppercase text-muted-foreground">героев в архиве</p></div>
@@ -116,7 +131,7 @@ function Index() {
           </div>
         </div>
       </section>
-      <div className="!-mt-12 flex overflow-hidden border-b border-border bg-sidebar" aria-label="Новости меты">
+      <div className="!-mt-12 mx-[calc(50%-50cqw)] flex overflow-hidden border-b border-border bg-sidebar" aria-label="Новости меты">
         <span className="z-10 flex shrink-0 items-center gap-2 border-r border-border bg-telemetry/10 px-4 text-[10px] font-semibold uppercase text-telemetry"><Radio className="h-3 w-3" /> Телеграф</span>
         <div className="min-w-0 flex-1 overflow-hidden"><div className="ticker-track" aria-hidden="true">{[0, 1].map((copy) => <div key={copy} className="flex shrink-0 items-center">{ticker.map((t, i) => <span key={i} className="whitespace-nowrap px-6 py-3 font-mono text-[10px] text-muted-foreground">{t}<span className="ml-6 text-primary">✦</span></span>)}</div>)}</div><span className="sr-only">{ticker.join(". ")}</span></div>
       </div>
