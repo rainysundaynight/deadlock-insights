@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-import { Chip, HeroIcon, SectionTitle, useHeroMap, useItemMap } from "@/components/dl";
+import { HeroIcon, SectionTitle, useHeroMap, useItemMap } from "@/components/dl";
 import type { StatSnap } from "@/lib/analysis";
 import { fmtDuration, fmtK } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,7 @@ const TEAM_NAME = ["Hidden King", "Archmother"];
 
 const METRICS = [
   { key: "player_damage", label: "Урон по героям", hint: "по самим героям" },
-  { key: "player_damage_taken", label: "Получено урона", hint: " quanto выдержал" },
+  { key: "player_damage_taken", label: "Получено урона", hint: "сколько выдержал" },
   { key: "player_healing", label: "Лечение", hint: "вылечено союзникам" },
   { key: "net_worth", label: "Души", hint: "итоговый доход" },
 ] as const;
