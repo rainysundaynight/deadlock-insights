@@ -238,16 +238,20 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
     linear-gradient(180deg, color-mix(in oklab, var(--hero) 25%, var(--card)), var(--card));
 }
 /* only the top edge may overflow, so sides/bottom never look cut */
-.hero-card-clip { clip-path: inset(-22% 0 0 0); }
+.hero-card-clip { clip-path: inset(-45% 0 0 0); }
 .hero-pose {
   transform-origin: 50% 100%;
   transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease, filter 0.45s ease;
 }
-.hero-pose-alt { opacity: 0; transform: translateY(6%) scale(1.02); }
+.hero-pose-alt {
+  /* the game's pose art is cut off at its left/right edges: fade them so no hard cut shows */
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 16%, black 84%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, black 16%, black 84%, transparent 100%);
+  opacity: 0; transform: translateY(6%) scale(1.02); }
 .group:hover .hero-pose-idle { opacity: 0; transform: scale(0.97); }
 .group:hover .hero-pose-alt {
   opacity: 1;
-  transform: translateY(-12%) scale(1.12);
+  transform: translateY(-10%) scale(1.06);
   filter: drop-shadow(0 -6px 14px color-mix(in oklab, var(--hero) 40%, transparent));
 }
 /* touch screens: no hover, so show the action pose by default */
@@ -278,3 +282,9 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 /* home hero lineup: 3D tilt + drop-shadow filter render a dark box, so skip the filter */
 .hero-side .hero-pose { filter: none !important; }
 .hero-side .hero-card-clip { clip-path: none; }
+.hero-side .hero-pose-idle { -webkit-mask-image: linear-gradient(to top, transparent 0, black 18%); mask-image: linear-gradient(to top, transparent 0, black 18%); }
+.hero-side .hero-pose-alt {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 16%, black 84%, transparent 100%), linear-gradient(to top, transparent 0, black 18%);
+  mask-image: linear-gradient(to right, transparent 0, black 16%, black 84%, transparent 100%), linear-gradient(to top, transparent 0, black 18%);
+  -webkit-mask-composite: source-in; mask-composite: intersect;
+}

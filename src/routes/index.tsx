@@ -74,7 +74,7 @@ function Index() {
                   <Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as CSSProperties} className={cn("group relative block transition-transform duration-500 hover:-translate-y-2", i === 0 ? "w-44 2xl:w-52" : "w-36 2xl:w-44")}>
                     <div className="hero-side relative aspect-[3/4]" style={{ transform: side === "left" ? "perspective(700px) rotateY(24deg)" : "perspective(700px) rotateY(-24deg) scaleX(-1)" }}>
                       <div className="absolute inset-x-2 bottom-0 h-2/3 rounded-t-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-70" style={{ background: "var(--hero)" }} />
-                      <div className="hero-card-clip absolute inset-0" style={{ maskImage: "radial-gradient(ellipse 62% 70% at 50% 48%, black 62%, transparent 100%)" }}>
+                      <div className="hero-card-clip absolute inset-0">
                         <img src={h.images.icon_hero_card_webp ?? h.images.icon_hero_card} alt={h.name} className="hero-pose hero-pose-idle absolute inset-0 h-full w-full object-cover object-bottom" />
                         {alt && <img src={alt} alt="" aria-hidden className="hero-pose hero-pose-alt absolute inset-0 h-full w-full object-cover object-bottom" />}
                       </div>
