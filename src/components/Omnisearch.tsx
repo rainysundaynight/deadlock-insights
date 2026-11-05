@@ -33,7 +33,27 @@ export function Omnisearch() {
   const hs = s ? (heroes.data ?? []).filter((h) => h.name.toLowerCase().includes(s)).slice(0, 5) : [];
   const is = s.length >= 2 ? (items.data ?? []).filter((i) => i.shopable !== false && i.name.toLowerCase().includes(s)).slice(0, 5) : [];
   const num = /^\d{3,}$/.test(s) ? s : null;
-  const go = (fn: () => void) => { fn(); setOpen(false); setQ(""); };
+  const settled = !!deb && !players.isFetching && !(deb.length >= 2 && !/^\d+$/.test(deb) && !players.data);
+  useEffect(() => {
+    if (!open || !settled) return;
+    const d = deb.toLowerCase();
+    const isNum = /^\d{3,}$/.test(d);
+    const counts = {
+      heroes: (heroes.data ?? []).filter((h) => h.name.toLowerCase().includes(d)).slice(0, 5).length,
+      items: d.length >= 2 ? (items.data ?? []).filter((i) => i.shopable !== false && i.name.toLowerCase().includes(d)).slice(0, 5).length : 0,
+      players: players.data?.length ?? 0,
+      ids: isNum ? 2 : 0,
+    };
+    const total = counts.heroes + counts.items + counts.players + counts.ids;
+    const base = { input_type: isNum ? "number" : "text", char_count: d.length };
+    window.__lovableEvents?.track?.("project.omnisearch_query", { ...base, result_count: total, hero_count: counts.heroes, item_count: counts.items, player_count: counts.players });
+    if (total === 0) window.__lovableEvents?.track?.("project.omnisearch_no_results", base);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deb, settled, open]);
+  const go = (fn: () => void, kind: string, position: number) => {
+    window.__lovableEvents?.track?.("project.omnisearch_result_selected", { result_kind: kind, position, char_count: q.trim().length });
+    fn(); setOpen(false); setQ("");
+  };
 
   return (
     <>
@@ -52,14 +72,14 @@ export function Omnisearch() {
               {!s && <p className="px-4 py-6 text-center text-sm text-muted-foreground">Начните вводить. Число — откроет матч или игрока по ID.</p>}
               {num && (
                 <Cmd.Group heading="По номеру" className={group}>
-                  <Cmd.Item value={`m${num}`} onSelect={() => go(() => navigate({ to: "/matches/$matchId", params: { matchId: num }, search: {} }))} className={row}>Открыть матч #{num}</Cmd.Item>
-                  <Cmd.Item value={`p${num}`} onSelect={() => go(() => navigate({ to: "/players/$accountId", params: { accountId: num } }))} className={row}>Открыть игрока ID {num}</Cmd.Item>
+                  <Cmd.Item value={`m${num}`} onSelect={() => go(() => navigate({ to: "/matches/$matchId", params: { matchId: num }, search: {} }), "match", 0)} className={row}>Открыть матч #{num}</Cmd.Item>
+                  <Cmd.Item value={`p${num}`} onSelect={() => go(() => navigate({ to: "/players/$accountId", params: { accountId: num } }), "player_id", 1)} className={row}>Открыть игрока ID {num}</Cmd.Item>
                 </Cmd.Group>
               )}
               {hs.length > 0 && (
                 <Cmd.Group heading="Герои" className={group}>
-                  {hs.map((h) => (
-                    <Cmd.Item key={h.id} value={`h${h.id}`} onSelect={() => go(() => navigate({ to: "/heroes/$heroId", params: { heroId: String(h.id) } }))} className={row}>
+                  {hs.map((h, idx) => (
+                    <Cmd.Item key={h.id} value={`h${h.id}`} onSelect={() => go(() => navigate({ to: "/heroes/$heroId", params: { heroId: String(h.id) } }), "hero", idx)} className={row}>
                       <img src={h.images.icon_image_small_webp ?? h.images.icon_image_small} alt="" className="h-7 w-7 rounded-sm" />{h.name}
                     </Cmd.Item>
                   ))}
@@ -67,8 +87,8 @@ export function Omnisearch() {
               )}
               {(players.data?.length ?? 0) > 0 && (
                 <Cmd.Group heading="Игроки" className={group}>
-                  {players.data!.map((p) => (
-                    <Cmd.Item key={p.account_id} value={`a${p.account_id}`} onSelect={() => go(() => navigate({ to: "/players/$accountId", params: { accountId: String(p.account_id) } }))} className={row}>
+                  {players.data!.map((p, idx) => (
+                    <Cmd.Item key={p.account_id} value={`a${p.account_id}`} onSelect={() => go(() => navigate({ to: "/players/$accountId", params: { accountId: String(p.account_id) } }), "player", idx)} className={row}>
                       <img src={p.avatarmedium ?? p.avatar} alt="" className="h-7 w-7 rounded-sm" />{p.personaname}<span className="ml-auto text-xs text-muted-foreground">ID {p.account_id}</span>
                     </Cmd.Item>
                   ))}
@@ -76,8 +96,8 @@ export function Omnisearch() {
               )}
               {is.length > 0 && (
                 <Cmd.Group heading="Предметы" className={group}>
-                  {is.map((i) => (
-                    <Cmd.Item key={i.id} value={`i${i.id}`} onSelect={() => go(() => navigate({ to: "/items" }))} className={row}>
+                  {is.map((i, idx) => (
+                    <Cmd.Item key={i.id} value={`i${i.id}`} onSelect={() => go(() => navigate({ to: "/items" }), "item", idx)} className={row}>
                       <img src={i.shop_image_webp ?? i.image_webp ?? i.image} alt="" className="h-7 w-7" />{i.name}<span className="ml-auto text-xs text-muted-foreground">T{i.item_tier} · {i.cost}</span>
                     </Cmd.Item>
                   ))}
