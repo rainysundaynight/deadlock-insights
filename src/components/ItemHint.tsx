@@ -63,7 +63,7 @@ export function ItemHintBody({ item }: { item: Item }) {
 export function ItemHint({ item, children, className }: { item: Item; children: ReactNode; className?: string }) {
   return (
     <HoverCard openDelay={200} closeDelay={60}>
-      <HoverCardTrigger asChild><span className={cn("inline-block", className)}>{children}</span></HoverCardTrigger>
+      <HoverCardTrigger asChild><span className={cn("inline-block shrink-0", className)}>{children}</span></HoverCardTrigger>
       <HoverCardContent side="right" align="start" collisionPadding={12} className="gazette-frame w-80 max-w-[calc(100vw-24px)] rounded-none border-primary/40 bg-card p-4">
         <ItemHintBody item={item} />
       </HoverCardContent>
