@@ -100,13 +100,17 @@ function HeroesPage() {
           {[...(heroList.data ?? [])].filter((h) => !rows.length || rows.some((r) => r.hero_id === h.id)).sort((a, b) => rows.findIndex((r) => r.hero_id === a.id) - rows.findIndex((r) => r.hero_id === b.id)).map((h) => {
             const s = rows.find((r) => r.hero_id === h.id);
             return (
-              <LayoutItem key={h.id}><Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} className="panel panel-hover gazette-frame group block overflow-hidden">
-                <div className="flex justify-between border-b border-border px-3 py-2 font-mono text-[9px] uppercase text-primary"><span>Досье</span><span>№ {String(h.id).padStart(3, "0")}</span></div>
-                <div className="dossier-art aspect-[3/4] overflow-hidden">
-                  <img src={h.images.icon_hero_card_webp ?? h.images.icon_hero_card} alt={h.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+              <LayoutItem key={h.id}><Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as React.CSSProperties} className="panel panel-hover gazette-frame group relative block hover:z-10">
+                <div className="relative aspect-[3/4]">
+                  <div className="hero-card-bg absolute inset-0 overflow-hidden" />
+                  <span className="absolute right-2 top-2 z-0 font-mono text-[9px] uppercase text-foreground/70">№ {String(h.id).padStart(3, "0")}</span>
+                  <img src={h.images.icon_hero_card_webp ?? h.images.icon_hero_card} alt={h.name} className="hero-card-pop absolute inset-x-0 bottom-0 z-[1] h-full w-full object-cover object-bottom" loading="lazy" />
+                  <div className="absolute inset-x-0 bottom-0 z-[2] flex flex-wrap justify-center gap-1 bg-gradient-to-t from-background via-background/80 to-transparent px-2 pb-2 pt-8">
+                    <p className="w-full text-center font-display text-xl uppercase leading-none tracking-wide text-foreground drop-shadow">{h.name}</p>
+                    {(h.tags ?? []).slice(0, 3).map((t) => <span key={t} className="hero-tag">{t}</span>)}
+                  </div>
                 </div>
                 <div className="p-3">
-                  <p className="font-display uppercase">{h.name}</p>
                   {s && <><div className="mt-3 grid grid-cols-2 gap-2"><div><p className={cn("tabular text-xl", s.wr >= 0.5 ? "text-win" : "text-loss")}>{fmtPct(s.wr)}</p><p className="font-mono text-[9px] text-muted-foreground">ПОБЕДЫ</p></div><div className="text-right"><p className="tabular text-lg text-foreground">{fmtPct(s.pr)}</p><p className="font-mono text-[9px] text-muted-foreground">ПИКРЕЙТ</p></div></div><div className="mt-3 flex justify-between border-t border-border pt-3 text-[10px] text-muted-foreground"><span>{fmtInt(s.matches)} игр</span><span>KDA {s.kdaV.toFixed(1)}</span></div></>}
                 </div>
               </Link></LayoutItem>
