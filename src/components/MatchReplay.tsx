@@ -470,7 +470,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
                         <HeroIcon heroId={p.hero_id} size={24} className={team === 0 ? "border-amber-team" : "border-sapphire-team"} />
                         <span className="min-w-0 flex-1 truncate text-xs">{mvpSlot === p.player_slot && <span title="Сильнейший сейчас" className="mr-1 text-primary">♛</span>}{names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name}</span>
                         {(() => { const st = streakOf(p.player_slot); return st >= 3 ? <span title={`Серия: ${st} убийств без смерти`} className="tabular text-[11px] font-bold text-primary">🔥{st}</span> : null; })()}
-                        <span className="tabular text-[11px] text-muted-foreground">{sn ? `${sn.kills ?? 0}/${sn.deaths ?? 0}/${sn.assists ?? 0}` : "—"}</span>
+                        <span className="tabular text-[11px] text-muted-foreground">{`${kills.filter((k) => k.killer === p.player_slot && k.t <= sec).length}/${kills.filter((k) => k.victim === p.player_slot && k.t <= sec).length}/${sn?.assists ?? 0}`}</span>
                         <span className={cn("tabular w-10 text-right text-[11px] font-semibold", team === 0 ? "text-amber-team" : "text-sapphire-team")}>{sn ? fmtK(sn.net_worth ?? 0) : "—"}</span>
                       </div>
                       <div className="ml-8 mt-0.5 flex gap-1">
