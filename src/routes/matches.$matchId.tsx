@@ -17,6 +17,8 @@ import { LiveScoreboard } from "@/components/LiveScoreboard";
 import { MatchDetails } from "@/components/MatchDetails";
 import { MatchReplay, type MatchObjective, type MatchPaths } from "@/components/MatchReplay";
 import { MatchActions, SpectateButton } from "@/components/ShareCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart3, Coins, Map, Swords, Crosshair, Package, Lightbulb } from "lucide-react";
 
 export const Route = createFileRoute("/matches/$matchId")({
   head: ({ params }) => ({
@@ -80,7 +82,7 @@ function MatchPage() {
   });
   const players = q.data?.match_info.players ?? [];
   const profiles = useSteamProfiles(players.map((p) => p.account_id));
-  const [tab, setTab] = useState<"table" | "details" | "map" | "lanes" | "damage" | "items" | "tips">("table");
+  const [tab, setTab] = useState("table");
 
   if (q.isLoading) return <Loading label="Загружаем матч…" />;
   if (q.error) {
@@ -88,18 +90,16 @@ function MatchPage() {
     if (live.data) return <LiveView m={live.data} />;
     return <ErrorBox error={new Error("Данные матча пока недоступны. Если матч только что закончился, попробуйте через несколько минут.")} />;
   }
-  const m = q.data!.match_info;
+  if (!q.data) return null;
+  const m = q.data.match_info;
 
   return (
     <div className="space-y-8">
-      <div>
-        <p className="text-xs uppercase tracking-[0.3em] text-primary">Матч #{m.match_id}</p>
-        <h1 className="font-display text-3xl font-bold md:text-4xl">
-          Победа: <span className={m.winning_team === 0 ? "text-amber-team" : "text-sapphire-team"}>{TEAMS[m.winning_team]}</span>
-        </h1>
-        <div className="deco-line mt-6" />
+      <div className="border-y border-primary/40 py-6">
+        <h1 className="mb-6 font-mono text-xs uppercase text-primary">Итоги матча / Дело № {m.match_id}</h1>
+        <div className="grid grid-cols-2 items-center gap-3">{[0,1].map((t) => <div key={t} className={cn("min-w-0", t === 1 && "text-right")}><p className={cn("font-display text-xl font-bold sm:text-3xl", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{t === 0 ? "Amber Hand" : "Sapphire Flame"}</p><div className={cn("mt-3 flex items-center gap-3", t === 1 && "justify-end")}><span className="font-mono text-2xl">{players.filter((p) => p.team === t).reduce((s,p) => s+p.kills,0)}</span><span className={cn("font-mono text-[10px] uppercase", m.winning_team === t ? "text-win" : "text-muted-foreground")}>{m.winning_team === t ? "Победа" : "Поражение"}</span></div></div>)}</div>
       </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px bg-border md:grid-cols-4">
         <Stat label="Длительность" value={fmtDuration(m.duration_s)} />
         <Stat label="Начало" value={<span className="text-lg">{fmtDate(m.start_time)}</span>} />
         <Stat label="Режим" value={<span className="text-lg">{GAME_MODES[m.game_mode] ?? m.game_mode} · {MATCH_MODES[m.match_mode] ?? m.match_mode}</span>} />
@@ -114,11 +114,12 @@ function MatchPage() {
         />
       </div>
       <MatchActions matchId={m.match_id} players={players} winner={m.winning_team} duration={m.duration_s} names={profiles.data} />
-      <div className="flex flex-wrap gap-2">
-        {([["table", "Таблица"], ["details", "Экономика"], ["map", "Карта"], ["lanes", "Линии и график"], ["damage", "Урон"], ["items", "Предметы"], ["tips", "Советы"]] as const).map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)} className={cn("rounded-full border px-4 py-2 text-sm font-medium", tab === k ? "border-primary/60 bg-primary/15 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground")}>{l}</button>
+      <Tabs value={tab} onValueChange={setTab}>
+      <TabsList>
+        {([["table", "Таблица", BarChart3], ["details", "Экономика", Coins], ["map", "Карта", Map], ["lanes", "Линии и график", Swords], ["damage", "Урон", Crosshair], ["items", "Предметы", Package], ["tips", "Советы", Lightbulb]] as const).map(([k, l, Icon]) => (
+          <TabsTrigger key={k} value={k}><Icon className="h-4 w-4" />{l}</TabsTrigger>
         ))}
-      </div>
+      </TabsList><TabsContent key={tab} value={tab} className="mt-6">
       {tab === "map" && <MatchReplay paths={m.match_paths} players={players} names={profiles.data} objectives={m.objectives} midBoss={m.mid_boss} />}
       {tab === "details" && <MatchDetails players={players} names={profiles.data} durationS={m.duration_s} />}
       {tab === "damage" && <DamageView players={players} names={profiles.data} />}
@@ -137,6 +138,7 @@ function MatchPage() {
           names={profiles.data}
         />
       ))}
+      </TabsContent></Tabs>
     </div>
   );
 }

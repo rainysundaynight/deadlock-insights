@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, Check, ChevronDown, Loader2 } from "lucide-react";
+import { AlertTriangle, Check, ChevronDown, Loader2, ArrowUpRight, Hash, TrendingUp, Crosshair, Clock3 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { api, heroesQuery, itemsQuery, ranksQuery, type Hero, type Item, type SteamProfile } from "@/lib/api";
@@ -22,18 +22,18 @@ export function useItemMap() {
 
 export function PageHeader({ eyebrow, title, children }: { eyebrow?: string; title: ReactNode; children?: ReactNode }) {
   return (
-    <div className="mb-8 border-b border-primary/40 pb-5">
-      {eyebrow && <p className="mb-3 flex items-center gap-3 text-[11px] font-medium uppercase text-primary"><span className="h-px w-8 bg-primary" />{eyebrow}<span className="text-primary/60">◆</span></p>}
-      <h1 className="font-display text-4xl font-black leading-[1.05] md:text-5xl">{title}</h1>
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="gazette-page-heading mb-8 grid gap-4 border-b border-primary/40 pb-6 md:grid-cols-[1fr_auto]">
+      <div>{eyebrow && <p className="mb-3 flex items-center gap-3 font-mono text-[10px] font-medium uppercase text-primary"><span className="h-px w-8 bg-primary" />{eyebrow}<span className="text-primary/60">◆</span></p>}
+      <h1 className="font-display text-4xl font-black leading-[1.05] md:text-5xl">{title}</h1></div>
       {children && <div className="mt-3 max-w-2xl italic text-muted-foreground">{children}</div>}
-    </div>
+    </motion.div>
   );
 }
 
 export function SectionTitle({ children, right }: { children: ReactNode; right?: ReactNode }) {
   return (
-    <div className="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-border pb-3">
-      <h2 className="font-display text-xl font-bold">{children}</h2>
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+      <h2 className="flex items-center gap-3 font-display text-xl font-bold"><span aria-hidden className="h-5 w-1 bg-primary" />{children}</h2>
       {right}
     </div>
   );
@@ -112,12 +112,13 @@ export function lobbyBadge(badges: (number | null | undefined)[]): number | null
 }
 
 export function Stat({ label, value, sub, tone }: { label: string; value: ReactNode; sub?: ReactNode; tone?: "win" | "loss" | "brass" }) {
+  const Icon = /винрейт|побед/i.test(label) ? TrendingUp : /kda|убийств/i.test(label) ? Crosshair : /время|последний|длительность/i.test(label) ? Clock3 : Hash;
   return (
-    <div className="panel p-4">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+    <div className="stat-ledger group relative min-h-32 overflow-hidden border-b border-border bg-card/40 px-4 py-5">
+      <div className="flex items-center justify-between gap-2"><p className="font-mono text-[10px] font-medium uppercase text-muted-foreground">{label}</p><Icon className="h-4 w-4 text-primary/70 transition-transform group-hover:-translate-y-1" /></div>
       <p
         className={cn(
-          "tabular mt-1 text-2xl font-semibold",
+          "tabular mt-4 text-2xl font-semibold sm:text-3xl",
           tone === "win" && "text-win",
           tone === "loss" && "text-loss",
           tone === "brass" && "text-primary",
@@ -125,7 +126,8 @@ export function Stat({ label, value, sub, tone }: { label: string; value: ReactN
       >
         {value}
       </p>
-      {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
+      {sub && <p className="mt-2 text-xs text-muted-foreground">{sub}</p>}
+      <ArrowUpRight aria-hidden className="absolute bottom-4 right-3 h-4 w-4 text-border" />
     </div>
   );
 }
@@ -175,8 +177,8 @@ export function Chip({ active, onClick, children }: { active?: boolean; onClick?
       aria-pressed={!!active}
       onClick={onClick}
       className={cn(
-        "relative overflow-hidden rounded-sm border px-3 py-1 text-sm transition-colors",
-        active ? "border-primary/60 text-primary" : "border-border bg-secondary text-muted-foreground hover:text-foreground",
+        "gazette-chip relative min-h-10 overflow-hidden rounded-none border-0 border-b-2 px-3 py-2 text-xs transition-colors",
+        active ? "border-primary text-primary" : "border-transparent bg-transparent text-muted-foreground hover:bg-primary/5 hover:text-foreground",
       )}
     >
       {active && <motion.span initial={reduce ? false : { opacity: 0, scaleX: 0.8 }} animate={{ opacity: 1, scaleX: 1 }} className="absolute inset-0 bg-primary/15" />}
@@ -240,26 +242,26 @@ export function RankFilter({ value, onChange }: { value: number | null; onChange
   return (
     <span ref={ref} className="relative flex items-center gap-2 text-xs text-muted-foreground">
       Ранг
-      <button
+      <Button variant="outline" aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         className="flex h-10 items-center gap-2 rounded-md border border-input bg-secondary px-3 text-sm text-foreground hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-ring"
       >
         {cur ? <img src={cur.images.large_webp ?? cur.images.large} alt="" className="h-6 w-6 object-contain" /> : <span className="flex h-6 w-6 items-center justify-center text-muted-foreground">✦</span>}
         <span>{cur?.name ?? "Все ранги"}</span>
         <ChevronDown className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform", open && "rotate-180")} />
-      </button>
+      </Button>
       {open && (
         <div className="absolute left-0 top-full z-50 mt-1 max-h-80 w-56 overflow-y-auto rounded-md border border-border bg-card p-1 shadow-xl">
-          <button
+          <Button variant="ghost"
             onClick={() => { onChange(null); setOpen(false); }}
             className={cn("flex w-full items-center gap-2.5 rounded px-2 py-1.5 text-sm hover:bg-secondary", value == null && "bg-primary/10 text-primary")}
           >
             <span className="flex h-7 w-7 items-center justify-center text-muted-foreground">✦</span>
             Все ранги
             {value == null && <Check className="ml-auto h-3.5 w-3.5" />}
-          </button>
+          </Button>
           {Array.from({ length: 12 }, (_, t) => (
-            <button
+            <Button variant="ghost"
               key={t}
               onClick={() => { onChange(t); setOpen(false); }}
               className={cn("flex w-full items-center gap-2.5 rounded px-2 py-1.5 text-sm hover:bg-secondary", value === t && "bg-primary/10 text-primary")}
@@ -267,7 +269,7 @@ export function RankFilter({ value, onChange }: { value: number | null; onChange
               {icon(t) ? <img src={icon(t)} alt="" className="h-7 w-7 object-contain" /> : <span className="h-7 w-7" />}
               {name(t)}
               {value === t && <Check className="ml-auto h-3.5 w-3.5" />}
-            </button>
+            </Button>
           ))}
         </div>
       )}

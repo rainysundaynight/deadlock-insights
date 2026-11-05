@@ -202,6 +202,15 @@
 .telegram:focus-within { box-shadow: var(--shadow-magic); border-color: var(--telemetry); }
 .ticker-track { display: flex; width: max-content; animation: ticker 50s linear infinite; }
 .ticker-track:hover { animation-play-state: paused; }
+.gazette-page-heading > div:last-child:not(:first-child) { align-self: end; font-size: 0.875rem; max-width: 26rem; }
+.stat-ledger::before { content: ""; position: absolute; top: 0; left: 0; width: 24px; height: 2px; background: var(--primary); transition: width 350ms; }
+.stat-ledger:hover::before { width: 100%; }
+.gazette-tabs { background: transparent !important; }
+.gazette-tab[data-state="active"]::after { content: ""; position: absolute; bottom: -1px; left: 50%; width: 6px; height: 6px; transform: translate(-50%, 50%) rotate(45deg); background: var(--primary); }
+.player-dossier { background-image: linear-gradient(90deg, color-mix(in oklab, var(--primary) 5%, transparent), transparent 65%); }
+.live-match-sheet { box-shadow: var(--shadow-brass); }
+.live-dispatch, .edition-tool, .meta-ledger-row { position: relative; }
+@media (max-width: 640px) { .gazette-tab { padding-left: 12px; padding-right: 12px; } .gazette-page-heading { gap: 8px; } }
 @keyframes ticker { to { transform: translateX(-50%); } }
 .recharts-default-tooltip { background: var(--popover) !important; border: 1px solid var(--primary) !important; color: var(--foreground) !important; border-radius: var(--radius) !important; box-shadow: var(--shadow-brass); }
 .recharts-tooltip-label { color: var(--foreground); }

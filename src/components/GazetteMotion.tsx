@@ -27,5 +27,5 @@ export function RollingNumber({ value, decimals = 0, suffix = "" }: { value: num
 
 export function LayoutItem({ children, className }: { children: ReactNode; className?: string }) {
   const reduce = useReducedMotion();
-  return <motion.div layout={!reduce} className={className} initial={reduce ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>{children}</motion.div>;
+  return <motion.div data-motion-owner layout={!reduce} className={className} initial={reduce ? false : { opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}>{children}</motion.div>;
 }

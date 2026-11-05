@@ -4,7 +4,8 @@ import { Activity, ArrowRight, Crown, GitCompare, LayoutGrid, Radio, Swords, Tro
 import { useMemo, useState } from "react";
 
 import cityArtwork from "@/assets/gazette-city.jpg";
-import { MagneticButton, RollingNumber } from "@/components/GazetteMotion";
+import { LayoutItem, MagneticButton, RollingNumber } from "@/components/GazetteMotion";
+import { motion, useReducedMotion } from "framer-motion";
 import { PlayerSearch } from "@/components/PlayerSearch";
 import { HeroIcon, SectionTitle, inputClass, useHeroMap } from "@/components/dl";
 import { api, type HeroAnalytics } from "@/lib/api";
@@ -36,6 +37,7 @@ const TOOLS = [
 ] as const;
 
 function Index() {
+  const reduce = useReducedMotion();
   const heroes = useHeroMap();
   const navigate = useNavigate();
   const [matchId, setMatchId] = useState("");
@@ -63,7 +65,7 @@ function Index() {
         <div className="relative mx-auto text-center">
           <div className="mb-7 flex items-center justify-between border-y border-primary/40 py-2 text-[10px] uppercase text-primary md:text-xs"><span>Независимое издание</span><span className="hidden sm:inline">Нью-Йорк · По ту сторону завесы</span><span>Deadlock · Спецвыпуск</span></div>
           <p className="mb-2 font-masthead text-sm text-primary">The</p>
-          <h1 className="gazette-masthead text-[36px] font-semibold leading-[1.05] text-foreground sm:text-6xl xl:text-[80px]">DEADLOCKED<br /><span className="text-primary">GAZETTE</span></h1>
+          <motion.h1 initial={reduce ? false : { opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="gazette-masthead text-[36px] font-semibold leading-[1.05] text-foreground sm:text-6xl xl:text-[80px]">DEADLOCKED<br /><span className="text-primary">GAZETTE</span></motion.h1>
           <div className="mx-auto my-6 flex max-w-md items-center gap-4 text-primary"><span className="h-px flex-1 bg-primary/40" /><span>◆</span><span className="h-px flex-1 bg-primary/40" /></div>
           <p className="mx-auto max-w-xl font-display text-base italic text-foreground/80 md:text-xl">Все души учтены. Каждая история имеет значение.</p>
           <div className="relative mx-auto mt-7 max-w-xl text-left"><PlayerSearch /></div>
@@ -83,21 +85,21 @@ function Index() {
         <div className="min-w-0 flex-1 overflow-hidden"><div className="ticker-track" aria-hidden="true">{[0, 1].map((copy) => <div key={copy} className="flex shrink-0 items-center">{ticker.map((t, i) => <span key={i} className="whitespace-nowrap px-6 py-3 font-mono text-[10px] text-muted-foreground">{t}<span className="ml-6 text-primary">✦</span></span>)}</div>)}</div><span className="sr-only">{ticker.join(". ")}</span></div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <section className="border-t border-primary/40 pt-5 lg:col-span-2">
+      <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
+        <section className="border-t border-primary/40 pt-5">
           <SectionTitle right={<Link to="/tierlist" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">Тир-лист <ArrowRight className="h-4 w-4" /></Link>}>Мета недели · Oracle+</SectionTitle>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="space-y-1">
             {tiers.slice(0, 8).map((r, i) => (
-              <Link key={r.hero_id} to="/heroes/$heroId" params={{ heroId: String(r.hero_id) }} className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-accent">
-                <span className="tabular w-5 text-sm text-muted-foreground">{i + 1}</span>
-                <HeroIcon heroId={r.hero_id} size={40} className="rounded-lg" />
+              <LayoutItem key={r.hero_id}><Link to="/heroes/$heroId" params={{ heroId: String(r.hero_id) }} className="meta-ledger-row group flex items-center gap-3 border-b border-border py-3 transition-colors hover:bg-primary/5">
+                <span className="font-display w-7 text-xl italic text-primary/60">{String(i + 1).padStart(2, "0")}</span>
+                <HeroIcon heroId={r.hero_id} size={44} className="rounded-none transition-transform group-hover:scale-110" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{heroes.get(r.hero_id)?.name}</p>
                   <p className="text-xs text-muted-foreground">{fmtInt(r.matches)} матчей</p>
                 </div>
                 <span className="tier-seal inline-grid h-7 w-7 place-items-center text-xs font-bold">{r.tier}</span>
-                <span className="tabular w-14 text-right text-sm text-win">{(r.winrate * 100).toFixed(1)}%</span>
-              </Link>
+                <div className="text-right"><span className="tabular text-lg text-win">{(r.winrate * 100).toFixed(1)}%</span><p className="font-mono text-[9px] uppercase text-muted-foreground">побед</p></div><ArrowRight className="hidden h-4 w-4 text-primary/50 transition-transform group-hover:translate-x-1 sm:block" />
+              </Link></LayoutItem>
             ))}
           </div>
         </section>
@@ -109,10 +111,11 @@ function Index() {
             {featured.map((m) => {
               const tot = m.net_worth_team_0 + m.net_worth_team_1 || 1;
               return (
-                <Link key={m.match_id} to="/matches/$matchId" params={{ matchId: String(m.match_id) }} className="block rounded-lg border border-border p-3 transition-colors hover:border-primary/50">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground"><span>#{m.match_id}</span><span className="inline-flex items-center gap-1"><Activity className="h-3 w-3" />{m.spectators}</span></div>
-                  <div className="mt-2 flex -space-x-1.5">{m.players.slice(0, 12).map((p, i) => <HeroIcon key={i} heroId={p.hero_id} size={22} className={cn("rounded-full", p.team === 0 ? "border-amber-team/70" : "border-sapphire-team/70")} />)}</div>
-                  <div className="mt-2 flex h-1 overflow-hidden rounded-full"><div className="bg-amber-team" style={{ width: `${(m.net_worth_team_0 / tot) * 100}%` }} /><div className="flex-1 bg-sapphire-team" /></div>
+                <Link key={m.match_id} to="/matches/$matchId" params={{ matchId: String(m.match_id) }} className="live-dispatch group block border-l-2 border-telemetry/50 bg-card/50 p-4 transition-colors hover:bg-telemetry/5">
+                  <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground"><span>ДЕЛО № {m.match_id}</span><span className="inline-flex items-center gap-1 text-telemetry"><Activity className="h-3 w-3 animate-pulse" />{m.spectators}</span></div>
+                  <div className="mt-3 flex items-center justify-between gap-3">{[0,1].map((t) => <div key={t} className="flex -space-x-1">{m.players.filter((p) => p.team === t).slice(0,6).map((p,i) => <HeroIcon key={i} heroId={p.hero_id} size={26} className={cn("rounded-none", t === 0 ? "border-amber-team/70" : "border-sapphire-team/70")} />)}</div>)}</div>
+                  <div className="mt-3 flex justify-between font-mono text-xs"><span className="text-amber-team">{fmtK(m.net_worth_team_0)}</span><span className="text-sapphire-team">{fmtK(m.net_worth_team_1)}</span></div>
+                  <div className="mt-2 flex h-0.5 overflow-hidden"><div className="bg-amber-team" style={{ width: `${(m.net_worth_team_0 / tot) * 100}%` }} /><div className="flex-1 bg-sapphire-team" /></div>
                 </Link>
               );
             })}
@@ -123,11 +126,11 @@ function Index() {
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {TOOLS.map((s) => (
-          <Link key={s.to} to={s.to} className="panel panel-hover gazette-frame group p-5">
-            <span className="grid h-10 w-10 place-items-center rounded-lg bg-primary/10 text-primary"><s.icon className="h-5 w-5" /></span>
-            <p className="mt-4 font-display font-semibold">{s.label}</p>
-            <p className="text-sm text-muted-foreground">{s.desc}</p>
-          </Link>
+          <LayoutItem key={s.to}><Link to={s.to} className="edition-tool group relative flex h-full flex-col border-t-2 border-primary/40 py-6 transition-colors hover:border-primary">
+            <div className="flex items-center justify-between"><s.icon className="h-7 w-7 text-primary transition-transform duration-300 group-hover:-rotate-12" /><ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-2 group-hover:text-primary" /></div>
+            <p className="mt-5 font-display text-xl font-semibold">{s.label}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
+          </Link></LayoutItem>
         ))}
       </section>
       <p className="flex items-center gap-2 text-xs text-muted-foreground"><Swords className="h-3.5 w-3.5" /> Статистика героев обновляется каждый час.</p>
