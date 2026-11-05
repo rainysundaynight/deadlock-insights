@@ -19,18 +19,18 @@ export function useItemMap() {
 
 export function PageHeader({ eyebrow, title, children }: { eyebrow?: string; title: ReactNode; children?: ReactNode }) {
   return (
-    <div className="mb-8">
-      {eyebrow && <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">{eyebrow}</p>}
-      <h1 className="font-display text-3xl font-bold md:text-4xl">{title}</h1>
-      {children && <div className="mt-3 max-w-2xl text-muted-foreground">{children}</div>}
+    <div className="mb-8 border-b border-foreground/80 pb-5">
+      {eyebrow && <p className="mb-3 border-y border-foreground/70 py-1 text-[11px] font-bold uppercase tracking-[0.3em] text-primary">{eyebrow}</p>}
+      <h1 className="font-display text-4xl font-black leading-[1.05] md:text-5xl">{title}</h1>
+      {children && <div className="mt-3 max-w-2xl italic text-muted-foreground">{children}</div>}
     </div>
   );
 }
 
 export function SectionTitle({ children, right }: { children: ReactNode; right?: ReactNode }) {
   return (
-    <div className="mb-4 flex items-end justify-between gap-4">
-      <h2 className="font-display text-lg font-semibold">{children}</h2>
+    <div className="mb-4 flex items-end justify-between gap-4 border-b border-foreground/60 pb-2">
+      <h2 className="font-display text-xl font-bold">{children}</h2>
       {right}
     </div>
   );
