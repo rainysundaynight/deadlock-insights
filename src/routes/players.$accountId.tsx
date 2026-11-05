@@ -223,7 +223,7 @@ function streaks(ms: MatchHistoryEntry[]) {
 
 interface RowMeta { match_id: number; players: { account_id: number; hero_id: number; team: string; items?: { item_id: number; sold_time_s: number }[] }[] }
 
-function SourceTag({ src }: { src?: "steam" | "archive" }) {
+function SourceTag({ src }: { src?: "steam" | "archive" | undefined }) {
   return src === "steam"
     ? <span title="Матч получен напрямую из Steam" className="ml-1 rounded-sm border border-primary/50 bg-primary/10 px-1 font-mono text-[9px] uppercase text-primary">Steam</span>
     : <span title="Матч из архива Deadlock API" className="ml-1 rounded-sm border border-border px-1 font-mono text-[9px] uppercase text-muted-foreground">Архив</span>;
