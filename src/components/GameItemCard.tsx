@@ -14,6 +14,7 @@ const TIP_FIX = `
 .mod-info-label{display:block!important;white-space:normal!important}
 .mod-info-label span:not(.keybind):not(.InlineKey):not(.inline-attribute-icon):not(.InlineAttributeIcon){display:inline!important;width:auto!important;max-width:none!important;flex:none!important;white-space:normal!important}
 .mod-info-label panel{display:inline!important;width:auto!important;height:auto!important;background:none!important;-webkit-mask:none!important;mask:none!important;vertical-align:baseline!important}
+.block-prop-item *,.important-stat-box *{white-space:normal!important;overflow-wrap:anywhere;min-width:0}
 .mod-info-label p,.mod-info-label div{display:block!important;width:auto!important;max-width:100%!important}
 .block-prop-item .attribute-name{white-space:normal!important;overflow-wrap:anywhere}
 `;
