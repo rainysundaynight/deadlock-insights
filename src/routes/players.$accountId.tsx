@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ExternalLink, Activity, Swords, Users, Crosshair, BookOpen, GitCompare } from "lucide-react";
+import { ExternalLink, Package, Activity, Swords, Users, Crosshair, BookOpen, GitCompare } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Empty, ErrorBox, useSteamProfiles, useItemMap, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
 import { FollowButton } from "@/components/FollowButton";
 import { PotentialRank } from "@/components/PotentialRank";
+import { PlayerItems } from "@/components/PlayerItems";
 import { PlayerInsights } from "@/components/PlayerInsights";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, type MatchHistoryEntry, type PlayerHeroStat } from "@/lib/api";
@@ -93,6 +94,7 @@ function PlayerPage() {
           <TabsTrigger value="overview"><BookOpen className="h-4 w-4" />Обзор</TabsTrigger>
           <TabsTrigger value="matches"><Activity className="h-4 w-4" />Матчи <span className="font-mono text-[10px] opacity-60">{summary.n}</span></TabsTrigger>
           <TabsTrigger value="heroes"><Swords className="h-4 w-4" />Герои</TabsTrigger>
+          <TabsTrigger value="items"><Package className="h-4 w-4" />Предметы</TabsTrigger>
           <TabsTrigger value="mates"><Users className="h-4 w-4" />Тиммейты</TabsTrigger>
           <TabsTrigger value="enemies"><Crosshair className="h-4 w-4" />Соперники</TabsTrigger>
         </TabsList>
@@ -104,6 +106,9 @@ function PlayerPage() {
         </TabsContent>
         <TabsContent value="heroes" className="mt-4">
           <PlayerHeroes id={id} />
+        </TabsContent>
+        <TabsContent value="items" className="mt-4">
+          <PlayerItems id={id} history={history.data ?? []} />
         </TabsContent>
         <TabsContent value="mates" className="mt-4">
           <People id={id} kind="mate" />
@@ -270,30 +275,40 @@ function PlayerHeroes({ id }: { id: number }) {
   if (q.error) return <ErrorBox error={q.error} />;
   const rows = [...(q.data ?? [])].sort((a, b) => b.matches_played - a.matches_played);
   if (!rows.length) return <Empty>Нет данных по героям</Empty>;
+  const max = rows[0]?.matches_played ?? 1;
   return (
-    <div className="panel overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground">
-          <tr className="border-b border-border">
-            <th className="p-3">Герой</th><th className="p-3">Матчи</th><th className="p-3">Винрейт</th><th className="p-3">KDA</th><th className="p-3">Душ/мин</th><th className="p-3">Время</th><th className="p-3">Последний</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.hero_id} className="border-b border-border/50 last:border-0 hover:bg-accent/40">
-              <td className="p-3"><HeroLink heroId={r.hero_id} size={32} /></td>
-              <td className="tabular p-3">{r.matches_played}</td>
-              <td className="p-3"><WinrateBar value={winrate(r.wins, r.matches_played)} /></td>
-              <td className="tabular p-3">{kda(r.kills, r.deaths, r.assists)}</td>
-              <td className="tabular p-3">{fmtInt(r.networth_per_min)}</td>
-              <td className="tabular p-3">{fmtHours(r.time_played)}</td>
-              <td className="p-3 text-muted-foreground">{fmtAgo(r.last_played)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {rows.map((r, i) => {
+        const wr = winrate(r.wins, r.matches_played) * 100;
+        return (
+          <Link key={r.hero_id} to="/heroes/$heroId" params={{ heroId: String(r.hero_id) }} className="panel panel-hover group relative overflow-hidden p-4">
+            <span className="absolute right-3 top-2 font-display text-3xl font-black text-primary/15">{String(i + 1).padStart(2, "0")}</span>
+            <div className="flex items-center gap-3">
+              <HeroIcon heroId={r.hero_id} size={52} />
+              <div className="min-w-0">
+                <HeroName id={r.hero_id} />
+                <p className="font-mono text-[10px] uppercase text-muted-foreground">{fmtHours(r.time_played)} · {fmtAgo(r.last_played)}</p>
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-3 text-center">
+              <div><p className={cn("tabular font-display text-lg font-bold", wr >= 50 ? "text-win" : "text-loss")}>{wr.toFixed(0)}%</p><p className="font-mono text-[9px] uppercase text-muted-foreground">винрейт</p></div>
+              <div><p className="tabular font-display text-lg font-bold">{kda(r.kills, r.deaths, r.assists)}</p><p className="font-mono text-[9px] uppercase text-muted-foreground">KDA</p></div>
+              <div><p className="tabular font-display text-lg font-bold">{fmtInt(r.networth_per_min)}</p><p className="font-mono text-[9px] uppercase text-muted-foreground">душ/мин</p></div>
+            </div>
+            <div className="mt-3">
+              <div className="mb-1 flex justify-between font-mono text-[10px] text-muted-foreground"><span>{r.matches_played} матчей</span><span>{r.wins}W · {r.matches_played - r.wins}L</span></div>
+              <div className="h-1 bg-secondary"><div className="h-full bg-primary" style={{ width: `${(r.matches_played / max) * 100}%` }} /></div>
+            </div>
+          </Link>
+        );
+      })}
     </div>
   );
+}
+
+function HeroName({ id }: { id: number }) {
+  const heroes = useHeroMap();
+  return <p className="truncate font-display text-lg font-bold">{heroes.get(id)?.name ?? id}</p>;
 }
 
 function People({ id, kind }: { id: number; kind: "mate" | "enemy" }) {
@@ -313,13 +328,14 @@ function People({ id, kind }: { id: number; kind: "mate" | "enemy" }) {
         const pid = (r.mate_id ?? r.enemy_id)!;
         const p = profiles.data?.get(pid);
         return (
-          <Link key={pid} to="/players/$accountId" params={{ accountId: String(pid) }} className="panel panel-hover flex items-center gap-3 p-3">
-            {p?.avatar ? <img src={p.avatar} alt="" className="h-9 w-9 rounded" /> : <div className="h-9 w-9 rounded bg-muted" />}
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-medium">{p?.personaname ?? `#${pid}`}</p>
-              <p className="text-xs text-muted-foreground">{r.matches_played} совместных матчей</p>
+          <Link key={pid} to="/players/$accountId" params={{ accountId: String(pid) }} className="panel panel-hover grid grid-cols-[auto_1fr_auto] items-center gap-4 p-3">
+            {p?.avatar ? <img src={p.avatar} alt="" className="h-11 w-11 border border-primary/40" /> : <div className="h-11 w-11 border border-border bg-muted" />}
+            <div className="min-w-0">
+              <p className="truncate font-display font-bold">{p?.personaname ?? `#${pid}`}</p>
+              <p className="font-mono text-[10px] uppercase text-muted-foreground">{r.matches_played} {kind === "mate" ? "вместе" : "против"} · {r.wins}W / {r.matches_played - r.wins}L</p>
+              <div className="mt-1.5 h-1 bg-secondary"><div className={cn("h-full", winrate(r.wins, r.matches_played) >= 0.5 ? "bg-win" : "bg-loss")} style={{ width: `${winrate(r.wins, r.matches_played) * 100}%` }} /></div>
             </div>
-            <WinrateBar value={winrate(r.wins, r.matches_played)} />
+            <p className={cn("tabular font-display text-xl font-black", winrate(r.wins, r.matches_played) >= 0.5 ? "text-win" : "text-loss")}>{(winrate(r.wins, r.matches_played) * 100).toFixed(0)}%</p>
           </Link>
         );
       })}
