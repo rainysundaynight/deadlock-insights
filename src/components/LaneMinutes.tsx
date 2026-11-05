@@ -21,7 +21,7 @@ type Metric = (typeof METRICS)[number][0];
 /** Cell shading: team-tinted background scaled by how big the value is. */
 function heat(team: number, v: number, max: number) {
   const a = max > 0 ? Math.min(1, v / max) : 0;
-  return { background: `color-mix(in oklab, var(--${team === 0 ? "color-amber" : "color-sapphire"}-team) ${(a * 26).toFixed(1)}%, transparent)` };
+  return { background: `color-mix(in oklab, var(--${team === 0 ? "team-amber" : "team-sapphire"}) ${(a * 26).toFixed(1)}%, transparent)` };
 }
 
 /** Lead across minutes as a small centered area chart. */
@@ -35,7 +35,7 @@ function LeadSpark({ lead }: { lead: number[] }) {
     <svg viewBox={`0 0 ${W} ${H}`} className="h-14 w-full" preserveAspectRatio="none" aria-hidden>
       <line x1="0" y1={mid} x2={W} y2={mid} stroke="var(--border)" strokeWidth="1" />
       {lead.map((v, i) => (
-        <rect key={i} x={x(i) - 3} y={Math.min(mid, y(v))} width={6} height={Math.abs(mid - y(v))} fill={`var(--${v >= 0 ? "color-amber" : "color-sapphire"}-team)`} opacity={0.55} />
+        <rect key={i} x={x(i) - 3} y={Math.min(mid, y(v))} width={6} height={Math.abs(mid - y(v))} fill={`var(--${v >= 0 ? "team-amber" : "team-sapphire"})`} opacity={0.55} />
       ))}
       <path d={`${line} L${W},${mid} L0,${mid} Z`} fill="none" stroke="var(--primary)" strokeWidth="1.2" opacity={0.8} />
     </svg>
