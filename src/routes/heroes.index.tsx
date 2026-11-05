@@ -113,10 +113,6 @@ function HeroesPage() {
             );
           })}
         </div>
-      ) : q.isLoading ? (
-        <Loading />
-      ) : q.error ? (
-        <ErrorBox error={q.error} />
       ) : (
         <div className="panel overflow-x-auto">
           <table className="w-full text-sm">
