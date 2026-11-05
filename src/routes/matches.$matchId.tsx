@@ -5,7 +5,7 @@ import { ErrorBox, HeroIcon, Loading, PlayerRank, RankBadge, Stat, useHeroMap, u
 import { api } from "@/lib/api";
 import { fmtDate, fmtDuration, fmtK, GAME_MODES, MATCH_MODES } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MatchHero } from "@/components/MatchHero";
 import { MatchAnalysis } from "@/components/MatchAnalysis";
 import { LaneDuelBoard, PlayerDossier } from "@/components/PlayerDossier";
@@ -79,6 +79,10 @@ function MatchPage() {
   const { matchId } = Route.useParams();
   const { from } = Route.useSearch();
   const navigate = useNavigate();
+  const [backPath, setBackPath] = useState<string | null>(null);
+  useEffect(() => {
+    try { setBackPath(window.sessionStorage.getItem("dl-prev-path")); } catch { /* storage unavailable */ }
+  }, []);
   const q = useQuery({ queryKey: ["match", matchId], queryFn: () => api<MatchMeta>(`/v1/matches/${matchId}/metadata`), staleTime: Infinity, retry: false });
   const live = useQuery({
     queryKey: ["active"],
