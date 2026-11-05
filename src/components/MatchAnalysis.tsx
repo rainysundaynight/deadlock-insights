@@ -15,14 +15,14 @@ type Names = Map<number, { personaname: string }> | undefined;
 
 type Obj = { destroyed_time_s: number; team_objective_id: number; team: number };
 type Boss = { team_killed: number; destroyed_time_s: number };
-export function MatchAnalysis({ view, players, durationS, names, objectives, midBoss }: { view: "lanes" | "tips"; players: APlayer[]; durationS: number; names: Names; objectives?: Obj[] | undefined; midBoss?: Boss[] | undefined }) {
+export function MatchAnalysis({ view, players, durationS, names, objectives, midBoss, winner }: { view: "lanes" | "tips"; players: APlayer[]; durationS: number; names: Names; objectives?: Obj[] | undefined; midBoss?: Boss[] | undefined; winner?: number | undefined }) {
   return view === "lanes" ? (
     <div className="space-y-8">
       <AdvantageChart players={players} />
       <Lanes players={players} names={names} />
     </div>
   ) : (
-    <Tips players={players} durationS={durationS} names={names} />
+    <Tips players={players} durationS={durationS} names={names} winner={winner} />
   );
 }
 
@@ -107,21 +107,19 @@ function Lanes({ players, names }: { players: APlayer[]; names: Names }) {
   );
 }
 
-function Tips({ players, durationS, names }: { players: APlayer[]; durationS: number; names: Names }) {
+function Tips({ players, durationS, names, winner }: { players: APlayer[]; durationS: number; names: Names; winner?: number | undefined }) {
   const heroes = useHeroMap();
   const g = useQuery(globalAvgQuery);
   const [sel, setSel] = useState(players[0]?.account_id);
   const p = players.find((x) => x.account_id === sel) ?? players[0];
   if (!p) return null;
   const tips = playerTips(p, players, durationS);
-  const winner = players.reduce((w, x) => w, -1);
   const ga = g.data ? globalAverages(g.data) : null;
   const f = (durationS || AVG_MATCH_S) / AVG_MATCH_S;
-  const won = (p as APlayer & { won?: boolean }).won;
+  const won = p.team === winner;
   const inp = { k: p.kills, d: p.deaths, a: p.assists, nw: p.net_worth, lh: p.last_hits, won: !!won };
   const graded = ga ? gradeVsGlobal(inp, ga, durationS) : null;
   const parts = ga ? perfParts(inp, { k: ga.k * f, d: ga.d * f, a: ga.a * f, nw: ga.nw * f, lh: ga.lh * f }) : [];
-  void winner;
   const name = names?.get(p.account_id)?.personaname ?? `#${p.account_id}`;
   return (
     <section className="space-y-4">
