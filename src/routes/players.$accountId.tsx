@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { ExternalLink, Package, RefreshCw, Activity, Swords, Users, Crosshair, BookOpen, GitCompare } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -118,7 +119,8 @@ function PlayerPage() {
 
   return (
     <div className="space-y-8">
-      <div className="player-dossier relative grid gap-6 border-y border-primary/40 py-7 md:grid-cols-[auto_1fr_auto] md:items-center">
+      <DossierBackdrop history={history.data ?? []} />
+      <div className="player-dossier relative -mt-8 grid gap-6 border-y border-primary/40 py-7 md:grid-cols-[auto_1fr_auto] md:items-center">
         {profile?.avatarfull ? (
           <div className="gazette-frame w-fit p-2"><img src={profile.avatarfull} alt="" className="h-24 w-24 object-cover" /></div>
         ) : (
@@ -126,7 +128,12 @@ function PlayerPage() {
         )}
         <div className="flex-1">
           <p className="mb-3 font-mono text-[10px] uppercase text-primary">Архив игроков / Досье № {id}</p>
-          <h1 className="break-words font-display text-3xl font-semibold sm:text-4xl">{profile?.personaname ?? `Игрок #${id}`}</h1>
+          <h1 className="break-words font-display text-4xl font-black tracking-tight sm:text-5xl">{profile?.personaname ?? `Игрок #${id}`}</h1>
+          <div className="mt-3 flex gap-1" aria-label="Форма за последние матчи">
+            {(history.data ?? []).slice(0, 15).reverse().map((m, i) => (
+              <motion.span key={m.match_id} initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: i * 0.03 }} title={m.match_result === m.player_team ? "Победа" : "Поражение"} className={cn("h-4 w-2 origin-bottom", m.match_result === m.player_team ? "bg-win" : "bg-loss/70")} />
+            ))}
+          </div>
           <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <FollowButton accountId={id} name={profile?.personaname} />
             <button onClick={forceRefresh} disabled={refetching} title="Запросить свежую историю напрямую из Steam" className="inline-flex items-center gap-1.5 hover:text-primary disabled:opacity-50"><RefreshCw className={cn("h-3.5 w-3.5", refetching && "animate-spin")} />{refetching ? "Обновляем…" : "Обновить матчи"}</button>
@@ -222,6 +229,23 @@ function streaks(ms: MatchHistoryEntry[]) {
 }
 
 interface RowMeta { match_id: number; players: { account_id: number; hero_id: number; team: string; items?: { item_id: number; sold_time_s: number }[] }[] }
+
+function DossierBackdrop({ history }: { history: MatchHistoryEntry[] }) {
+  const heroes = useHeroMap();
+  const top = useMemo(() => {
+    const c = new Map<number, number>();
+    history.slice(0, 30).forEach((m) => c.set(m.hero_id, (c.get(m.hero_id) ?? 0) + 1));
+    return [...c.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  }, [history]);
+  const img = top ? heroes.get(top)?.images.background_image_webp ?? heroes.get(top)?.images.icon_hero_card_webp : undefined;
+  return (
+    <div aria-hidden className="pointer-events-none relative -mx-4 h-8 md:-mx-8">
+      {img && (
+        <motion.div initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} className="dossier-backdrop absolute inset-x-0 top-0 h-[320px] bg-cover bg-center" style={{ backgroundImage: `url(${img})` }} />
+      )}
+    </div>
+  );
+}
 
 function SourceTag({ src }: { src?: "steam" | "archive" | undefined }) {
   return src === "steam"

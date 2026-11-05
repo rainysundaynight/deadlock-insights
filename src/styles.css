@@ -222,3 +222,11 @@ main table thead { background: var(--secondary); font-family: var(--font-mono); 
 main table tbody tr { transition: background-color 150ms; }
 main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, transparent); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } .ticker-track { animation: none; } }
+
+.dossier-backdrop {
+  opacity: 0.22;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 100%), linear-gradient(to right, transparent, black 30%, black 70%, transparent);
+  mask-composite: intersect;
+  filter: grayscale(0.4) sepia(0.35) contrast(1.1);
+}
+.player-dossier > * { position: relative; z-index: 1; }
