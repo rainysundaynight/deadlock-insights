@@ -7,11 +7,26 @@ const SHADOW_FIX = `
 .mod-name{font-family:"PT Serif",Georgia,serif!important;font-size:10.5px!important;line-height:1.05!important;hyphens:auto;overflow-wrap:anywhere;padding:0 3px!important}
 .mod-name.name-size-sm,.mod-name.name-size-xs{font-size:9.5px!important}
 .mod-name-container{overflow:hidden}
+.stats-block-props{flex-wrap:wrap!important;row-gap:4px}
+.block-prop-item{min-width:0!important;flex:1 1 45%!important;overflow:visible!important}
+.block-prop-item .attribute-name{white-space:normal!important;overflow-wrap:anywhere}
 `;
 
 export function GameItemsProvider({ children }: { children: ReactNode }) {
   return <DlProvider language={"russian" as never} tooltipTrigger={"hover" as never}>{children}</DlProvider>;
 }
+
+function injectAll(root: ShadowRoot | Document | null | undefined) {
+  if (!root) return;
+  if (root instanceof ShadowRoot && !root.querySelector("style[data-fix]")) {
+    const st = document.createElement("style");
+    st.setAttribute("data-fix", "1");
+    st.textContent = SHADOW_FIX;
+    root.appendChild(st);
+  }
+  root.querySelectorAll("*").forEach((e) => e.shadowRoot && injectAll(e.shadowRoot));
+}
+const fixTooltips = () => requestAnimationFrame(() => { injectAll(document); setTimeout(() => injectAll(document), 120); });
 
 export default function GameItemCard({ itemId, data, variant = "card" }: { itemId: number; data?: unknown; variant?: "card" | "icon" | "image" }) {
   const ref = useRef<HTMLElement>(null);
@@ -29,5 +44,5 @@ export default function GameItemCard({ itemId, data, variant = "card" }: { itemI
     }, 50);
     return () => clearInterval(t);
   }, []);
-  return <DlItemCard ref={ref as never} lang="ru" className="game-item" itemId={itemId} itemData={data as never} variant={variant} hoverEffect="scale" showTierBadge={variant === "card"} tooltipTrigger="hover" />;
+  return <DlItemCard ref={ref as never} lang="ru" className="game-item" itemId={itemId} itemData={data as never} variant={variant} hoverEffect="scale" showTierBadge={variant === "card"} tooltipTrigger="hover" onTooltipOpen={fixTooltips as never} onMouseEnter={fixTooltips} />;
 }
