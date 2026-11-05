@@ -21,7 +21,7 @@ export default function GameItemCard({ itemId, data, variant = "card" }: { itemI
       const root = ref.current?.shadowRoot;
       if (root && !root.querySelector("style[data-fix]")) {
         const s = document.createElement("style");
-        s.dataset.fix = "1";
+        s.setAttribute("data-fix", "1");
         s.textContent = SHADOW_FIX;
         root.appendChild(s);
       }
