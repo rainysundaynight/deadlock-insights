@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Activity, ArrowRight, Crown, GitCompare, LayoutGrid, Radio, Swords, Trophy } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 
 import cityArtwork from "@/assets/gazette-city.jpg";
 import { LayoutItem, MagneticButton, RollingNumber } from "@/components/GazetteMotion";
@@ -62,7 +62,35 @@ function Index() {
           <img src={cityArtwork} alt="" width={1920} height={1024} className="h-full w-full object-cover object-center" />
           <div className="gazette-hero absolute inset-0" />
         </div>
-        <div className="relative mx-auto text-center">
+        {tiers.length >= 4 && (["left", "right"] as const).map((side) => (
+          <div key={side} className={cn("absolute bottom-0 z-[3] hidden items-end gap-1 xl:flex", side === "left" ? "left-6 2xl:left-12" : "right-6 flex-row-reverse 2xl:right-12")}>
+            {tiers.slice(side === "left" ? 0 : 2, side === "left" ? 2 : 4).map((r, i) => {
+              const h = heroes.get(r.hero_id);
+              if (!h) return null;
+              const rank = tiers.indexOf(r) + 1;
+              const alt = h.images.hero_card_gloat_webp ?? h.images.hero_card_gloat;
+              return (
+                <motion.div key={r.hero_id} initial={reduce ? false : { opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 + i * 0.12 }}>
+                  <Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as CSSProperties} className={cn("group relative block", i === 0 ? "w-40 2xl:w-48" : "w-32 2xl:w-40")}>
+                    <div className="relative aspect-[3/4]">
+                      <div className="absolute inset-x-2 bottom-0 h-2/3 rounded-t-full opacity-60 blur-2xl" style={{ background: "var(--hero)" }} />
+                      <div className="hero-card-clip absolute inset-0" style={{ maskImage: "linear-gradient(to top, transparent 0, black 22%)" }}>
+                        <img src={h.images.icon_hero_card_webp ?? h.images.icon_hero_card} alt={h.name} className="hero-pose hero-pose-idle absolute inset-0 h-full w-full object-cover object-bottom" />
+                        {alt && <img src={alt} alt="" aria-hidden className="hero-pose hero-pose-alt absolute inset-0 h-full w-full object-cover object-bottom" />}
+                      </div>
+                    </div>
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/85 to-transparent pb-2 pt-6 text-center">
+                      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">№{rank} · {r.tier}-тир</p>
+                      <p className="font-display text-base uppercase leading-tight text-foreground drop-shadow">{h.name}</p>
+                      <p className="tabular text-xs text-win">{(r.winrate * 100).toFixed(1)}%</p>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+        ))}
+        <div className="relative z-[2] mx-auto text-center">
           <div className="mb-7 flex items-center justify-between border-y border-primary/40 py-2 text-[10px] uppercase text-primary md:text-xs"><span>Независимое издание</span><span className="hidden sm:inline">Нью-Йорк · По ту сторону завесы</span><span>Deadlock · Спецвыпуск</span></div>
           <p className="mb-2 font-masthead text-sm text-primary">The</p>
           <motion.h1 initial={reduce ? false : { opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="gazette-masthead text-[36px] font-semibold leading-[1.05] text-foreground sm:text-6xl xl:text-[80px]">DEADLOCKED<br /><span className="text-primary">GAZETTE</span></motion.h1>
