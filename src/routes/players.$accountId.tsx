@@ -196,7 +196,7 @@ function PlayerPage() {
           <TabsTrigger value="enemies"><Crosshair className="h-4 w-4" />Соперники</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4">
-          <PlayerInsights history={history.data ?? []} badge={rank.data?.badge} />
+          <PlayerInsights history={history.data ?? []} badge={rank.data?.badge} backTo={`/players/${id}`} />
         </TabsContent>
         <TabsContent value="matches" className="mt-4">
           <MatchList matches={history.data ?? []} accountId={id} sources={sources} />
