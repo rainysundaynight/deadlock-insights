@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Activity, ArrowRight, Crown, GitCompare, LayoutGrid, Radio, Swords, Trophy } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 
 import cityArtwork from "@/assets/gazette-city.jpg";
 import { LayoutItem, MagneticButton, RollingNumber } from "@/components/GazetteMotion";
@@ -63,7 +63,7 @@ function Index() {
           <div className="gazette-hero absolute inset-0" />
         </div>
         {tiers.length >= 4 && (["left", "right"] as const).map((side) => (
-          <div key={side} className={cn("absolute bottom-0 z-[1] hidden items-end gap-1 xl:flex", side === "left" ? "left-6 2xl:left-12" : "right-6 flex-row-reverse 2xl:right-12")}>
+          <div key={side} className={cn("absolute bottom-0 z-[3] hidden items-end gap-1 xl:flex", side === "left" ? "left-6 2xl:left-12" : "right-6 flex-row-reverse 2xl:right-12")}>
             {tiers.slice(side === "left" ? 0 : 2, side === "left" ? 2 : 4).map((r, i) => {
               const h = heroes.get(r.hero_id);
               if (!h) return null;
@@ -71,7 +71,7 @@ function Index() {
               const alt = h.images.hero_card_gloat_webp ?? h.images.hero_card_gloat;
               return (
                 <motion.div key={r.hero_id} initial={reduce ? false : { opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 + i * 0.12 }}>
-                  <Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as React.CSSProperties} className={cn("group relative block", i === 0 ? "w-40 2xl:w-48" : "w-32 2xl:w-40")}>
+                  <Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as CSSProperties} className={cn("group relative block", i === 0 ? "w-40 2xl:w-48" : "w-32 2xl:w-40")}>
                     <div className="relative aspect-[3/4]">
                       <div className="absolute inset-x-2 bottom-0 h-2/3 rounded-t-full opacity-60 blur-2xl" style={{ background: "var(--hero)" }} />
                       <div className="hero-card-clip absolute inset-0" style={{ maskImage: "linear-gradient(to top, transparent 0, black 22%)" }}>
