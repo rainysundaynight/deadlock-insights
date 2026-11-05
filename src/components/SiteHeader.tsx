@@ -1,8 +1,12 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import {
   Activity, BarChart3, Calculator, Crown, GitCompare, Hammer, Home, LayoutGrid, Menu, Package, ScrollText, Swords, TrendingUp, Trophy, Tv, Users, X,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { motion } from "framer-motion";
+import { useRef, useState, type ReactNode } from "react";
+
+import { InkBackground } from "@/components/InkBackground";
+import { useRevealCards } from "@/components/RevealCards";
 
 import { FriendNotifier } from "@/components/FriendNotifier";
 import { PlayerSearch } from "@/components/PlayerSearch";
@@ -49,7 +53,7 @@ function Nav({ onNavigate }: { onNavigate?: () => void }) {
     <nav className="space-y-6">
       {GROUPS.map((g) => (
         <div key={g.title}>
-          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/70">{g.title}</p>
+          <p className="mb-2 border-b border-foreground/60 px-3 pb-1 font-display text-[11px] font-bold uppercase tracking-[0.25em]">{g.title}</p>
           <div className="space-y-0.5">
             {g.items.map((n) => (
               <Link
@@ -57,8 +61,8 @@ function Nav({ onNavigate }: { onNavigate?: () => void }) {
                 to={n.to}
                 onClick={onNavigate}
                 activeOptions={{ exact: n.to === "/" }}
-                className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
-                activeProps={{ className: "!bg-primary/10 !text-primary" }}
+                className="group flex items-center gap-3 border-l-2 border-transparent px-3 py-1.5 text-sm text-muted-foreground transition-all hover:translate-x-0.5 hover:text-foreground"
+                activeProps={{ className: "!border-primary !text-foreground font-bold italic" }}
               >
                 <n.icon className="h-4 w-4" />
                 <span className="flex-1">{n.label}</span>
@@ -75,10 +79,9 @@ function Nav({ onNavigate }: { onNavigate?: () => void }) {
 function Logo() {
   return (
     <Link to="/" className="flex items-center gap-2.5">
-      <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary font-display text-base font-bold text-primary-foreground shadow-[var(--shadow-brass)]">D</span>
-      <span className="font-display text-sm font-bold uppercase leading-tight tracking-wider">
-        Deadlock<br />
-        <span className="text-brass">Stats</span>
+      <span className="leading-none">
+        <span className="font-masthead block text-[28px]">The Deadlock</span>
+        <span className="block border-t border-foreground pt-0.5 text-[9px] font-bold uppercase tracking-[0.35em] text-primary">Stats · Gazette</span>
       </span>
     </Link>
   );
@@ -100,20 +103,30 @@ function Account() {
   );
 }
 
+function Dateline() {
+  const d = new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  return <p className="hidden shrink-0 text-[11px] uppercase tracking-[0.2em] text-muted-foreground md:block" suppressHydrationWarning>{d}</p>;
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+  const path = useLocation({ select: (l) => l.pathname });
+  useRevealCards(mainRef);
   return (
-    <div className="min-h-screen lg:pl-60">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-sidebar-border bg-sidebar px-3 py-5 lg:flex">
+    <div className="relative min-h-screen lg:pl-60">
+      <InkBackground />
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r-4 border-double border-foreground/70 bg-sidebar px-3 py-5 lg:flex">
         <div className="px-2"><Logo /></div>
         <div className="mt-8 flex-1 overflow-y-auto"><Nav /></div>
         <p className="px-3 text-[10px] leading-relaxed text-muted-foreground/70">Данные deadlock-api.com · Фан-проект, не связан с Valve</p>
       </aside>
 
-      <header className="sticky top-0 z-30 border-b border-border bg-background/75 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 border-b-4 border-double border-foreground/70 bg-background/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 lg:px-8">
           <button className="lg:hidden" onClick={() => setOpen(true)} aria-label="Меню"><Menu /></button>
           <div className="lg:hidden"><Logo /></div>
+          <Dateline />
           <div className="ml-auto w-full max-w-md"><PlayerSearch compact /></div>
           <Account />
         </div>
@@ -129,7 +142,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      <main className={cn("mx-auto min-h-[80vh] max-w-7xl px-4 py-8 lg:px-8")}>{children}</main>
+      <main ref={mainRef} className={cn("relative z-10 mx-auto min-h-[80vh] max-w-7xl px-4 py-8 lg:px-8")}>
+        <motion.div key={path} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
+          {children}
+        </motion.div>
+      </main>
     </div>
   );
 }
