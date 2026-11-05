@@ -50,6 +50,9 @@ export interface Item {
   description?: { desc?: string; active?: string; passive?: string };
   hero?: number;
   heroes?: number[];
+  component_items?: string[] | null;
+  properties?: Record<string, { value?: string | number; label?: string | null; postfix?: string | null; prefix?: string | null; postvalue_label?: string | null; icon?: string | null }>;
+  tooltip_sections?: { section_type: string; section_attributes: { loc_string?: string; properties?: string[]; important_properties?: string[]; elevated_properties?: string[] }[] }[];
 }
 export interface Rank {
   tier: number;
