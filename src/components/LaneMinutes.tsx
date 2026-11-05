@@ -21,7 +21,7 @@ type Metric = (typeof METRICS)[number][0];
 /** Cell shading: team-tinted background scaled by how big the value is. */
 function heat(team: number, v: number, max: number) {
   const a = max > 0 ? Math.min(1, v / max) : 0;
-  return { background: `color-mix(in oklab, var(--${team === 0 ? "color-amber" : "color-sapphire"}-team) ${(a * 26).toFixed(1)}%, transparent)` };
+  return { background: `color-mix(in oklab, var(--${team === 0 ? "team-amber" : "team-sapphire"}) ${(a * 26).toFixed(1)}%, transparent)` };
 }
 
 /** Lead across minutes as a small centered area chart. */
