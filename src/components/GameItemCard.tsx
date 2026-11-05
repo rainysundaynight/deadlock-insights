@@ -3,7 +3,7 @@ import { DlItemCard, DlProvider } from "@deadlock-api/ui-react";
 import type { ReactNode } from "react";
 
 export function GameItemsProvider({ children }: { children: ReactNode }) {
-  return <DlProvider language="russian" tooltipPlacement="auto" tooltipDelay={250}>{children}</DlProvider>;
+  return <DlProvider language={"russian" as never} tooltipPlacement="auto" tooltipDelay={250}>{children}</DlProvider>;
 }
 
 export default function GameItemCard({ itemId }: { itemId: number }) {
