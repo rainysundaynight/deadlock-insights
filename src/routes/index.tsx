@@ -57,13 +57,13 @@ function Index() {
 
   return (
     <div className="space-y-12">
-      <section className="relative -mx-4 -mt-8 border-b border-border px-4 pb-8 pt-10 lg:-mx-8 lg:px-8">
+      <section onMouseMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", String((e.clientX - r.left) / r.width - 0.5)); e.currentTarget.style.setProperty("--my", String((e.clientY - r.top) / r.height - 0.5)); }} onMouseLeave={(e) => { e.currentTarget.style.setProperty("--mx", "0"); e.currentTarget.style.setProperty("--my", "0"); }} className="relative -mx-4 -mt-8 border-b border-border px-4 pb-8 pt-10 lg:-mx-8 lg:px-8">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <img src={cityArtwork} alt="" width={1920} height={1024} className="h-full w-full object-cover object-center" />
           <div className="gazette-hero absolute inset-0" />
         </div>
         {tiers.length >= 4 && (["left", "right"] as const).map((side) => (
-          <div key={side} className={cn("absolute bottom-0 z-[3] hidden items-end min-[1400px]:flex", side === "left" ? "left-6 2xl:left-12" : "right-6 flex-row-reverse 2xl:right-12")}>
+          <div key={side} style={{ transform: `translate(calc(var(--mx, 0) * ${side === "left" ? 14 : 14}px), calc(var(--my, 0) * 6px))` }} className={cn("absolute bottom-0 z-[3] hidden items-end transition-transform duration-700 ease-out min-[1400px]:flex", side === "left" ? "left-6 2xl:left-12" : "right-6 flex-row-reverse 2xl:right-12")}>
             <div aria-hidden className="hero-stage pointer-events-none absolute inset-x-0 bottom-0 top-[-30%]">
               <div className="hero-stage-beam absolute inset-0" />
               <div className="absolute inset-x-[10%] bottom-0 h-6 rounded-[50%] blur-md" style={{ background: "radial-gradient(closest-side, color-mix(in oklab, var(--primary) 45%, transparent), transparent)" }} />
@@ -78,6 +78,7 @@ function Index() {
               return (
                 <motion.div key={r.hero_id} className={cn("relative hover:!z-20", i === 0 ? "z-10" : "z-0", i > 0 && (side === "left" ? "-ml-14" : "-mr-14"))} initial={reduce ? false : { opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 + i * 0.12 }}>
                   <Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as CSSProperties} className={cn("group relative block transition-transform duration-500 hover:-translate-y-2", i === 0 ? "w-44 2xl:w-52" : "w-36 2xl:w-44")}>
+                    <div aria-hidden className="hero-spot pointer-events-none absolute -inset-x-4 -top-10 bottom-0" />
                     <div className="hero-side relative aspect-[3/4]" style={{ transform: side === "left" ? "perspective(700px) rotateY(24deg)" : "perspective(700px) rotateY(-24deg) scaleX(-1)" }}>
                       <div className="absolute inset-x-2 bottom-0 h-2/3 rounded-t-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-70" style={{ background: "var(--hero)" }} />
                       <div className="hero-card-clip hero-breathe absolute inset-0" style={{ animationDelay: `${i * 1.3}s` }}>
@@ -85,6 +86,7 @@ function Index() {
                         {alt && <img src={alt} alt="" aria-hidden className="hero-pose hero-pose-alt absolute inset-0 h-full w-full object-cover object-bottom" />}
                       </div>
                     </div>
+                    <div className="hero-plate pointer-events-none absolute bottom-1 left-1/2 z-10 -translate-x-1/2 transition-opacity duration-300 group-hover:opacity-0"><span className="font-masthead text-sm leading-none">№{rank}</span></div>
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 pb-2 text-center [text-shadow:0_1px_3px_var(--background),0_0_12px_var(--background)] opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                       <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">№{rank} · {r.tier}-тир</p>
                       <p className="font-display text-base uppercase leading-tight text-foreground drop-shadow">{h.name}</p>
