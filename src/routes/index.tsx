@@ -62,7 +62,7 @@ function Index() {
           <img src={cityArtwork} alt="" width={1920} height={1024} className="h-full w-full object-cover object-center" />
           <div className="gazette-hero absolute inset-0" />
         </div>
-        {tiers.length >= 4 && (["left", "right"] as const).map((side) => (
+        {tiers.length >= 6 && (["left", "right"] as const).map((side) => (
           <div key={side} style={{ transform: `translate(calc(var(--mx, 0) * ${side === "left" ? 14 : 14}px), calc(var(--my, 0) * 6px))` }} className={cn("absolute bottom-0 z-[3] hidden items-end transition-transform duration-700 ease-out min-[1400px]:flex", side === "left" ? "left-0" : "right-0 flex-row-reverse")}>
             <div aria-hidden className="hero-stage pointer-events-none absolute inset-x-0 bottom-0 top-[-30%]">
               <div className="hero-stage-beam absolute inset-0" />
@@ -70,13 +70,13 @@ function Index() {
               <div className="absolute inset-x-[5%] bottom-0 h-px" style={{ background: "linear-gradient(90deg, transparent, var(--primary), transparent)" }} />
               {Array.from({ length: 8 }).map((_, k) => <span key={k} className="hero-ember" style={{ left: `${10 + k * 11}%`, animationDelay: `${(k * 0.9) % 6}s`, animationDuration: `${5 + (k % 3)}s` }} />)}
             </div>
-            {tiers.slice(side === "left" ? 0 : 2, side === "left" ? 2 : 4).map((r, i) => {
+            {tiers.slice(side === "left" ? 0 : 3, side === "left" ? 3 : 6).map((r, i) => {
               const h = heroes.get(r.hero_id);
               if (!h) return null;
               const rank = tiers.indexOf(r) + 1;
               const alt = h.images.hero_card_gloat_webp ?? h.images.hero_card_gloat;
               return (
-                <motion.div key={r.hero_id} className={cn("relative hover:!z-20", i === 0 ? "z-10" : "z-0", i > 0 && (side === "left" ? "-ml-14" : "-mr-14"))} initial={reduce ? false : { opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 + i * 0.12 }}>
+                <motion.div key={r.hero_id} className={cn("relative hover:!z-20", i === 0 ? "z-10" : "z-0", i > 0 && (side === "left" ? "-ml-14" : "-mr-14"), i === 2 && "hidden min-[1700px]:block")} initial={reduce ? false : { opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 + i * 0.12 }}>
                   <Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as CSSProperties} className={cn("group relative block transition-transform duration-500 hover:-translate-y-2", i === 0 ? "w-44 2xl:w-52" : "w-36 2xl:w-44")}>
                     <div aria-hidden className="hero-spot pointer-events-none absolute -inset-x-4 -top-10 bottom-0" />
                     <div className="hero-side relative aspect-[3/4]" style={{ transform: side === "left" ? "perspective(700px) rotateY(24deg)" : "perspective(700px) rotateY(-24deg) scaleX(-1)" }}>
