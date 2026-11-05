@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { GameItem } from "@/components/GameItem";
 import { ExternalLink, X } from "lucide-react";
 import { useState } from "react";
 
@@ -70,7 +71,7 @@ export function PlayerMatchModal({ player, name, sec, hp, onClose }: { player: M
         owned.length === 0 ? <p className="mt-2 text-xs text-muted-foreground">Пока ничего не куплено.</p> : (
           <div className="mt-2 grid grid-cols-6 gap-1">
             {owned.map((i, idx) => { const it = items.get(i.item_id)!; return (
-              <img key={`${i.item_id}-${idx}`} src={it.shop_image_webp ?? it.image_webp ?? it.image} alt={it.name} title={`${it.name} · ${fmtDuration(i.game_time_s)}`} className={cn("h-10 w-10 rounded-md border p-0.5", SLOT_STYLE[it.item_slot_type ?? ""] ?? "border-border")} />
+              <GameItem key={`${i.item_id}-${idx}`} item={it} size={40} variant="image" />
             ); })}
           </div>
         )
@@ -79,7 +80,7 @@ export function PlayerMatchModal({ player, name, sec, hp, onClose }: { player: M
           {all.map((i, idx) => { const it = items.get(i.item_id)!; return (
             <div key={`h-${i.item_id}-${idx}`} className={cn("flex items-center gap-2 text-xs", i.game_time_s > sec && "opacity-35")}>
               <span className="tabular w-9 text-muted-foreground">{fmtDuration(i.game_time_s)}</span>
-              <img src={it.shop_image_webp ?? it.image_webp ?? it.image} alt="" className={cn("h-6 w-6 rounded border", SLOT_STYLE[it.item_slot_type ?? ""] ?? "border-border")} />
+              <GameItem item={it} size={24} variant="image" />
               <span className="min-w-0 flex-1 truncate">{it.name}</span>
               {i.sold_time_s > 0 && <span className="text-[10px] text-loss">−{fmtDuration(i.sold_time_s)}</span>}
             </div>
