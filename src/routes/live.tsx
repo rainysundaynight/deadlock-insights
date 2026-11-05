@@ -18,6 +18,8 @@ export const Route = createFileRoute("/live")({
       { name: "description", content: "Матчи Deadlock, которые идут прямо сейчас: составы, души команд, зрители." },
       { property: "og:title", content: "Live матчи Deadlock" },
       { property: "og:description", content: "Матчи Deadlock в реальном времени." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: LivePage,

@@ -17,6 +17,8 @@ export const Route = createFileRoute("/heroes/$heroId")({
       { name: "description", content: "Подробная статистика героя Deadlock: способности, контрпики, синергии, лучшие предметы и билды." },
       { property: "og:title", content: "Герой Deadlock — статистика и билды" },
       { property: "og:description", content: "Способности, контрпики, предметы и билды героя Deadlock." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HeroPage,

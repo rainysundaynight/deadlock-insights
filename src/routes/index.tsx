@@ -19,6 +19,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Найдите игрока Deadlock, разберите матч по линиям, смотрите живую статистику и актуальный тир-лист героев." },
       { property: "og:title", content: "The Deadlocked Gazette — статистика Deadlock" },
       { property: "og:description", content: "Профили, разбор матчей, live-статистика и тир-лист Deadlock." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Index,

@@ -22,6 +22,8 @@ export const Route = createFileRoute("/players/$accountId")({
       { name: "description", content: "Профиль игрока Deadlock: ранг, история матчей, герои, тиммейты." },
       { property: "og:title", content: `Игрок ${params.accountId} — Deadlock Stats` },
       { property: "og:description", content: "Ранг, матчи и статистика героев игрока Deadlock." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: PlayerPage,

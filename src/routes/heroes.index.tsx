@@ -17,6 +17,8 @@ export const Route = createFileRoute("/heroes/")({
       { name: "description", content: "Актуальная мета героев Deadlock: винрейт, пикрейт, KDA по рангам и периодам." },
       { property: "og:title", content: "Герои Deadlock — винрейт и пикрейт" },
       { property: "og:description", content: "Мета героев Deadlock по рангам и периодам." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: HeroesPage,

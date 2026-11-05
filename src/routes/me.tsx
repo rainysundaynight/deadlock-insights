@@ -21,6 +21,8 @@ export const Route = createFileRoute("/me")({
       { name: "description", content: "Ваш профиль Deadlock, друзья из Steam, уведомления о их матчах и личные цели." },
       { property: "og:title", content: "Мой кабинет Deadlock Stats" },
       { property: "og:description", content: "Друзья, уведомления и личные цели в Deadlock." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MePage,

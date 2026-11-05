@@ -16,6 +16,8 @@ export const Route = createFileRoute("/tierlist")({
       { name: "description", content: "Актуальный тир-лист героев Deadlock по рангам: винрейт, популярность, тиры S–D." },
       { property: "og:title", content: "Тир-лист героев Deadlock" },
       { property: "og:description", content: "Кто сильнее всех в текущей мете Deadlock — по данным реальных матчей." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: TierPage,

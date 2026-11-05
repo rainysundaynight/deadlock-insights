@@ -31,6 +31,8 @@ export const Route = createFileRoute("/builds")({
       { name: "description", content: "Ищите самые популярные билды героев Deadlock по названию и герою." },
       { property: "og:title", content: "Билды Deadlock" },
       { property: "og:description", content: "Популярные сборки героев Deadlock." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: BuildsPage,
