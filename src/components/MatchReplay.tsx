@@ -295,10 +295,26 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
               const col = teamCol(p.team);
               return (
                 <g key={w.slot} opacity={hp <= 0 ? 0.25 : 1} style={{ cursor: "pointer" }} transform={`translate(${pt[0]},${pt[1]})`} onClick={() => setSel(w.slot)}>
-                  {mvpSlot === w.slot && hp > 0 && <>
-                    <circle r={27} fill="none" stroke="var(--primary)" strokeWidth={3}><animate attributeName="opacity" values="1;0.35;1" dur="2s" repeatCount="indefinite" /></circle>
-                    <path d="M-12,-30 L-12,-40 L-6,-35 L0,-43 L6,-35 L12,-40 L12,-30 Z" fill="var(--primary)" stroke="black" strokeWidth={1.5} />
-                  </>}
+                  {mvpSlot === w.slot && hp > 0 && (() => {
+                    const raw = names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name ?? "";
+                    const nm = raw.length > 18 ? `${raw.slice(0, 17)}…` : raw;
+                    const wpx = nm.length * 6.6 + 32;
+                    return <>
+                      <circle r={40} fill="var(--primary)" opacity={0.1} />
+                      <circle r={33} fill="var(--primary)" opacity={0.16} />
+                      <circle r={27} fill="var(--primary)" opacity={0.22} />
+                      <circle r={24} fill="none" stroke="var(--primary)" strokeWidth={2.5}>
+                        <animate attributeName="r" values="24;44" dur="1.8s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.9;0" dur="1.8s" repeatCount="indefinite" />
+                      </circle>
+                      <circle r={24.5} fill="none" stroke="var(--primary)" strokeWidth={3} />
+                      <path d="M-14,-33 L-14,-45 L-7,-39 L0,-49 L7,-39 L14,-45 L14,-33 Z" fill="var(--primary)" stroke="black" strokeWidth={1.6} />
+                      <g transform="translate(0,33)">
+                        <rect x={-wpx / 2} y={0} width={wpx} height={17} rx={3} fill="var(--card)" stroke="var(--primary)" strokeWidth={1.2} />
+                        <text y={12.5} fontSize={11} textAnchor="middle" fill="var(--primary)" fontWeight={800}>♛ {nm}</text>
+                      </g>
+                    </>;
+                  })()}
                   <circle r={21} fill="var(--card)" stroke={col} strokeWidth={4} />
                   {img && <image href={img} x={-17} y={-17} width={34} height={34} clipPath="circle(17px)" />}
                   {hp <= 0 && <text y={7} fontSize={22} textAnchor="middle" fill="var(--loss)" stroke="black" strokeWidth={1} fontWeight={800}>✕</text>}
@@ -449,7 +465,7 @@ export function MatchReplay({ paths, players, names, objectives, midBoss }: {
                   const hp = w?.health?.[Math.min(ti, (w?.pts.length ?? 1) - 1)] ?? 100;
                   const sn = snapOf(p);
                   return (
-                    <button key={p.player_slot} onClick={() => setSel(p.player_slot)} className={cn("w-full rounded px-1 py-0.5 text-left hover:bg-secondary", sel === p.player_slot && "bg-secondary", hp <= 0 && "opacity-40")}>
+                    <button key={p.player_slot} onClick={() => setSel(p.player_slot)} className={cn("w-full rounded px-1 py-0.5 text-left hover:bg-secondary", sel === p.player_slot && "bg-secondary", mvpSlot === p.player_slot && hp > 0 && "bg-primary/10 ring-1 ring-primary/60", hp <= 0 && "opacity-40")}>
                       <div className="flex items-center gap-2">
                         <HeroIcon heroId={p.hero_id} size={24} className={team === 0 ? "border-amber-team" : "border-sapphire-team"} />
                         <span className="min-w-0 flex-1 truncate text-xs">{mvpSlot === p.player_slot && <span title="Сильнейший сейчас" className="mr-1 text-primary">♛</span>}{names?.get(p.account_id ?? 0)?.personaname ?? heroes.get(p.hero_id)?.name}</span>
