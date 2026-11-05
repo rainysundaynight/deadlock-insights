@@ -111,7 +111,7 @@ function Index() {
             {featured.map((m) => {
               const tot = m.net_worth_team_0 + m.net_worth_team_1 || 1;
               return (
-                <Link key={m.match_id} to="/matches/$matchId" params={{ matchId: String(m.match_id) }} className="live-dispatch group block border-l-2 border-telemetry/50 bg-card/50 p-4 transition-colors hover:bg-telemetry/5">
+                <Link key={m.match_id} to="/matches/$matchId" params={{ matchId: String(m.match_id) }} search={{ from: "/" }} className="live-dispatch group block border-l-2 border-telemetry/50 bg-card/50 p-4 transition-colors hover:bg-telemetry/5">
                   <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground"><span>ДЕЛО № {m.match_id}</span><span className="inline-flex items-center gap-1 text-telemetry"><Activity className="h-3 w-3 animate-pulse" />{m.spectators}</span></div>
                   <div className="mt-3 flex items-center justify-between gap-3">{[0,1].map((t) => <div key={t} className="flex -space-x-1">{m.players.filter((p) => p.team === t).slice(0,6).map((p,i) => <HeroIcon key={i} heroId={p.hero_id} size={26} className={cn("rounded-none", t === 0 ? "border-amber-team/70" : "border-sapphire-team/70")} />)}</div>)}</div>
                   <div className="mt-3 flex justify-between font-mono text-xs"><span className="text-amber-team">{fmtK(m.net_worth_team_0)}</span><span className="text-sapphire-team">{fmtK(m.net_worth_team_1)}</span></div>

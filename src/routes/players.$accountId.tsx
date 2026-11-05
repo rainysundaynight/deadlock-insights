@@ -333,6 +333,7 @@ function MatchList({ matches: all, accountId, sources }: { matches: MatchHistory
             key={m.match_id}
             to="/matches/$matchId"
             params={{ matchId: String(m.match_id) }}
+            search={{ from: `/players/${accountId}` }}
             className="panel panel-hover grid grid-cols-[4px_auto_1fr_auto] items-center gap-4 overflow-hidden p-3 pl-0 lg:grid-cols-[4px_auto_minmax(140px,1fr)_auto_auto_auto_auto_auto]"
           >
             <span className={cn("h-full", won ? "bg-win" : "bg-loss")} />
