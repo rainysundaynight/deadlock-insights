@@ -43,7 +43,7 @@ export function MatchDetails({ players, names, durationS }: { players: P[]; name
       </div>
       {[0, 1].map((team) => (
         <section key={team} className="panel overflow-x-auto p-0">
-          <div className={cn("border-b border-border px-4 py-2 text-xs font-semibold uppercase tracking-wider", team === 0 ? "text-amber-team" : "text-sapphire-team")}>{team === 0 ? "Амбер" : "Сапфир"}</div>
+          <div className={cn("border-b border-border px-4 py-2 text-xs font-semibold uppercase tracking-wider", team === 0 ? "text-amber-team" : "text-sapphire-team")}>{team === 0 ? "Hidden King" : "Archmother"}</div>
           <table className="w-full min-w-[900px] text-sm">
             <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
               <tr className="[&>th]:px-3 [&>th]:py-2 [&>th]:text-left">

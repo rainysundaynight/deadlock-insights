@@ -9,7 +9,7 @@ export function InkBackground() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = true; // static field: no cursor reaction
     const GAP = 22;
     const ink = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
     const red = getComputedStyle(document.documentElement).getPropertyValue("--telemetry").trim();
@@ -39,7 +39,7 @@ export function InkBackground() {
           const px = x + (d ? (dx / d) * e * 10 : 0);
           const py = y + (d ? (dy / d) * e * 10 : 0);
           ctx.globalAlpha = 0.04 + e * 0.3;
-          ctx.fillStyle = e > 0.35 ? red : ink;
+          ctx.fillStyle = ink; void red;
           ctx.beginPath();
           ctx.arc(px, py, 0.9 + e * 3.2, 0, Math.PI * 2);
           ctx.fill();
@@ -51,8 +51,8 @@ export function InkBackground() {
     resize();
     draw();
     window.addEventListener("resize", resize);
-    window.addEventListener("pointermove", move);
-    document.addEventListener("pointerleave", leave);
+    void move;
+    void leave;
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);

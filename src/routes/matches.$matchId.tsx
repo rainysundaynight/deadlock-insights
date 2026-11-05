@@ -68,7 +68,7 @@ interface MatchMeta {
   };
 }
 
-const TEAMS = ["Амбер (Amber)", "Сапфир (Sapphire)"];
+const TEAMS = ["Hidden King", "Archmother"];
 
 function MatchPage() {
   const { matchId } = Route.useParams();
@@ -97,7 +97,7 @@ function MatchPage() {
     <div className="space-y-8">
       <div className="border-y border-primary/40 py-6">
         <h1 className="mb-6 font-mono text-xs uppercase text-primary">Итоги матча / Дело № {m.match_id}</h1>
-        <div className="grid grid-cols-2 items-center gap-3">{[0,1].map((t) => <div key={t} className={cn("min-w-0", t === 1 && "text-right")}><p className={cn("font-display text-xl font-bold sm:text-3xl", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{t === 0 ? "Amber Hand" : "Sapphire Flame"}</p><div className={cn("mt-3 flex items-center gap-3", t === 1 && "justify-end")}><span className="font-mono text-2xl">{players.filter((p) => p.team === t).reduce((s,p) => s+p.kills,0)}</span><span className={cn("font-mono text-[10px] uppercase", m.winning_team === t ? "text-win" : "text-muted-foreground")}>{m.winning_team === t ? "Победа" : "Поражение"}</span></div></div>)}</div>
+        <div className="grid grid-cols-2 items-center gap-3">{[0,1].map((t) => <div key={t} className={cn("min-w-0", t === 1 && "text-right")}><p className={cn("font-display text-xl font-bold sm:text-3xl", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{t === 0 ? "Hidden King" : "Archmother"}</p><div className={cn("mt-3 flex items-center gap-3", t === 1 && "justify-end")}><span className="font-mono text-2xl">{players.filter((p) => p.team === t).reduce((s,p) => s+p.kills,0)}</span><span className={cn("font-mono text-[10px] uppercase", m.winning_team === t ? "text-win" : "text-muted-foreground")}>{m.winning_team === t ? "Победа" : "Поражение"}</span></div></div>)}</div>
       </div>
       <div className="grid grid-cols-2 gap-px bg-border md:grid-cols-4">
         <Stat label="Длительность" value={fmtDuration(m.duration_s)} />
@@ -124,7 +124,7 @@ function MatchPage() {
       {tab === "details" && <MatchDetails players={players} names={profiles.data} durationS={m.duration_s} />}
       {tab === "damage" && <DamageView players={players} names={profiles.data} />}
       {tab === "items" && <ItemsTimeline players={players} names={profiles.data} />}
-      {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} objectives={m.objectives} midBoss={m.mid_boss} />}
+      {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} objectives={m.objectives} midBoss={m.mid_boss} winner={m.winning_team} />}
       {tab === "lanes" && <LaneMinutes players={players} names={profiles.data} />}
       {tab === "table" && [0, 1].map((team) => (
         <TeamTable

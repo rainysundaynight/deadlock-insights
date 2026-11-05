@@ -8,6 +8,7 @@ import { fmtDuration, fmtK, kda } from "@/lib/format";
 import { formSeries, globalAverages, playstyle, summarize, won } from "@/lib/playerStats";
 import { gradeFromScore, gradeHistory, gradeTone, strengthsWeaknesses } from "@/lib/grade";
 import { Link } from "@tanstack/react-router";
+import { GradeSeal, MetricBar, TipColumns } from "@/components/GradeReport";
 import { cn } from "@/lib/utils";
 
 export const globalAvgQuery = {
@@ -58,95 +59,45 @@ export function PlayerInsights({ history, badge }: { history: MatchHistoryEntry[
         <Stat label="Текущая серия" value={s.currentStreak > 0 ? `+${s.currentStreak}` : String(s.currentStreak)} tone={s.currentStreak > 0 ? "win" : "loss"} sub={s.currentStreak > 0 ? "побед подряд" : "поражений подряд"} />
       </div>
       {graded.length > 0 && (
-        <section className="panel relative overflow-hidden p-0">
-          <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-          <div className="relative grid gap-0 lg:grid-cols-[260px_1fr]">
-            {/* Grade ring */}
-            <div className="flex flex-col items-center justify-center gap-3 border-b border-border/60 p-6 lg:border-b-0 lg:border-r">
-              <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Оценка · 30 матчей</p>
-              <div className="relative grid h-40 w-40 place-items-center rounded-full"
-                style={{ background: `conic-gradient(var(--primary) ${avgScore * 3.6}deg, color-mix(in oklab, var(--muted) 60%, transparent) 0)` }}>
-                <div className="grid h-[136px] w-[136px] place-items-center rounded-full bg-card">
-                  <div className="text-center">
-                    <p className={cn("font-display text-6xl font-extrabold leading-none", gradeTone(gradeFromScore(avgScore)))}>{gradeFromScore(avgScore)}</p>
-                    <p className="tabular mt-1 text-xs text-muted-foreground">{avgScore.toFixed(0)} / 100</p>
-                  </div>
-                </div>
+        <section className="panel p-0">
+          <div className="flex items-center justify-between border-b border-border/60 px-5 py-3">
+            <p className="font-display text-lg font-bold">Табель успеваемости</p>
+            <span className={cn("font-mono text-[11px] uppercase tracking-wider", Math.abs(trend) < 2 ? "text-muted-foreground" : trend > 0 ? "text-win" : "text-loss")}>
+              {Math.abs(trend) < 2 ? "→ стабильная форма" : trend > 0 ? `↑ форма растёт +${trend.toFixed(0)}` : `↓ форма падает ${trend.toFixed(0)}`}
+            </span>
+          </div>
+          <div className="grid lg:grid-cols-[220px_1fr_1fr]">
+            <div className="flex flex-col items-center justify-center gap-4 border-b border-border/60 p-6 lg:border-b-0 lg:border-r">
+              <GradeSeal score={avgScore} caption={`${avgScore.toFixed(0)} / 100 · 30 матчей`} />
+              <div className="grid w-full grid-cols-3 text-center">
+                {[["WR", `${(s30.winrate * 100).toFixed(0)}%`, s30.winrate >= 0.5 ? "text-win" : "text-loss"], ["KDA", kda(s30.k, s30.d, s30.a), "text-primary"], ["Души", fmtK(s30.nw), "text-foreground"]].map(([l, v, c]) => (
+                  <div key={l}><p className={cn("tabular font-display text-lg font-bold", c)}>{v}</p><p className="font-mono text-[9px] uppercase text-muted-foreground">{l}</p></div>
+                ))}
               </div>
-              <span className={cn("inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium",
-                Math.abs(trend) < 2 ? "bg-muted text-muted-foreground" : trend > 0 ? "bg-win/15 text-win" : "bg-loss/15 text-loss")}>
-                {Math.abs(trend) < 2 ? "→ Стабильная форма" : trend > 0 ? `↑ Форма растёт +${trend.toFixed(0)}` : `↓ Форма падает ${trend.toFixed(0)}`}
-              </span>
             </div>
-
-            <div className="space-y-5 p-5">
-              <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border/60 md:grid-cols-4">
-                {[
-                  { l: "Винрейт", v: `${(s30.winrate * 100).toFixed(0)}%`, sub: `${s30.wins}–${s30.n - s30.wins}`, c: s30.winrate >= 0.5 ? "text-win" : "text-loss" },
-                  { l: "KDA", v: kda(s30.k, s30.d, s30.a), sub: `${s30.k.toFixed(1)} / ${s30.d.toFixed(1)} / ${s30.a.toFixed(1)}`, c: "text-primary" },
-                  { l: "Души", v: fmtK(s30.nw), sub: "за матч", c: "text-foreground" },
-                  { l: "Смерти", v: s30.d.toFixed(1), sub: `обычно ${s.d.toFixed(1)}`, c: s30.d > s.d ? "text-loss" : "text-win" },
-                ].map((x) => (
-                  <div key={x.l} className="bg-card/90 p-4">
-                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground">{x.l}</p>
-                    <p className={cn("tabular mt-1 font-display text-2xl font-bold", x.c)}>{x.v}</p>
-                    <p className="tabular text-xs text-muted-foreground">{x.sub}</p>
-                  </div>
+            <div className="border-b border-border/60 p-5 lg:border-b-0 lg:border-r">
+              <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Против среднего игрока</p>
+              {g.data && playstyle(s30, globalAverages(g.data)).map((x) => <MetricBar key={x.axis} label={x.axis} v={x.v} />)}
+              <p className="mb-2 mt-5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Оценки по матчам · новые слева</p>
+              <div className="flex flex-wrap gap-1">
+                {graded.map(({ m, grade }) => (
+                  <Link key={m.match_id} to="/matches/$matchId" params={{ matchId: String(m.match_id) }}
+                    title={`${heroes.get(m.hero_id)?.name ?? ""} · ${m.player_kills}/${m.player_deaths}/${m.player_assists} · ${grade}`}
+                    className={cn("grid h-8 w-8 place-items-center border font-display text-xs font-bold transition-transform hover:-translate-y-0.5", won(m) ? "border-win/50 bg-win/10" : "border-loss/50 bg-loss/10", gradeTone(grade))}>
+                    {grade}
+                  </Link>
                 ))}
               </div>
-
-              <div>
-                <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
-                  <span>Оценки по матчам</span><span>← новые · старые →</span>
-                </div>
-                <div className="flex h-24 items-end gap-1">
-                  {graded.map(({ m, grade, score }) => (
-                    <Link key={m.match_id} to="/matches/$matchId" params={{ matchId: String(m.match_id) }}
-                      title={`${heroes.get(m.hero_id)?.name ?? ""} · ${m.player_kills}/${m.player_deaths}/${m.player_assists} · ${grade}`}
-                      className="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
-                      <span className={cn("font-display text-[10px] font-bold opacity-70 group-hover:opacity-100", gradeTone(grade))}>{grade}</span>
-                      <span className={cn("w-full rounded-t-md transition-all group-hover:brightness-125", won(m) ? "bg-gradient-to-t from-win/30 to-win/80" : "bg-gradient-to-t from-loss/30 to-loss/80")}
-                        style={{ height: `${Math.max(8, Math.min(100, score))}%` }} />
-                    </Link>
-                  ))}
-                </div>
-                <div className="mt-2 flex gap-4 text-[11px] text-muted-foreground">
-                  <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-win" />победа</span>
-                  <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-loss" />поражение</span>
-                  <span>высота — очки за матч</span>
-                </div>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-2">
-                {([
-                  { title: "Сильные стороны", items: sw.good, tone: "win", empty: "Ровная игра без явных перекосов." },
-                  { title: "Что улучшить", items: sw.bad, tone: "loss", empty: "Слабых мест не видно — держите уровень." },
-                ] as const).map((col) => (
-                  <div key={col.title} className={cn("rounded-xl border bg-gradient-to-br to-transparent p-4", col.tone === "win" ? "border-win/25 from-win/10" : "border-loss/25 from-loss/10")}>
-                    <p className={cn("mb-3 text-xs font-semibold uppercase tracking-wider", col.tone === "win" ? "text-win" : "text-loss")}>{col.title}</p>
-                    <div className="space-y-3">
-                      {col.items.length ? col.items.map((x) => (
-                        <div key={x.axis}>
-                          <div className="mb-1 flex items-baseline justify-between gap-2">
-                            <span className="text-sm font-semibold">{x.axis}</span>
-                            <span className={cn("tabular text-xs font-medium", col.tone === "win" ? "text-win" : "text-loss")}>{x.v}%</span>
-                          </div>
-                          <div className="mb-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
-                            <div className={cn("h-full rounded-full", col.tone === "win" ? "bg-win" : "bg-loss")} style={{ width: `${Math.min(100, x.v / 2)}%` }} />
-                          </div>
-                          <p className="text-xs leading-relaxed text-muted-foreground">{x.text}</p>
-                        </div>
-                      )) : <p className="text-sm text-muted-foreground">{col.empty}</p>}
-                      {col.tone === "loss" && s30.heroes.length > 6 && (
-                        <div>
-                          <p className="text-sm font-semibold">Пул героев <span className="tabular text-xs font-medium text-loss">{s30.heroes.length}</span></p>
-                          <p className="text-xs leading-relaxed text-muted-foreground">Широкий пул за 30 матчей — сосредоточьтесь на 2–3 героях для стабильного роста.</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            </div>
+            <div className="p-5">
+              <TipColumns
+                empty="Ровная игра без явных перекосов — держите уровень."
+                tips={[
+                  ...sw.bad.map((x) => ({ tone: "bad" as const, title: `${x.axis} · ${x.v - 100}%`, text: x.text })),
+                  ...(s30.heroes.length > 6 ? [{ tone: "bad" as const, title: `Пул героев · ${s30.heroes.length}`, text: "Широкий пул за 30 матчей — сосредоточьтесь на 2–3 героях для стабильного роста." }] : []),
+                  ...sw.good.map((x) => ({ tone: "good" as const, title: `${x.axis} · +${x.v - 100}%`, text: x.text })),
+                ]}
+              />
             </div>
           </div>
         </section>

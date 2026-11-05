@@ -61,8 +61,8 @@ export function LiveMap({ matchId, players }: { matchId: number; players: LivePl
           {live.length > 0 && !stale && <span className="flex items-center gap-1 text-[11px] text-loss"><span className="h-2 w-2 animate-pulse rounded-full bg-loss" />LIVE</span>}
         </p>
         <div className="flex items-center gap-3 text-xs">
-          <span className="text-amber-team">Амбер · живы {count(2)}</span>
-          <span className="text-sapphire-team">Сапфир · живы {count(3)}</span>
+          <span className="text-amber-team">Hidden King · живы {count(2)}</span>
+          <span className="text-sapphire-team">Archmother · живы {count(3)}</span>
           {(err || stale) && <button onClick={() => setAttempt((a) => a + 1)} className="rounded-full border border-border px-3 py-1 hover:border-primary hover:text-primary">Переподключить</button>}
         </div>
       </div>

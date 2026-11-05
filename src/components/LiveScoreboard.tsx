@@ -12,7 +12,7 @@ import { useLiveScoreboard, type LiveEvent } from "@/lib/liveStream";
 import { fetchPotentialBadge } from "@/lib/potentialRank";
 import { cn } from "@/lib/utils";
 
-const TEAMS = ["Амбер", "Сапфир"];
+const TEAMS = ["Hidden King", "Archmother"];
 interface Roster { account_id: number; team: number; hero_id: number }
 interface LbEntry { account_name: string; possible_account_ids: number[]; rank: number }
 
@@ -172,7 +172,7 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
             ))}
           </div>
           <div className="mb-3 flex gap-1 text-xs">
-            {([[-1, "Обе команды"], [0, "Амбер"], [1, "Сапфир"]] as const).map(([k, l]) => (
+            {([[-1, "Обе команды"], [0, "Hidden King"], [1, "Archmother"]] as const).map(([k, l]) => (
               <button key={k} onClick={() => setTeamF(k)} className={cn("rounded-full px-2 py-0.5", teamF === k ? (k === 0 ? "bg-amber-team/20 text-amber-team" : k === 1 ? "bg-sapphire-team/20 text-sapphire-team" : "bg-primary/15 text-primary") : "text-muted-foreground hover:text-foreground")}>{l}</button>
             ))}
           </div>
