@@ -19,7 +19,7 @@ export const globalAvgQuery = {
 
 const tip = { background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 };
 
-export function PlayerInsights({ history, badge }: { history: MatchHistoryEntry[]; badge?: number | null | undefined }) {
+export function PlayerInsights({ history, badge, backTo }: { history: MatchHistoryEntry[]; badge?: number | null | undefined; backTo?: string | undefined }) {
   const heroes = useHeroMap();
   const g = useQuery(globalAvgQuery);
   const myBadge = badge || history.find((m) => m.ranked_display_badge)?.ranked_display_badge || null;
@@ -81,7 +81,7 @@ export function PlayerInsights({ history, badge }: { history: MatchHistoryEntry[
               <p className="mb-2 mt-5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Оценки по матчам · новые слева</p>
               <div className="flex flex-wrap gap-1">
                 {graded.map(({ m, grade }) => (
-                  <Link key={m.match_id} to="/matches/$matchId" params={{ matchId: String(m.match_id) }}
+                  <Link key={m.match_id} to="/matches/$matchId" params={{ matchId: String(m.match_id) }} {...(backTo ? { search: { from: backTo } } : {})}
                     title={`${heroes.get(m.hero_id)?.name ?? ""} · ${m.player_kills}/${m.player_deaths}/${m.player_assists} · ${grade}`}
                     className={cn("grid h-8 w-8 place-items-center border font-display text-xs font-bold transition-transform hover:-translate-y-0.5", won(m) ? "border-win/50 bg-win/10" : "border-loss/50 bg-loss/10", gradeTone(grade))}>
                     {grade}

@@ -99,7 +99,7 @@ function LivePage() {
                   {(history[m.match_id]?.length ?? 0) > 1 && <AdvantageSparkline values={history[m.match_id] ?? []} />}
                   <div className="mt-2 flex items-center justify-between border-t border-border pt-3">
                     <Button variant="ghost" className="h-8 px-0 text-xs text-muted-foreground" aria-expanded={open === m.match_id} onClick={() => setOpen(open === m.match_id ? null : m.match_id)}>Боевой отчёт <ChevronDown className={cn("transition-transform", open === m.match_id && "rotate-180")} /></Button>
-                    <Button asChild variant="outline" size="sm"><Link to="/matches/$matchId" params={{ matchId: String(m.match_id) }}>В эфир →</Link></Button>
+                    <Button asChild variant="outline" size="sm"><Link to="/matches/$matchId" params={{ matchId: String(m.match_id) }} search={{ from: "/live" }}>В эфир →</Link></Button>
                   </div>
                   <AnimatePresence>{open === m.match_id && <motion.div initial={reduce ? false : { height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden"><div className="space-y-3 border-t border-border pt-4">{[0, 1].map((t) => <div key={t}><p className={cn("mb-2 font-mono text-[10px]", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{t === 0 ? "AMBER" : "SAPPHIRE"}</p><div className="flex flex-wrap gap-2">{m.players.filter((p) => p.team === t).map((p) => <Link key={p.account_id} to="/players/$accountId" params={{ accountId: String(p.account_id) }} className="rounded-sm hover:ring-1 hover:ring-primary" title={`Игрок ${p.account_id}`}><HeroIcon heroId={p.hero_id} size={36} /></Link>)}</div></div>)}</div></motion.div>}</AnimatePresence>
                   </div>

@@ -4,11 +4,12 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -104,11 +105,25 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+/** Remembers the page you were on before the current one, so "Назад" can return there. */
+function PathTracker() {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const prev = useRef<string | null>(null);
+  useEffect(() => {
+    if (prev.current && prev.current !== path) {
+      try { window.sessionStorage.setItem("dl-prev-path", prev.current); } catch { /* storage unavailable */ }
+    }
+    prev.current = path;
+  }, [path]);
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PathTracker />
       <AppShell>
         <Outlet />
       </AppShell>

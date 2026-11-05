@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { ErrorBox, HeroIcon, Loading, PlayerRank, RankBadge, Stat, useHeroMap, useItemMap, useSteamProfiles } from "@/components/dl";
 import { api } from "@/lib/api";
 import { fmtDate, fmtDuration, fmtK, GAME_MODES, MATCH_MODES } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MatchHero } from "@/components/MatchHero";
 import { MatchAnalysis } from "@/components/MatchAnalysis";
 import { LaneDuelBoard, PlayerDossier } from "@/components/PlayerDossier";
@@ -23,6 +23,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, Coins, Map, Swords, Crosshair, Package, Lightbulb, UserRound } from "lucide-react";
 
 export const Route = createFileRoute("/matches/$matchId")({
+  validateSearch: (s: Record<string, unknown>): { from?: string | undefined } => ({
+    from: typeof s["from"] === "string" && s["from"].startsWith("/") ? s["from"] : undefined,
+  }),
   head: ({ params }) => ({
     meta: [
       { title: `Матч ${params.matchId} — Deadlock Stats` },
@@ -74,6 +77,12 @@ const TEAMS = ["Hidden King", "Archmother"];
 
 function MatchPage() {
   const { matchId } = Route.useParams();
+  const { from } = Route.useSearch();
+  const navigate = useNavigate();
+  const [backPath, setBackPath] = useState<string | null>(null);
+  useEffect(() => {
+    try { setBackPath(window.sessionStorage.getItem("dl-prev-path")); } catch { /* storage unavailable */ }
+  }, []);
   const q = useQuery({ queryKey: ["match", matchId], queryFn: () => api<MatchMeta>(`/v1/matches/${matchId}/metadata`), staleTime: Infinity, retry: false });
   const live = useQuery({
     queryKey: ["active"],
@@ -97,6 +106,13 @@ function MatchPage() {
 
   return (
     <div className="space-y-8">
+      {(() => {
+        const back = from ?? (backPath && backPath !== `/matches/${matchId}` ? backPath : null);
+        const cls = "group inline-flex items-center gap-2 border border-border bg-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary";
+        return back
+          ? <button onClick={() => void navigate({ to: back })} className={cls}><span className="transition-transform group-hover:-translate-x-0.5">←</span> Назад</button>
+          : <Link to="/" className={cls}><span className="transition-transform group-hover:-translate-x-0.5">←</span> На главную</Link>;
+      })()}
       <MatchHero m={m} players={players} names={profiles.data} />
       <MatchActions matchId={m.match_id} players={players} winner={m.winning_team} duration={m.duration_s} names={profiles.data} />
       <Tabs value={tab} onValueChange={setTab}>

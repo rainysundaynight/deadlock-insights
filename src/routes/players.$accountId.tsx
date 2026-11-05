@@ -196,7 +196,7 @@ function PlayerPage() {
           <TabsTrigger value="enemies"><Crosshair className="h-4 w-4" />Соперники</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4">
-          <PlayerInsights history={history.data ?? []} badge={rank.data?.badge} />
+          <PlayerInsights history={history.data ?? []} badge={rank.data?.badge} backTo={`/players/${id}`} />
         </TabsContent>
         <TabsContent value="matches" className="mt-4">
           <MatchList matches={history.data ?? []} accountId={id} sources={sources} />
@@ -333,6 +333,7 @@ function MatchList({ matches: all, accountId, sources }: { matches: MatchHistory
             key={m.match_id}
             to="/matches/$matchId"
             params={{ matchId: String(m.match_id) }}
+            search={{ from: `/players/${accountId}` }}
             className="panel panel-hover grid grid-cols-[4px_auto_1fr_auto] items-center gap-4 overflow-hidden p-3 pl-0 lg:grid-cols-[4px_auto_minmax(140px,1fr)_auto_auto_auto_auto_auto]"
           >
             <span className={cn("h-full", won ? "bg-win" : "bg-loss")} />
