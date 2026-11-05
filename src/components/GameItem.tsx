@@ -11,7 +11,7 @@ export function GameItem({ item, size = 72, hint = true }: { item: Item; size?: 
   useEffect(() => setReady(true), []);
   const fallback = <img src={item.shop_image_webp ?? item.image_webp} alt={item.name} className="mx-auto object-contain" style={{ width: size * 0.7, height: size * 0.7 }} />;
   const card = (
-    <span className="block shrink-0 overflow-hidden" style={{ width: size }}>
+    <span className="flex shrink-0 justify-center overflow-hidden" style={{ width: size }}>
       {ready ? <Suspense fallback={fallback}><LazyCard itemId={item.id} data={item} /></Suspense> : fallback}
     </span>
   );
