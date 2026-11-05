@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { GameItem } from "@/components/GameItem";
 import { motion } from "framer-motion";
 
 import { HeroIcon, SectionTitle, useHeroMap, useItemMap } from "@/components/dl";
@@ -159,10 +160,9 @@ export function ItemsTimeline({ players, names }: { players: DeepPlayer[]; names
   const final = bought.filter((i) => !i.sold_time_s);
   const end = Math.max(1, p.stats.at(-1)?.time_stamp_s ?? bought.at(-1)?.game_time_s ?? 1);
   const phases = [["Ранняя игра", "0–10 мин", 0, 600], ["Середина", "10–25 мин", 600, 1500], ["Поздняя", "25+ мин", 1500, 1e9]] as const;
-  const slotBorder = (s?: string) => s === "weapon" ? "border-amber-team/70" : s === "vitality" ? "border-win/70" : s === "spirit" ? "border-chart-5/70" : "border-border";
   const Img = ({ id, size = 36, dim }: { id: number; size?: number; dim?: boolean }) => {
     const it = items.get(id)!;
-    return <img src={it.shop_image_webp ?? it.image_webp ?? it.image} alt={it.name} title={it.name} style={{ width: size, height: size }} className={cn("border-2 bg-secondary p-0.5", slotBorder(it.item_slot_type), dim && "opacity-40 grayscale")} />;
+    return <GameItem item={it} size={size} variant="image" dim={dim} />;
   };
   return (
     <div className="space-y-5">
@@ -319,7 +319,7 @@ export function PowerSpikes({ players, names }: { players: DeepPlayer[]; names: 
                   style={{ left: `${(it.game_time_s / maxT) * 100}%` }}
                   title={`${items.get(it.item_id)?.name} · ${fmtDuration(it.game_time_s)}`}
                 >
-                  <img src={items.get(it.item_id)?.shop_image_webp ?? items.get(it.item_id)?.image_webp ?? items.get(it.item_id)?.image} alt="" className={cn("h-6 w-6 border-2 bg-secondary p-0.5", k ? "border-primary" : p.team === 0 ? "border-amber-team" : "border-sapphire-team")} />
+                  {items.get(it.item_id) && <GameItem item={items.get(it.item_id)!} size={24} variant="image" />}
                 </motion.div>) : null)}
             </div>
             <span className="tabular text-right font-mono text-[10px] text-muted-foreground">T3 {t3 ? fmtDuration(t3.game_time_s) : "—"} · T4 {t4 ? fmtDuration(t4.game_time_s) : "—"}</span>

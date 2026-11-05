@@ -1,4 +1,5 @@
 import { PlayerStyle } from "@/components/PlayerStyle";
+import { GameItem } from "@/components/GameItem";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -364,7 +365,7 @@ function MatchList({ matches: all, accountId, sources }: { matches: MatchHistory
             <div className="hidden w-[168px] grid-cols-6 gap-0.5 lg:grid">
               {Array.from({ length: 6 }).map((_, i) => {
                 const it = build[i];
-                return it ? <img key={i} src={it.shop_image_webp ?? it.shop_image ?? it.image_webp ?? it.image} alt={it.name} title={it.name} loading="lazy" className="h-7 w-7 border border-border bg-secondary object-contain" />
+                return it ? <GameItem key={i} item={it} size={28} variant="image" />
                   : <span key={i} className={cn("h-7 w-7 border border-dashed border-border/60", !meta && metaQ.isLoading && "animate-pulse bg-secondary")} />;
               })}
             </div>

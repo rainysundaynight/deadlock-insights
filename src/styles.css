@@ -306,3 +306,5 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 .hero-spot { background: radial-gradient(45% 45% at 50% 48%, color-mix(in oklab, var(--hero) 32%, transparent), transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent); mask-image: linear-gradient(to bottom, black 20%, transparent); opacity: .7; transition: opacity .5s; }
 .group:hover .hero-spot, .hero-spot:has(+ .hero-side:hover) { opacity: 1; }
 .hero-plate { padding: 3px 10px 2px; color: var(--primary); background: linear-gradient(180deg, color-mix(in oklab, var(--background) 70%, var(--hero)), var(--background)); border: 1px solid color-mix(in oklab, var(--primary) 70%, transparent); box-shadow: 0 0 0 2px var(--background), 0 0 0 3px color-mix(in oklab, var(--primary) 35%, transparent), 0 4px 14px color-mix(in oklab, var(--hero) 40%, transparent); clip-path: polygon(8% 0, 92% 0, 100% 50%, 92% 100%, 8% 100%, 0 50%); }
+/* ui.deadlock-api.com image variant sized by wrapper */
+.game-item-image dl-item-card { width: var(--gi-size); height: var(--gi-size); display: block; }

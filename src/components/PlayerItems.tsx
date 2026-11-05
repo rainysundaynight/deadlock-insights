@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { GameItem } from "@/components/GameItem";
 import { motion } from "framer-motion";
 import { useMemo, useState } from "react";
 
@@ -171,9 +172,6 @@ function Bar({ label, v, text, tone = "bg-primary", className }: { label: string
 function ItemImg({ item, size }: { item: Item; size: number }) {
   const slot = item.item_slot_type ?? "";
   return (
-    <span title={item.name} className="relative inline-block border border-border bg-secondary" style={{ width: size, height: size }}>
-      <img src={item.shop_image_webp ?? item.shop_image ?? item.image_webp ?? item.image} alt={item.name} loading="lazy" className="h-full w-full object-contain" />
-      <span className={cn("absolute inset-x-0 bottom-0 h-0.5", SLOT[slot]?.tone ?? "bg-muted")} />
-    </span>
+    <GameItem item={item} size={size} variant="image" className={slot ? "" : ""} />
   );
 }

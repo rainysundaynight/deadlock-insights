@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { GameItem } from "@/components/GameItem";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import { useMemo } from "react";
@@ -143,7 +144,7 @@ function HeroPage() {
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {topItems.map((r) => (
               <div key={r.item_id} className="panel flex items-center gap-3 p-3">
-                <img src={r.item.shop_image_webp ?? r.item.image_webp} alt="" className="h-10 w-10 rounded border border-border bg-muted p-1" />
+                <GameItem item={r.item} size={40} variant="image" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{r.item.name}</p>
                   <p className="text-xs text-muted-foreground">{fmtInt(r.matches)} матчей · {fmtInt(r.item.cost)} душ</p>
