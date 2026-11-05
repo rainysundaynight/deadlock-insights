@@ -21,7 +21,7 @@ type Metric = (typeof METRICS)[number][0];
 /** Cell shading: team-tinted background scaled by how big the value is. */
 function heat(team: number, v: number, max: number) {
   const a = max > 0 ? Math.min(1, v / max) : 0;
-  return { background: `color-mix(in oklab, var(--${team === 0 ? "amber" : "sapphire"}-team) ${(a * 26).toFixed(1)}%, transparent)` };
+  return { background: `color-mix(in oklab, var(--${team === 0 ? "color-amber" : "color-sapphire"}-team) ${(a * 26).toFixed(1)}%, transparent)` };
 }
 
 /** Lead across minutes as a small centered area chart. */
@@ -38,7 +38,6 @@ function LeadSpark({ lead }: { lead: number[] }) {
         <rect key={i} x={x(i) - 3} y={Math.min(mid, y(v))} width={6} height={Math.abs(mid - y(v))} fill={`var(--${v >= 0 ? "amber" : "sapphire"}-team)`} opacity={0.55} />
       ))}
       <path d={`${line} L${W},${mid} L0,${mid} Z`} fill="none" stroke="var(--primary)" strokeWidth="1.2" opacity={0.8} />
-    </svg>
   );
 }
 
@@ -102,11 +101,11 @@ export function LaneMinutes({ players, names }: { players: APlayer[]; names?: Ma
             <td className="p-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Перевес HK</td>
             {lead.map((d, i) => (
               <td key={MINUTES[i]} className="p-2 text-right">
-                <div className="relative mx-auto flex h-6 w-8 items-end justify-center">
-                  <span aria-hidden className={cn("absolute bottom-0 w-1.5", d >= 0 ? "bg-amber-team/60" : "bg-sapphire-team/60")} style={{ height: `${Math.max(8, (Math.abs(d) / leadMax) * 100)}%` }} />
-                  <span className={cn("tabular relative font-mono text-[11px] font-semibold", d > 0 ? "text-amber-team" : d < 0 ? "text-sapphire-team" : "text-muted-foreground")}>
+                <div className="mx-auto flex w-10 flex-col items-center gap-1">
+                  <span className={cn("tabular font-mono text-[11px] font-semibold", d > 0 ? "text-amber-team" : d < 0 ? "text-sapphire-team" : "text-muted-foreground")}>
                     {d > 0 ? "+" : ""}{metric === "creep_kills" ? d : fmtK(d)}
                   </span>
+                  <span aria-hidden className={cn("h-1 w-full rounded-full", d >= 0 ? "bg-amber-team/70" : "bg-sapphire-team/70")} style={{ opacity: 0.35 + 0.65 * (Math.abs(d) / leadMax) }} />
                 </div>
               </td>
             ))}

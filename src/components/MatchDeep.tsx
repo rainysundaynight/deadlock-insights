@@ -266,7 +266,7 @@ export function DuelMatrix({ players, names }: { players: DuelPlayer[]; names: N
                 return (
                   <td key={s.player_slot} className="p-1">
                     <div className="tabular flex h-9 w-14 items-center justify-center gap-1 border border-border/70" title={`${nm(a)} убил ${nm(s)}: ${ab} · обратно: ${ba}`}
-                      style={{ boxShadow: `inset 0 0 0 999px color-mix(in oklab, var(--${ab >= ba ? "amber-team" : "sapphire-team"}) ${(Math.max(ab, ba) / max) * 45}%, transparent)` }}>
+                      style={{ boxShadow: `inset 0 0 0 999px color-mix(in oklab, var(--${ab >= ba ? "color-amber-team" : "color-sapphire-team"}) ${(Math.max(ab, ba) / max) * 45}%, transparent)` }}>
                       <span className="text-amber-team">{ab}</span><span className="text-muted-foreground">:</span><span className="text-sapphire-team">{ba}</span>
                     </div>
                   </td>
