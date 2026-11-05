@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ExternalLink, Package, Activity, Swords, Users, Crosshair, BookOpen, GitCompare } from "lucide-react";
+import { ExternalLink, Package, RefreshCw, Activity, Swords, Users, Crosshair, BookOpen, GitCompare } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Empty, ErrorBox, useSteamProfiles, useItemMap, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
@@ -39,7 +40,31 @@ function PlayerPage() {
   const profiles = useSteamProfiles([id]);
   const profile = profiles.data?.get(id);
   const rank = useQuery({ queryKey: ["rank", id], queryFn: () => api<RankResp>(`/v1/players/${id}/rank`) });
-  const history = useQuery({ queryKey: ["history", id], queryFn: () => api<MatchHistoryEntry[]>(`/v1/players/${id}/match-history`) });
+  const history = useQuery({
+    queryKey: ["history", id],
+    queryFn: () => api<MatchHistoryEntry[]>(`/v1/players/${id}/match-history`),
+    refetchInterval: 120_000,
+    refetchOnWindowFocus: true,
+  });
+  const qc = useQueryClient();
+  const [refetching, setRefetching] = useState(false);
+  const forceRefresh = async () => {
+    const key = `dl-force-refetch-${id}`;
+    const last = Number(localStorage.getItem(key) ?? 0);
+    const left = 3600_000 - (Date.now() - last);
+    if (left > 0) { toast.info(`Steam позволяет принудительно обновлять раз в час. Попробуйте через ${Math.ceil(left / 60000)} мин.`); return; }
+    setRefetching(true);
+    try {
+      const fresh = await api<MatchHistoryEntry[]>(`/v1/players/${id}/match-history`, { force_refetch: true });
+      localStorage.setItem(key, String(Date.now()));
+      const before = history.data?.length ?? 0;
+      qc.setQueryData(["history", id], fresh);
+      const added = fresh.length - before;
+      toast.success(added > 0 ? `Найдено новых матчей: ${added}` : "Новых матчей нет — история актуальна");
+    } catch {
+      toast.error("Steam временно не отдаёт историю (лимит запросов). Попробуйте позже.");
+    } finally { setRefetching(false); }
+  };
 
   const summary = useMemo(() => {
     const h = history.data ?? [];
@@ -63,6 +88,7 @@ function PlayerPage() {
           <h1 className="break-words font-display text-3xl font-semibold sm:text-4xl">{profile?.personaname ?? `Игрок #${id}`}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <FollowButton accountId={id} name={profile?.personaname} />
+            <button onClick={forceRefresh} disabled={refetching} title="Запросить свежую историю напрямую из Steam" className="inline-flex items-center gap-1.5 hover:text-primary disabled:opacity-50"><RefreshCw className={cn("h-3.5 w-3.5", refetching && "animate-spin")} />{refetching ? "Обновляем…" : "Обновить матчи"}</button>
             <Link to="/compare" search={{ a: id }} className="inline-flex items-center gap-1.5 hover:text-primary"><GitCompare className="h-3.5 w-3.5" />Сравнить</Link>
             {profile?.profileurl && (
               <a href={profile.profileurl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
