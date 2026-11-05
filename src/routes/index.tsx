@@ -79,7 +79,7 @@ function Index() {
                         {alt && <img src={alt} alt="" aria-hidden className="hero-pose hero-pose-alt absolute inset-0 h-full w-full object-cover object-bottom" />}
                       </div>
                     </div>
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-background via-background/85 to-transparent pb-2 pt-6 text-center opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 pb-2 text-center [text-shadow:0_1px_3px_var(--background),0_0_12px_var(--background)] opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                       <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary">№{rank} · {r.tier}-тир</p>
                       <p className="font-display text-base uppercase leading-tight text-foreground drop-shadow">{h.name}</p>
                       <p className="tabular text-xs text-win">{(r.winrate * 100).toFixed(1)}%</p>
