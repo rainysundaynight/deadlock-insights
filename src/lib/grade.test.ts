@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { gradeFromScore, perfScore } from "./grade";
+import { gradeFromScore, perfScore, gradeHistory, gradeVsGlobal } from "./grade";
 
 describe("grades", () => {
+  it("uses the identical grade for match and profile history with one death in a 3094 second match", () => {
+    const baseline = { k: 8, d: 8, a: 15, nw: 40000, lh: 180 };
+    const match = gradeVsGlobal({ k: 6, d: 1, a: 26, nw: 89897, lh: 404, won: true }, baseline, 3094);
+    const history = gradeHistory({ match_id: 131871467, hero_id: 7, hero_level: 30, start_time: 0, player_team: 1, player_kills: 6, player_deaths: 1, player_assists: 26, denies: 0, net_worth: 89897, last_hits: 404, match_duration_s: 3094, match_result: 1, game_mode: 1, match_mode: 1 }, baseline);
+    expect(match.score).toBeGreaterThan(66);
+    expect(history).toEqual(match);
+  });
   it("maps score boundaries to D..S+", () => {
     expect(gradeFromScore(95)).toBe("S+");
     expect(gradeFromScore(80)).toBe("S");

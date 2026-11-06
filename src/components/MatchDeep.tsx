@@ -20,8 +20,8 @@ const TEAM_NAME = ["Hidden King", "Archmother"];
 
 const METRICS = [
   { key: "player_damage", label: "Урон по героям", hint: "по самим героям" },
-  { key: "player_damage_taken", label: "Получено урона", hint: "сколько выдержал" },
-  { key: "player_healing", label: "Лечение", hint: "вылечено союзникам" },
+  { key: "player_damage_taken", label: "Получено урона", hint: "нагрузка, не оценка живучести" },
+  { key: "player_healing", label: "Лечение", hint: "суммарное лечение" },
   { key: "net_worth", label: "Души", hint: "итоговый доход" },
 ] as const;
 
@@ -60,7 +60,7 @@ function MetricPanel({ metric, players, names, mins }: { metric: (typeof METRICS
         </div>
         <div className="mt-1 flex justify-between tabular text-xs text-muted-foreground">
           <span>{fmtK(t0)} · {(t0 / mins).toFixed(0)}/мин</span>
-          <span className={cn(t0 >= t1 ? "text-amber-team" : "text-sapphire-team")}>{t0 >= t1 ? "◆ перевес" : "перевес ◆"}</span>
+          <span className={cn(t0 >= t1 ? "text-amber-team" : "text-sapphire-team")}>{metric.key === "player_damage_taken" ? "получено" : t0 === t1 ? "поровну" : t0 > t1 ? "◆ больше" : "больше ◆"}</span>
           <span>{fmtK(t1)} · {(t1 / mins).toFixed(0)}/мин</span>
         </div>
       </div>

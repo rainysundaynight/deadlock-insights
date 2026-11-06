@@ -54,7 +54,7 @@ function Picker({ players, sel, onSel, names }: { players: P[]; sel: number; onS
 }
 
 /* ---------------- Category card ---------------- */
-interface Row { label: string; v: number; avg: number; fmt?: (v: number) => string; lowerBetter?: boolean }
+interface Row { label: string; v: number; avg: number; fmt?: (v: number) => string; lowerBetter?: boolean; rank?: number; count?: number }
 function CategoryCard({ icon, title, main, rows, rank, of, lobbyRank, lobbyCount, tone, delay }: { icon: ReactNode; title: string; main: Row; rows: Row[]; rank: number; of: number; lobbyRank: number; lobbyCount: number; tone: "good" | "bad" | "neutral"; delay: number }) {
   const f = main.fmt ?? fmtN;
   const diff = main.v - main.avg;
@@ -78,7 +78,7 @@ function CategoryCard({ icon, title, main, rows, rank, of, lobbyRank, lobbyCount
       <dl className="mt-3 divide-y divide-border/40 px-4 pb-2">
         {rows.map((r) => {
           const ff = r.fmt ?? fmtN;
-          const top = r.lowerBetter ? r.v <= r.avg * 0.8 : r.v >= r.avg * 1.25;
+          const top = r.rank === 1 && (r.count ?? 0) > 1;
           return (
             <div key={r.label} className="flex items-center justify-between py-2">
               <dt className="flex items-center gap-2 text-sm">{r.label}{top && <span className="border border-primary/60 px-1 font-mono text-[9px] uppercase text-primary">Топ</span>}</dt>
@@ -192,19 +192,19 @@ export function PlayerDossier({ players, names, durationS, winner }: { players: 
       <div className="grid gap-4 md:grid-cols-2">
         <CategoryCard delay={0} icon={<Coins className="h-4 w-4 text-primary" />} title="Экономика" {...M.spm} of={of}
           main={{ label: "Души в минуту", v: M.spm.v, avg: M.spm.avg }}
-          rows={[{ label: "Всего душ", v: M.nw.v, avg: M.nw.avg }, { label: "Крипы", v: M.lh.v, avg: M.lh.avg }, { label: "Денаи", v: M.dn.v, avg: M.dn.avg }]} />
+          rows={[{ label: "Всего душ", ...M.nw }, { label: "Крипы", ...M.lh }, { label: "Денаи", ...M.dn }]} />
         <CategoryCard delay={0.05} icon={<Crosshair className="h-4 w-4 text-primary" />} title="Урон" {...M.dmg} of={of}
           main={{ label: "Урон по героям", v: M.dmg.v, avg: M.dmg.avg }}
-          rows={[{ label: "В минуту", v: M.dpm.v, avg: M.dpm.avg }, { label: "За жизнь", v: M.dpl.v, avg: M.dpl.avg }]} />
+          rows={[{ label: "В минуту", ...M.dpm }, { label: "На отрезок между смертями", ...M.dpl }]} />
         <CategoryCard delay={0.1} icon={<Shield className="h-4 w-4 text-primary" />} title="Живучесть" {...M.deaths} of={of}
           main={{ label: "Смерти · меньше лучше", v: M.deaths.v, avg: M.deaths.avg, lowerBetter: true }}
           rows={[{ label: "Получено урона", v: M.taken.v, avg: M.taken.avg, lowerBetter: true }, { label: "Получено / мин", v: M.tpm.v, avg: M.tpm.avg, lowerBetter: true }, { label: "Лечение", v: M.heal.v, avg: M.heal.avg }]} />
         <CategoryCard delay={0.15} icon={<Zap className="h-4 w-4 text-primary" />} title="Ранняя игра · 0–10 мин" {...M.e_nw} of={of}
           main={{ label: "Души к 10 минуте", v: M.e_nw.v, avg: M.e_nw.avg }}
-          rows={[{ label: "Урон 0–10", v: M.e_dmg.v, avg: M.e_dmg.avg }, { label: "Убийства 0–10", v: M.e_k.v, avg: M.e_k.avg }, { label: "Крипы 0–10", v: M.e_lh.v, avg: M.e_lh.avg }]} />
+          rows={[{ label: "Урон 0–10", ...M.e_dmg }, { label: "Убийства 0–10", ...M.e_k }, { label: "Крипы 0–10", ...M.e_lh }]} />
         <CategoryCard delay={0.2} icon={<HeartPulse className="h-4 w-4 text-primary" />} title="Командная игра" {...M.kp} of={of}
           main={{ label: "Участие в убийствах", v: M.kp.v, avg: M.kp.avg, fmt: pct }}
-          rows={[{ label: "Помощь", v: M.as.v, avg: M.as.avg }, { label: "Лечение", v: M.heal.v, avg: M.heal.avg }]} />
+          rows={[{ label: "Помощь", ...M.as }, { label: "Лечение", ...M.heal }]} />
         <LaneDuelMini p={p} players={players} names={names} />
       </div>
     </div>
