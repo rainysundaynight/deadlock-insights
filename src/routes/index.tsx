@@ -109,15 +109,16 @@ function Index() {
             <input aria-label="ID матча" value={matchId} onChange={(e) => setMatchId(e.target.value)} placeholder="Номер дела · ID матча" className={cn(inputClass, "bg-background/80")} />
             <MagneticButton type="submit" variant="outline" className="h-10 border-primary/40 text-primary">Открыть <ArrowRight /></MagneticButton>
           </form>
-          {tiers.length >= 4 && (
-            <div className="mx-auto mt-8 grid max-w-xl grid-cols-4 items-end gap-1 min-[1400px]:hidden">
-              {tiers.slice(0, 4).map((r, i) => { const h = heroes.get(r.hero_id); if (!h) return null; return (
-                <Link key={r.hero_id} to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as CSSProperties} className="group relative block">
+          {tiers.length >= 6 && (
+            <div className="home-hero-lineup mx-auto mt-8 grid max-w-xl grid-cols-3 gap-x-2 gap-y-5 sm:grid-cols-6 min-[1400px]:hidden">
+              {tiers.slice(0, 6).map((r, i) => { const h = heroes.get(r.hero_id); if (!h) return null; const alt = h.images.hero_card_gloat_webp ?? h.images.hero_card_gloat; return (
+                <Link key={r.hero_id} to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as CSSProperties} className="group relative block min-w-0">
                   <div aria-hidden className="hero-spot pointer-events-none absolute inset-0" />
                   <div className="hero-side relative aspect-[3/4]"><div className="hero-card-clip absolute inset-0">
                     <img src={h.images.icon_hero_card_webp ?? h.images.icon_hero_card} alt={h.name} loading="lazy" className="hero-pose hero-pose-idle absolute inset-0 h-full w-full object-cover object-bottom" />
+                    {alt && <img src={alt} alt="" aria-hidden loading="lazy" className="hero-pose hero-pose-alt absolute inset-0 h-full w-full object-contain object-bottom" />}
                   </div><div className="hero-plate absolute -bottom-2 left-1/2 z-10 -translate-x-1/2"><span className="font-masthead text-xs leading-none">№{i + 1}</span></div></div>
-                  <p className="mt-4 truncate text-center font-display text-xs uppercase text-foreground">{h.name}</p>
+                  <p className="relative mt-4 min-h-[2lh] break-words text-center font-display text-xs uppercase leading-tight text-foreground">{h.name}</p>
                   <p className="tabular text-center text-[10px] text-win">{(r.winrate * 100).toFixed(1)}%</p>
                 </Link>
               ); })}

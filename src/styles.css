@@ -256,7 +256,7 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 }
 /* touch screens: no hover, so show the action pose by default */
 @media (hover: none) {
-  .hero-pose-idle { opacity: 0; }
+  .hero-card-clip:has(.hero-pose-alt) .hero-pose-idle { opacity: 0; }
   .hero-pose-alt {
     opacity: 1;
     transform: translateY(-8%) scale(1.06);
@@ -314,3 +314,13 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 .tier-card .hero-pose-alt { -webkit-mask-image: none; mask-image: none; }
 .tier-card:hover .hero-pose-alt { transform: scale(1.04); }
 .tier-card:hover .hero-pose-idle { transform: scale(1.04); }
+
+/* Navigation stays scrollable without platform-dependent scrollbar gutters. */
+.sidebar-scroll { scrollbar-width: none; }
+.sidebar-scroll::-webkit-scrollbar { display: none; }
+
+/* Compact home figures retain their full pose and don't rise into the search. */
+.home-hero-lineup .hero-card-clip { overflow: hidden; }
+.home-hero-lineup .hero-pose-alt,
+.home-hero-lineup .group:hover .hero-pose-alt { transform: none; }
+.home-hero-lineup .group:not(:has(.hero-pose-alt)) .hero-pose-idle { opacity: 1; transform: none; }
