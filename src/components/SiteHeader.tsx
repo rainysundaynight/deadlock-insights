@@ -63,12 +63,12 @@ function Nav({ onNavigate }: { onNavigate?: () => void }) {
                 to={n.to}
                 onClick={onNavigate}
                 activeOptions={{ exact: n.to === "/" }}
-                className="group flex items-center gap-3 border-l-2 border-transparent px-3 py-1.5 text-sm text-muted-foreground transition-all hover:translate-x-0.5 hover:text-foreground"
+                className="group flex min-w-0 items-center gap-3 border-l-2 border-transparent px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
                 activeProps={{ className: "!border-primary !text-primary bg-primary/10 font-semibold" }}
               >
-                <n.icon className="h-4 w-4" />
-                <span className="flex-1">{n.label}</span>
-                {"live" in n && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-telemetry" />}
+                <n.icon className="h-4 w-4 shrink-0" />
+                <span className="min-w-0 flex-1">{n.label}</span>
+                {"live" in n && <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-telemetry" />}
               </Link>
             ))}
           </div>
@@ -120,9 +120,9 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="relative min-h-screen [container-type:inline-size] lg:pl-60">
       <InkBackground />
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r border-border bg-sidebar px-3 py-6 lg:flex">
-        <div className="px-2"><Logo /></div>
-        <div className="mt-8 flex-1 overflow-y-auto"><Nav /></div>
-        <p className="px-3 text-[10px] leading-relaxed text-muted-foreground/70">Данные deadlock-api.com · Фан-проект, не связан с Valve</p>
+        <div className="shrink-0 px-2"><Logo /></div>
+        <div className="sidebar-scroll mt-8 min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"><Nav /></div>
+        <p className="shrink-0 px-3 pt-4 text-[10px] leading-relaxed text-muted-foreground/70">Данные deadlock-api.com · Фан-проект, не связан с Valve</p>
       </aside>
 
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-md">
@@ -139,9 +139,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <AnimatePresence>{open && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-background/80 backdrop-blur" onClick={() => setOpen(false)} />
-          <motion.aside initial={{ x: -256 }} animate={{ x: 0 }} exit={{ x: -256 }} className="absolute inset-y-0 left-0 w-64 overflow-y-auto border-r border-border bg-sidebar p-4">
-            <div className="mb-6 flex items-center justify-between"><Logo /><Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Закрыть"><X /></Button></div>
-            <Nav onNavigate={() => setOpen(false)} />
+          <motion.aside initial={{ x: -256 }} animate={{ x: 0 }} exit={{ x: -256 }} className="absolute inset-y-0 left-0 flex w-64 flex-col overflow-hidden border-r border-border bg-sidebar p-4">
+            <div className="mb-6 flex shrink-0 items-center justify-between"><Logo /><Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Закрыть"><X /></Button></div>
+            <div className="sidebar-scroll min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"><Nav onNavigate={() => setOpen(false)} /></div>
           </motion.aside>
         </motion.div>
       )}</AnimatePresence>
