@@ -9,12 +9,16 @@ const mk = (team: number, lane: number, nw9: number): APlayer => ({
 describe("laneResults", () => {
   it("does not use future data for the ten-minute comparison", () => {
     const p = mk(0, 1, 5000);
-    p.stats[0].time_stamp_s = 660;
+    const snapshot = p.stats[0];
+    if (!snapshot) throw new Error("Missing fixture snapshot");
+    snapshot.time_stamp_s = 660;
     expect(snapAt(p, 600)).toBeUndefined();
   });
   it("does not criticize damage absorption when a player survives with one death", () => {
     const p = { ...mk(0, 1, 5000), deaths: 1 };
-    Object.assign(p.stats[0], { player_damage: 10000, player_damage_taken: 50000 });
+    const snapshot = p.stats[0];
+    if (!snapshot) throw new Error("Missing fixture snapshot");
+    Object.assign(snapshot, { player_damage: 10000, player_damage_taken: 50000 });
     expect(playerTips(p, [p, { ...mk(1, 1, 5000), deaths: 10 }], 3094).some((t) => t.title === "Урон сопровождается частыми смертями")).toBe(false);
     const frequent = { ...p, deaths: 20 };
     expect(playerTips(frequent, [frequent, p], 3094).some((t) => t.title === "Урон сопровождается частыми смертями")).toBe(true);
