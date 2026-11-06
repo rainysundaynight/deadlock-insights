@@ -16,7 +16,8 @@ describe("match metric comparisons", () => {
   });
   it("fewer deaths means a higher survival rank", () => {
     expect(compareMetric(1, [9, 1, 9, 8, 10, 13], "lower").rank).toBe(1);
-    expect(compareMetric(9, [9, 1, 9, 8, 10, 13], "lower").tone).toBe("bad");
+    expect(compareMetric(13, [9, 1, 9, 8, 10, 13], "lower").tone).toBe("bad");
+    expect(compareMetric(9, [9, 1, 9, 8, 10, 13], "lower").tone).toBe("neutral");
   });
   it("tied and solo metrics remain neutral", () => {
     expect(compareMetric(0, [0, 0, 0]).tone).toBe("neutral");
