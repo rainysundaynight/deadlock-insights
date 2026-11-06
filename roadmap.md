@@ -10,7 +10,7 @@
 - [x] Duo/counter presentation and themed charts.
 - [x] Verify desktop/mobile, interactions, tests and route metadata.
 # Competitive features
-- [ ] Audit match 131871467, correct player metric directions and comparisons, add regression tests and verify real player views.
+- [x] Audit match 131871467, correct player metric directions and comparisons, add regression tests and verify real player views.
 - [x] Match "Разбор": turning point, teamfight reports, ability order, item timings vs lobby, anti-heal tips
 - [x] Profile: playstyle DNA, rank dynamics, hero mastery
 - [x] Map highlight jumps; live win-chance bar
