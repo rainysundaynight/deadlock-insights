@@ -31,11 +31,10 @@ export interface APlayer {
 export const LANE_NAMES: Record<number, string> = { 1: "Жёлтая линия", 4: "Синяя линия", 6: "Зелёная линия" };
 export const LANE_TIME = 540; // 9 минута
 
-/** Snapshot closest to (and not after, if possible) time t */
+/** Latest snapshot at or before t; never borrow future statistics. */
 export function snapAt(p: APlayer, t: number): StatSnap | undefined {
-  if (!p.stats.length) return undefined;
-  let best = p.stats[0];
-  for (const s of p.stats) if (s.time_stamp_s <= t) best = s;
+  let best: StatSnap | undefined;
+  for (const s of p.stats) if (s.time_stamp_s <= t && (!best || s.time_stamp_s > best.time_stamp_s)) best = s;
   return best;
 }
 
@@ -120,8 +119,9 @@ export function playerTips(p: APlayer, all: APlayer[], durationS: number): Tip[]
       else if (acc > 0.55) tips.push({ tone: "good", title: "Меткая стрельба", text: `Точность ${pct(acc)} — выше большинства игроков.` });
     }
     // Damage taken vs dealt
-    if (last.player_damage_taken > last.player_damage * 1.5 && p.deaths >= 5)
-      tips.push({ tone: "bad", title: "Много получаемого урона", text: "Вы получили значительно больше урона, чем нанесли. Подумайте о предметах живучести и позиционировании за спинами союзников." });
+    const averageDeaths = all.reduce((sum, x) => sum + x.deaths, 0) / Math.max(1, all.length);
+    if (last.player_damage_taken > last.player_damage * 1.5 && p.deaths > averageDeaths && p.deaths / minutes > 0.3)
+      tips.push({ tone: "bad", title: "Урон сопровождается частыми смертями", text: "Вы получаете больше урона, чем наносите, и умираете чаще среднего по матчу. Проверьте позиционирование и защитные предметы; один лишь полученный урон не означает плохую игру." });
   }
 
   // Denies
