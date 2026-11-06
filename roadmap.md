@@ -10,6 +10,7 @@
 - [x] Duo/counter presentation and themed charts.
 - [x] Verify desktop/mobile, interactions, tests and route metadata.
 # Competitive features
+- [ ] Show DNA baseline and signed deviations; gate hero mastery by experience and winrate, then verify profile and tests.
 - [x] Audit match 131871467, correct player metric directions and comparisons, add regression tests and verify real player views.
 - [x] Match "Разбор": turning point, teamfight reports, ability order, item timings vs lobby, anti-heal tips
 - [x] Profile: playstyle DNA, rank dynamics, hero mastery
