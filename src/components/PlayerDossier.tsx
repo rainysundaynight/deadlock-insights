@@ -11,6 +11,7 @@ import { LANE_NAMES, snapAt, type APlayer, type StatSnap } from "@/lib/analysis"
 import { fmtDuration, fmtK } from "@/lib/format";
 import { gradeVsGlobal } from "@/lib/grade";
 import { globalAverages } from "@/lib/playerStats";
+import { compareMetric } from "@/lib/matchMetrics";
 import { cn } from "@/lib/utils";
 
 type Names = Map<number, { personaname: string }> | undefined;
@@ -54,24 +55,23 @@ function Picker({ players, sel, onSel, names }: { players: P[]; sel: number; onS
 
 /* ---------------- Category card ---------------- */
 interface Row { label: string; v: number; avg: number; fmt?: (v: number) => string; lowerBetter?: boolean }
-function CategoryCard({ icon, title, main, rows, rank, of, delay }: { icon: ReactNode; title: string; main: Row; rows: Row[]; rank: number; of: number; delay: number }) {
+function CategoryCard({ icon, title, main, rows, rank, of, lobbyRank, lobbyCount, tone, delay }: { icon: ReactNode; title: string; main: Row; rows: Row[]; rank: number; of: number; lobbyRank: number; lobbyCount: number; tone: "good" | "bad" | "neutral"; delay: number }) {
   const f = main.fmt ?? fmtN;
   const diff = main.v - main.avg;
-  const better = main.lowerBetter ? diff <= 0 : diff >= 0;
   const max = Math.max(main.v, main.avg) * 1.25 || 1;
   return (
     <motion.section data-motion-owner initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.35 }}
       className="panel flex flex-col p-0">
       <header className="flex items-center justify-between border-b border-border/60 px-4 py-2.5">
         <p className="flex items-center gap-2 font-display text-sm font-bold uppercase tracking-wider">{icon}{title}</p>
-        <span className={cn("border px-1.5 py-0.5 font-mono text-[10px]", rank === 1 ? "border-primary text-primary" : "border-border text-muted-foreground")}>#{rank} из {of}</span>
+        <span title="Место по основному показателю; цвет полосы — положение в команде, а не отклонение от среднего" className={cn("shrink-0 border px-1.5 py-0.5 text-right font-mono text-[10px]", rank === 1 ? "border-primary text-primary" : "border-border text-muted-foreground")}>#{rank}/{of} команда<br />#{lobbyRank}/{lobbyCount} лобби</span>
       </header>
       <div className="px-4 pt-3">
         <p className="text-xs text-muted-foreground">{main.label}</p>
         <p className="tabular font-display text-4xl font-black leading-tight">{f(main.v)}</p>
-        <p className="text-xs"><span className={better ? "text-win" : "text-loss"}>{diff >= 0 ? "↑" : "↓"} {f(Math.abs(diff))}</span> <span className="text-muted-foreground">{diff >= 0 ? "выше" : "ниже"} среднего по команде ({f(main.avg)})</span></p>
+        <p className="text-xs text-muted-foreground"><span>{diff >= 0 ? "↑" : "↓"} {f(Math.abs(diff))}</span> <span>{diff >= 0 ? "выше" : "ниже"} среднего по команде ({f(main.avg)})</span></p>
         <div className="relative mt-3 h-1.5 bg-muted/60">
-          <motion.span className={cn("absolute inset-y-0 left-0", better ? "bg-primary" : "bg-loss/80")} initial={{ width: 0 }} animate={{ width: `${(main.v / max) * 100}%` }} transition={{ duration: 0.7, delay }} />
+          <motion.span className={cn("absolute inset-y-0 left-0", tone === "good" ? "bg-win" : tone === "bad" ? "bg-loss/80" : "bg-muted-foreground")} initial={{ width: 0 }} animate={{ width: `${(main.v / max) * 100}%` }} transition={{ duration: 0.7, delay }} />
           <span className="absolute -inset-y-1 w-0.5 bg-foreground/70" style={{ left: `${(main.avg / max) * 100}%` }} />
         </div>
       </div>
@@ -103,10 +103,13 @@ export function PlayerDossier({ players, names, durationS, winner }: { players: 
     if (!p) return null;
     const mates = players.filter((x) => x.team === p.team);
     const teamKills = mates.reduce((s, x) => s + x.kills, 0) || 1;
-    const metric = (fn: (x: P) => number) => {
+    const metric = (fn: (x: P) => number, lowerBetter = false) => {
       const vals = mates.map(fn);
       const v = fn(p);
-      return { v, avg: vals.reduce((a, b) => a + b, 0) / vals.length, rank: [...vals].sort((a, b) => b - a).indexOf(v) + 1 };
+      const direction = lowerBetter ? "lower" : "higher";
+      const team = compareMetric(v, vals, direction);
+      const lobby = compareMetric(v, players.map(fn), direction);
+      return { v, ...team, lobbyRank: lobby.rank, lobbyCount: lobby.count };
     };
     const at10 = (x: APlayer) => snapAt(x, 600) ?? ({} as Partial<StatSnap>);
     const M = {
@@ -117,10 +120,11 @@ export function PlayerDossier({ players, names, durationS, winner }: { players: 
       dmg: metric((x) => last(x).player_damage ?? 0),
       dpm: metric((x) => (last(x).player_damage ?? 0) / min),
       dpl: metric((x) => (last(x).player_damage ?? 0) / (x.deaths + 1)),
-      taken: metric((x) => last(x).player_damage_taken ?? 0),
+      taken: metric((x) => last(x).player_damage_taken ?? 0, true),
+      tank: metric((x) => last(x).player_damage_taken ?? 0),
       tpm: metric((x) => (last(x).player_damage_taken ?? 0) / min),
       heal: metric((x) => last(x).player_healing ?? 0),
-      deaths: metric((x) => x.deaths),
+      deaths: metric((x) => x.deaths, true),
       as: metric((x) => x.assists),
       kp: metric((x) => (x.kills + x.assists) / teamKills),
       e_dmg: metric((x) => at10(x).player_damage ?? 0),
@@ -140,7 +144,7 @@ export function PlayerDossier({ players, names, durationS, winner }: { players: 
   const name = names?.get(p.account_id)?.personaname ?? `#${p.account_id}`;
   const kdaV = (p.kills + p.assists) / Math.max(1, p.deaths);
   const pct = (v: number) => `${Math.round(v * 100)}%`;
-  const role = [["Фармер", M.nw.rank], ["Боец", M.dmg.rank], ["Танк", M.taken.rank], ["Поддержка", M.as.rank]].sort((a, b) => (a[1] as number) - (b[1] as number))[0]![0];
+  const role = [["Фармер", M.nw.rank], ["Боец", M.dmg.rank], ["Танк", M.tank.rank], ["Поддержка", M.as.rank]].sort((a, b) => (a[1] as number) - (b[1] as number))[0]?.[0] ?? "Универсал";
 
   return (
     <div className="space-y-4">
@@ -186,19 +190,19 @@ export function PlayerDossier({ players, names, durationS, winner }: { players: 
 
       {/* Category cards */}
       <div className="grid gap-4 md:grid-cols-2">
-        <CategoryCard delay={0} icon={<Coins className="h-4 w-4 text-primary" />} title="Экономика" rank={M.spm.rank} of={of}
+        <CategoryCard delay={0} icon={<Coins className="h-4 w-4 text-primary" />} title="Экономика" {...M.spm} of={of}
           main={{ label: "Души в минуту", v: M.spm.v, avg: M.spm.avg }}
           rows={[{ label: "Всего душ", v: M.nw.v, avg: M.nw.avg }, { label: "Крипы", v: M.lh.v, avg: M.lh.avg }, { label: "Денаи", v: M.dn.v, avg: M.dn.avg }]} />
-        <CategoryCard delay={0.05} icon={<Crosshair className="h-4 w-4 text-primary" />} title="Урон" rank={M.dmg.rank} of={of}
+        <CategoryCard delay={0.05} icon={<Crosshair className="h-4 w-4 text-primary" />} title="Урон" {...M.dmg} of={of}
           main={{ label: "Урон по героям", v: M.dmg.v, avg: M.dmg.avg }}
           rows={[{ label: "В минуту", v: M.dpm.v, avg: M.dpm.avg }, { label: "За жизнь", v: M.dpl.v, avg: M.dpl.avg }]} />
-        <CategoryCard delay={0.1} icon={<Shield className="h-4 w-4 text-primary" />} title="Живучесть" rank={M.taken.rank} of={of}
-          main={{ label: "Получено урона", v: M.taken.v, avg: M.taken.avg }}
-          rows={[{ label: "В минуту", v: M.tpm.v, avg: M.tpm.avg }, { label: "Смерти", v: M.deaths.v, avg: M.deaths.avg, lowerBetter: true }, { label: "Лечение", v: M.heal.v, avg: M.heal.avg }]} />
-        <CategoryCard delay={0.15} icon={<Zap className="h-4 w-4 text-primary" />} title="Ранняя игра · 0–10 мин" rank={M.e_nw.rank} of={of}
+        <CategoryCard delay={0.1} icon={<Shield className="h-4 w-4 text-primary" />} title="Живучесть" {...M.deaths} of={of}
+          main={{ label: "Смерти · меньше лучше", v: M.deaths.v, avg: M.deaths.avg, lowerBetter: true }}
+          rows={[{ label: "Получено урона", v: M.taken.v, avg: M.taken.avg, lowerBetter: true }, { label: "Получено / мин", v: M.tpm.v, avg: M.tpm.avg, lowerBetter: true }, { label: "Лечение", v: M.heal.v, avg: M.heal.avg }]} />
+        <CategoryCard delay={0.15} icon={<Zap className="h-4 w-4 text-primary" />} title="Ранняя игра · 0–10 мин" {...M.e_nw} of={of}
           main={{ label: "Души к 10 минуте", v: M.e_nw.v, avg: M.e_nw.avg }}
           rows={[{ label: "Урон 0–10", v: M.e_dmg.v, avg: M.e_dmg.avg }, { label: "Убийства 0–10", v: M.e_k.v, avg: M.e_k.avg }, { label: "Крипы 0–10", v: M.e_lh.v, avg: M.e_lh.avg }]} />
-        <CategoryCard delay={0.2} icon={<HeartPulse className="h-4 w-4 text-primary" />} title="Командная игра" rank={M.kp.rank} of={of}
+        <CategoryCard delay={0.2} icon={<HeartPulse className="h-4 w-4 text-primary" />} title="Командная игра" {...M.kp} of={of}
           main={{ label: "Участие в убийствах", v: M.kp.v, avg: M.kp.avg, fmt: pct }}
           rows={[{ label: "Помощь", v: M.as.v, avg: M.as.avg }, { label: "Лечение", v: M.heal.v, avg: M.heal.avg }]} />
         <LaneDuelMini p={p} players={players} names={names} />
