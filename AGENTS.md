@@ -14,6 +14,7 @@
 - App layout is a left sidebar shell (`AppShell` in `src/components/SiteHeader.tsx`); add new pages to its NAV groups.
 - Sidebar navigation uses a shrinkable, vertical-only `.sidebar-scroll` region with hidden scrollbar tracks; keep branding outside it so classic scrollbars never alter menu width.
 - Scope touch idle-pose hiding to containers with an alternate pose; heroes without alternate artwork must stay visible on touch devices.
+- Match dossier comparisons use direction-aware competition ranks and midrank percentiles via `matchMetrics`; keep raw mean deltas neutral and survival based on deaths, not damage exposure.
 - Theme all pages through global semantic CSS tokens and shared Gazette motion primitives; keep chart history based on real minute-poll samples so the live list never consumes additional spectating connections.
 - Use shared ruled Radix tab rails for section navigation; each block has one motion owner so nested reveal and layout animations never compete.
 - Steam sign-in is Steam OpenID 2.0 via `/api/public/steam/login` → `/api/public/steam/callback` (verifies with Steam, admin-creates a user with a synthetic email, returns a magic-link token_hash that `/auth/steam` exchanges with verifyOtp; popup+postMessage in iframes). Cloud has no native Steam provider.
