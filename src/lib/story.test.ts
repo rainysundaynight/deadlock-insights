@@ -28,7 +28,15 @@ describe("abilityOrder", () => {
 });
 
 describe("mastery", () => {
-  it("needs at least 3 games for any level", () => {
-    expect(mastery(2, 1, 10).level).toBe(0);
+  it("nine wins in nine games cannot grant grandmaster", () => {
+    expect(mastery(9, 1).level).toBe(0);
+  });
+  it("requires both experience and winrate at every level", () => {
+    for (const [games, wr, level] of [[20, .5, 1], [50, .53, 2], [150, .55, 3], [300, .6, 4]] as const) {
+      expect(mastery(games, wr).level).toBe(level);
+      expect(mastery(games - 1, wr).level).toBeLessThan(level);
+      expect(mastery(games, wr - .01).level).toBeLessThan(level);
+    }
+    expect(mastery(1000, .49).level).toBe(0);
   });
 });

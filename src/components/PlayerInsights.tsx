@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { Area, AreaChart, CartesianGrid, PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useMemo } from "react";
 
 import { HeroIcon, SectionTitle, Stat, WinrateBar, useHeroMap } from "@/components/dl";
 import { api, ranksQuery, type HeroAnalytics, type MatchHistoryEntry } from "@/lib/api";
 import { fmtDuration, fmtK, kda } from "@/lib/format";
-import { formSeries, globalAverages, playstyle, summarize, won } from "@/lib/playerStats";
+import { deviationFromAverage, formSeries, globalAverages, playstyle, summarize, won } from "@/lib/playerStats";
 import { gradeFromScore, gradeHistory, gradeTone, strengthsWeaknesses } from "@/lib/grade";
 import { Link } from "@tanstack/react-router";
 import { GradeSeal, MetricBar, TipColumns } from "@/components/GradeReport";
@@ -35,7 +35,7 @@ export function PlayerInsights({ history, badge, backTo }: { history: MatchHisto
   const radarBase = rq.data?.length ? rq.data : g.data;
   const recent = history.slice(0, 100);
   const s = useMemo(() => summarize(recent), [recent]);
-  const radar = useMemo(() => (radarBase ? playstyle(s, globalAverages(radarBase)) : []), [s, radarBase]);
+  const radar = useMemo(() => (radarBase ? playstyle(s, globalAverages(radarBase)).map((x) => ({ ...x, average: 100 })) : []), [s, radarBase]);
   const form = useMemo(() => formSeries(recent), [recent]);
   const hasRank = recent.some((m) => m.ranked_delta != null);
   const last30 = useMemo(() => history.slice(0, 30), [history]);
@@ -126,13 +126,16 @@ export function PlayerInsights({ history, badge, backTo }: { history: MatchHisto
         <section className="panel p-5 lg:col-span-2">
           <SectionTitle>Стиль игры</SectionTitle>
           <p className="-mt-2 mb-2 text-xs text-muted-foreground">100 = средний игрок {rq.data?.length && rankName ? <>ранга <span className="text-primary">{rankName}</span>{badge ? "" : " (по последнему/потенциальному рангу)"}</> : "за 14 дней"}</p>
+          <div className="mb-2 flex gap-4 text-[10px] text-muted-foreground"><span className="inline-flex items-center gap-1"><i className="h-px w-4 bg-primary" />Игрок</span><span className="inline-flex items-center gap-1"><i className="w-4 border-t border-dashed border-muted-foreground" />Средний игрок</span></div>
           <div className="h-60">
             <ResponsiveContainer>
               <RadarChart data={radar} outerRadius="72%">
                 <PolarGrid stroke="var(--border)" />
                 <PolarAngleAxis dataKey="axis" tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
-                <Radar dataKey="v" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.3} />
-                <Tooltip contentStyle={tip} />
+                <PolarRadiusAxis domain={[0, 200]} tick={false} axisLine={false} />
+                <Radar name="Игрок" dataKey="v" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.3} />
+                <Radar name="Средний игрок" dataKey="average" stroke="var(--muted-foreground)" strokeDasharray="4 3" fill="var(--muted-foreground)" fillOpacity={0.04} />
+                <Tooltip contentStyle={tip} formatter={(v: number, name: string) => [name === "Средний игрок" ? "0% (база)" : `${v > 100 ? "+" : ""}${deviationFromAverage(v)}% к среднему`, name]} />
               </RadarChart>
             </ResponsiveContainer>
           </div>

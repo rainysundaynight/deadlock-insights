@@ -63,14 +63,23 @@ export const median = (xs: number[]) => {
   return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2;
 };
 
-/** Hero mastery level from games, win rate and KDA on the hero. */
+/** Experience gates cannot be bypassed by a short winning streak or high KDA. */
 export const MASTERY = ["Новичок", "Знаток", "Мастер", "Гранд-мастер", "Легенда"] as const;
-export function mastery(games: number, wr: number, kda: number) {
-  const exp = Math.min(1, Math.log10(Math.max(1, games)) / 2); // 100 games = full
-  const skill = Math.max(0, Math.min(1, (wr - 0.4) / 0.25)) * 0.6 + Math.max(0, Math.min(1, (kda - 1.5) / 3)) * 0.4;
-  const score = exp * 0.55 + skill * 0.45;
-  const level = games < 3 ? 0 : Math.min(4, Math.floor(score * 5));
-  return { level, name: MASTERY[level]!, score: Math.round(score * 100) };
+export const MASTERY_REQUIREMENTS = [
+  { games: 0, winrate: 0 },
+  { games: 20, winrate: 0.5 },
+  { games: 50, winrate: 0.53 },
+  { games: 150, winrate: 0.55 },
+  { games: 300, winrate: 0.6 },
+] as const;
+export function mastery(games: number, wr: number) {
+  let level = 0;
+  for (const [i, requirement] of MASTERY_REQUIREMENTS.entries()) {
+    if (games >= requirement.games && wr >= requirement.winrate) level = i;
+  }
+  const next = MASTERY_REQUIREMENTS[level + 1];
+  const progress = next ? Math.min(1, Math.max(0, games) / next.games, Math.max(0, wr) / next.winrate) : 1;
+  return { level, name: MASTERY[level] ?? MASTERY[0], score: Math.round(progress * 100), next };
 }
 
 /** Playstyle archetype from radar axes (100 = average player). */

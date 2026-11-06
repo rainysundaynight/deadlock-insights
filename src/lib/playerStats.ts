@@ -8,6 +8,7 @@ export interface PlayerSummary {
 }
 
 export const won = (m: MatchHistoryEntry) => m.match_result === m.player_team;
+export const deviationFromAverage = (ratioPercent: number) => Math.round(ratioPercent - 100);
 
 export function summarize(h: MatchHistoryEntry[]): PlayerSummary {
   const n = h.length || 1;
