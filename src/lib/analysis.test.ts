@@ -16,6 +16,8 @@ describe("laneResults", () => {
     const p = { ...mk(0, 1, 5000), deaths: 1 };
     Object.assign(p.stats[0], { player_damage: 10000, player_damage_taken: 50000 });
     expect(playerTips(p, [p, { ...mk(1, 1, 5000), deaths: 10 }], 3094).some((t) => t.title === "Урон сопровождается частыми смертями")).toBe(false);
+    const frequent = { ...p, deaths: 20 };
+    expect(playerTips(frequent, [frequent, p], 3094).some((t) => t.title === "Урон сопровождается частыми смертями")).toBe(true);
   });
   it("picks the team with more souls at 9 minutes as lane winner", () => {
     const r = laneResults([mk(0, 1, 5000), mk(0, 1, 5000), mk(1, 1, 4000), mk(1, 1, 4000)]);
