@@ -262,6 +262,9 @@ function MatchList({ matches: all, accountId, sources }: { matches: MatchHistory
   const [hero, setHero] = useState<number | "all">("all");
   const [res, setRes] = useState<"all" | "win" | "loss">("all");
   const [mode, setMode] = useState<"all" | "ranked" | "normal" | "brawl">("all");
+  const [period, setPeriod] = useState<"all" | "7" | "30" | "90" | "custom">("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const heroes = useHeroMap();
   const gq = useQuery(globalAvgQuery);
   const ga = gq.data ? globalAverages(gq.data) : null;
@@ -278,6 +281,12 @@ function MatchList({ matches: all, accountId, sources }: { matches: MatchHistory
     if (mode === "brawl" && m.game_mode !== 4) return false;
     if (mode === "ranked" && (m.game_mode === 4 || m.match_mode !== 4)) return false;
     if (mode === "normal" && (m.game_mode === 4 || m.match_mode === 4)) return false;
+    if (period !== "all") {
+      if (period === "custom") {
+        if (dateFrom && m.start_time < new Date(`${dateFrom}T00:00:00`).getTime() / 1000) return false;
+        if (dateTo && m.start_time > new Date(`${dateTo}T23:59:59`).getTime() / 1000) return false;
+      } else if (m.start_time < Date.now() / 1000 - Number(period) * 86400) return false;
+    }
     return true;
   });
   const st = streaks(all);
@@ -315,6 +324,15 @@ function MatchList({ matches: all, accountId, sources }: { matches: MatchHistory
         {([["all", "Все"], ["win", "Победы"], ["loss", "Поражения"]] as const).map(([k, l]) => <button key={k} className={chip(res === k)} onClick={() => setRes(k)}>{l}</button>)}
         <span className="mx-1 h-5 w-px bg-border" />
         {([["all", "Все режимы"], ["ranked", "Рейтинговый"], ["normal", "Обычный"], ["brawl", "Street Brawl"]] as const).map(([k, l]) => <button key={k} className={chip(mode === k)} onClick={() => setMode(k)}>{l}</button>)}
+        <span className="mx-1 h-5 w-px bg-border" />
+        {([["all", "Всё время"], ["7", "7 дней"], ["30", "30 дней"], ["90", "90 дней"], ["custom", "Период"]] as const).map(([k, l]) => <button key={k} className={chip(period === k)} onClick={() => setPeriod(k)}>{l}</button>)}
+        {period === "custom" && (
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded-md border border-border bg-secondary px-2 py-1 text-xs text-foreground" />
+            —
+            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded-md border border-border bg-secondary px-2 py-1 text-xs text-foreground" />
+          </span>
+        )}
       </div>
       {!matches.length && <Empty>Нет матчей под фильтр</Empty>}
       {matches.slice(0, limit).map((m) => {
