@@ -1,4 +1,5 @@
 import { PlayerStyle } from "@/components/PlayerStyle";
+import { HeroProgressPanel } from "@/components/HeroProgressPanel";
 import { HeroFigure } from "@/components/HeroFigure";
 import { Button } from "@/components/ui/button";
 import { MatchHeroPose } from "@/components/MatchHeroPose";
@@ -84,6 +85,10 @@ function PlayerPage() {
   const pendingSrc = useRef<"steam" | "archive">("archive");
   const seen = useRef<Set<number> | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const [tab, setTab] = useState("overview");
+  useEffect(() => {
+    try { const t = sessionStorage.getItem(`dl-profile-tab-${id}`); setTab(t ?? "overview"); } catch { /* ignore */ }
+  }, [id]);
   const [lastForce, setLastForce] = useState(0);
   useEffect(() => {
     try { setSources(JSON.parse(localStorage.getItem(srcKey) ?? "{}")); } catch { /* ignore */ }
@@ -206,7 +211,7 @@ function PlayerPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="overview">
+      <Tabs value={tab} onValueChange={(v) => { setTab(v); try { sessionStorage.setItem(`dl-profile-tab-${id}`, v); } catch { /* ignore */ } }}>
         <TabsList>
           <TabsTrigger value="overview"><BookOpen className="h-4 w-4" />Обзор</TabsTrigger>
           <TabsTrigger value="matches"><Activity className="h-4 w-4" />Матчи <span className="font-mono text-[10px] opacity-60">{summary.n}</span></TabsTrigger>
@@ -223,6 +228,7 @@ function PlayerPage() {
           <MatchList matches={history.data ?? []} accountId={id} sources={sources} />
         </TabsContent>
         <TabsContent value="heroes" className="mt-4">
+          <HeroProgressPanel history={history.data ?? []} />
           <PlayerHeroes id={id} />
         </TabsContent>
         <TabsContent value="items" className="mt-4">
