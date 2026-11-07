@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { heroTrends } from "./trends";
+import { dailyEdition, heroTrends } from "./trends";
 
 describe("heroTrends", () => {
   it("compares last window against previous window", () => {
@@ -18,7 +18,6 @@ describe("heroTrends", () => {
   });
 });
 
-import { dailyEdition } from "./trends";
 describe("dailyEdition", () => {
   it("ignores today's partial bucket and picks yesterday's biggest riser", () => {
     const D = 86400;
