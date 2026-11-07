@@ -374,3 +374,74 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 .profile-game-ledger > div { min-width: 0; background: transparent; border-left: 2px solid var(--border); }
 .profile-game-ledger > div > p:not(:first-child) { margin-top: 12px; }
 .profile-game-summary { background: var(--gradient-card); }
+
+/* Game dossiers: artwork has its own space; only meaningful labels become plates. */
+.game-status-plate { border-color: color-mix(in oklab, currentColor 45%, transparent); border-left: 3px solid currentColor; padding: 3px 8px; }
+.profile-game-stat { border-top: 0; border-right: 0; border-bottom: 1px solid var(--border); background: var(--card); }
+.profile-game-stat > p { font-size: 26px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.game-rank-name { font-size: 11px; line-height: 1.4; border-bottom: 1px solid var(--border); padding-block: 3px; }
+.game-rank-division { transform: translateX(-50%) skew(-8deg); border-color: var(--border); }
+.dossier-heading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 30%); gap: 24px; align-items: center; }
+.dossier-heading-copy { min-width: 0; }
+.dossier-figure { position: relative; height: 340px; min-width: 0; isolation: isolate; }
+.dossier-figure::before { content: ""; position: absolute; inset: 12% 5% 0; z-index: -1; background: radial-gradient(ellipse at 50% 70%, color-mix(in oklab, var(--hero) 18%, transparent), transparent 70%); }
+.dossier-figure::after { content: ""; position: absolute; bottom: 0; left: 15%; right: 15%; height: 1px; background: var(--border); }
+.dossier-figure-art { position: absolute; inset: 0; height: 100%; width: 100%; object-fit: contain; object-position: center bottom; transition: opacity 240ms ease, transform 300ms ease; mask-image: linear-gradient(to top, transparent, black 12%, black 100%); }
+.dossier-figure-action { opacity: 0; transform: translateY(4px); }
+@media (hover: hover) { .dossier-figure:hover .dossier-figure-idle { opacity: 0; } .dossier-figure:hover .dossier-figure-action { opacity: 1; transform: none; } }
+@media (hover: none) { .dossier-figure-idle { opacity: 0; } .dossier-figure-action { opacity: 1; transform: none; } }
+.hero-dossier-heading { padding-block: 24px; border-block: 1px solid var(--border); }
+.hero-dossier-heading h1 { font-size: 56px; overflow-wrap: anywhere; line-height: 1.05; }
+.hero-dossier-heading .dossier-figure { height: 420px; }
+.hero-dossier-stats { margin-top: 28px; }
+.team-identity { --team-ink: var(--team-amber); display: inline-flex; align-items: center; gap: 12px; color: var(--team-ink); max-width: 100%; }
+.team-mother { --team-ink: var(--team-sapphire); }
+.team-insignia { display: grid; place-items: center; width: 40px; height: 44px; flex-shrink: 0; border: 1px solid color-mix(in oklab, var(--team-ink) 55%, transparent); }
+.team-king .team-insignia { clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%); background: color-mix(in oklab, var(--team-ink) 8%, transparent); }
+.team-mother .team-insignia { border-radius: 50%; width: 44px; border-style: double; border-width: 3px; }
+.team-insignia svg { width: 23px; height: 23px; }
+.team-wordmark { font-family: var(--font-masthead); font-size: 22px; font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; }
+.team-mother .team-wordmark { font-family: var(--font-display); font-style: italic; }
+.team-identity-compact { gap: 8px; }
+.team-identity-compact .team-insignia { width: 27px; height: 29px; }
+.team-identity-compact svg { width: 16px; height: 16px; }
+.team-identity-compact .team-wordmark { font-size: 17px; }
+.team-banner { --team-ink: var(--team-amber); border-bottom: 3px double color-mix(in oklab, var(--team-ink) 50%, transparent); padding-bottom: 16px; }
+.team-banner-mother { --team-ink: var(--team-sapphire); border-bottom: 1px solid color-mix(in oklab, var(--team-ink) 55%, transparent); }
+.team-banner-mother::after { content: ""; display: block; width: 40px; margin-top: 12px; border-top: 2px solid var(--team-ink); }
+.team-table { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.team-table table { min-width: 940px; }
+.team-table thead th:first-child, .team-table tbody td:first-child { position: sticky; left: 0; z-index: 2; background: var(--card); }
+.team-table thead th:first-child { z-index: 3; background: var(--secondary); }
+.team-table tbody tr:hover td:first-child { background: var(--secondary); }
+.match-history-row.panel-hover:hover { transform: none; box-shadow: none; }
+.gazette-tabs { scrollbar-width: none; }
+.gazette-tabs::-webkit-scrollbar { display: none; }
+@media (max-width: 767px) {
+  .dossier-heading { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .player-dossier { padding-block: 20px; }
+  .player-dossier .dossier-heading-copy { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 16px; }
+  .player-dossier .dossier-avatar img, .player-dossier .dossier-avatar { width: 64px; height: 64px; }
+  .player-dossier .dossier-avatar { padding: 0; }
+  .player-dossier h1 { font-size: 30px; line-height: 1.15; }
+  .player-dossier .dossier-classification { grid-column: 1 / -1; flex-direction: row; align-items: center; border-top: 0; padding-top: 4px; }
+  .player-dossier > .dossier-figure { height: 240px; width: 100%; }
+  .hero-dossier-heading h1 { font-size: 40px; }
+  .hero-dossier-heading .dossier-figure { height: 300px; grid-row: 2; }
+  .hero-dossier-heading .hero-dossier-stats { margin-top: 20px; gap: 8px; }
+  .profile-game-stat { padding: 12px 10px; min-height: 108px; }
+  .profile-game-stat > p { font-size: 22px; margin-top: 14px; }
+  .match-team-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 12px; }
+  .match-team-score { grid-column: 1 / -1; grid-row: 1; padding-block: 8px 16px; border-bottom: 1px solid var(--border); }
+  .match-team-grid .team-wordmark { font-size: 17px; }
+  .match-team-grid .team-insignia { width: 28px; height: 32px; }
+  .match-team-grid .team-identity { gap: 7px; }
+  .match-team-grid .team-insignia svg { width: 18px; height: 18px; }
+  .match-team-grid .team-lineup { display: grid; grid-template-columns: repeat(3, 44px); gap: 8px; }
+  .team-table thead th:first-child, .team-table tbody td:first-child { max-width: 160px; min-width: 160px; padding: 10px; }
+  .team-table tbody td:first-child > div { gap: 6px; }
+  .team-table tbody td:first-child a { max-width: 90px; }
+  .team-table tbody td:first-child .game-rank { display: none; }
+  .team-table tbody td:first-child p { max-width: 90px; font-size: 10px; }
+  .team-table tbody td:first-child .inline-flex.shrink-0 { width: 32px !important; height: 40px !important; border-radius: 0; }
+}
