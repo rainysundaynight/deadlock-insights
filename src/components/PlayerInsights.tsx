@@ -145,7 +145,7 @@ export function PlayerInsights({ history, badge, backTo }: { history: MatchHisto
         <SectionTitle>Пул героев (последние 100 матчей)</SectionTitle>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {s.heroes.slice(0, 9).map((h) => (
-            <div key={h.hero_id} className="flex items-center gap-3 rounded-lg bg-secondary/60 p-3">
+            <div key={h.hero_id} className="profile-hero-pool grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-lg bg-secondary/60 p-3">
               <HeroIcon heroId={h.hero_id} size={40} />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{heroes.get(h.hero_id)?.name}</p>

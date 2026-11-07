@@ -416,6 +416,7 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 .profile-hero-portrait::after { display: none; }
 .profile-hero-portrait .dossier-figure-art { object-position: center; mask-image: linear-gradient(to bottom, black 0%, black 52%, transparent 96%), linear-gradient(to right, transparent, black 14%, black 86%, transparent); mask-composite: intersect; }
 .profile-hero-portrait::before { background: none; }
+.profile-hero-pool > div:last-child > div { width: 40px; }
 .team-table { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .team-table table { min-width: 940px; }
 .team-table thead th:first-child, .team-table tbody td:first-child { position: sticky; left: 0; z-index: 2; background: var(--card); }
