@@ -21,5 +21,6 @@
 - Resolve profile match artwork through matchHeroPose with normal-portrait fallback; outcome poses are present without hover so touch users see the same result.
 - Stat's opt-in game variant scopes angled labels and accent rails to player summaries without changing shared statistics elsewhere.
 - Use HeroFigure for unframed dossier artwork and TeamIdentity for Gazette team insignia; stable art footprints and shared identity prevent overlapping mobile content and inconsistent team headers.
+- Profile artwork uses an intrinsic-ratio, resolution-capped image with edge masks on the image itself, not its larger container, so baked-in card crops fade without enlarging low-resolution art.
 - Steam sign-in is Steam OpenID 2.0 via `/api/public/steam/login` → `/api/public/steam/callback` (verifies with Steam, admin-creates a user with a synthetic email, returns a magic-link token_hash that `/auth/steam` exchanges with verifyOtp; popup+postMessage in iframes). Cloud has no native Steam provider.
 - User data (profiles, followed_players, goals) lives in Lovable Cloud with own-row RLS; friend match alerts are client-side polling of `/v1/matches/active` in `FriendNotifier` (only while the site is open).

@@ -417,7 +417,10 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 .player-dossier .dossier-heading-copy { position: relative; width: 60%; z-index: 2; }
 .player-dossier > .profile-hero-portrait { position: absolute; right: 0; top: 0; bottom: 0; width: 40%; height: auto; z-index: 1; }
 .profile-hero-portrait::after { display: none; }
-.profile-hero-portrait .dossier-figure-art { top: -12px; bottom: auto; height: calc(100% + 100px); object-fit: contain; object-position: center top; mask-image: linear-gradient(to right, transparent, black 12%, black 92%, transparent); }
+.profile-hero-portrait .dossier-figure-art { inset: auto auto 0 50%; width: 260px; max-width: 100%; height: auto; aspect-ratio: 280 / 380; object-fit: contain; object-position: center bottom; transform: translateX(-50%); mask-image: linear-gradient(to right, transparent, black 28%, black 76%, transparent), linear-gradient(to top, transparent, black 22%); mask-composite: intersect; }
+.profile-hero-portrait .dossier-figure-action { transform: translateX(-50%); }
+@media (hover: hover) { .profile-hero-portrait:hover .dossier-figure-action { transform: translateX(-50%); } }
+@media (hover: none) { .profile-hero-portrait .dossier-figure-action { transform: translateX(-50%); } }
 .profile-hero-portrait::before { background: none; }
 .profile-hero-pool > div:last-child > div { width: 40px; }
 .team-table { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
@@ -439,8 +442,8 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
   .player-dossier > .dossier-figure { height: 240px; width: 100%; }
   .player-dossier.dossier-heading { padding-bottom: 0; }
   .player-dossier .dossier-heading-copy { width: 100%; }
-  .player-dossier > .profile-hero-portrait { position: relative; top: auto; right: auto; bottom: auto; height: 290px; width: 100%; margin-top: 12px; }
-  .profile-hero-portrait .dossier-figure-art { top: 0; height: 380px; object-fit: contain; object-position: center top; }
+  .player-dossier > .profile-hero-portrait { position: relative; top: auto; right: auto; bottom: auto; height: 300px; width: 100%; margin-top: 12px; }
+  .profile-hero-portrait .dossier-figure-art { top: auto; bottom: 0; width: 220px; height: auto; object-position: center bottom; }
   .hero-dossier-heading h1 { font-size: 40px; }
   .hero-dossier-heading .dossier-figure { height: 300px; grid-row: 2; }
   .hero-dossier-heading .hero-dossier-stats { margin-top: 20px; gap: 8px; }
