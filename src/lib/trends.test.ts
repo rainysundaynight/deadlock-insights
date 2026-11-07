@@ -17,3 +17,15 @@ describe("heroTrends", () => {
     expect(heroTrends([{ hero_id: 1, bucket: 1, wins: 1, matches: 5 }, { hero_id: 1, bucket: 2, wins: 1, matches: 5 }], 1, 10)).toEqual([]);
   });
 });
+
+import { dailyEdition } from "./trends";
+describe("dailyEdition", () => {
+  it("ignores today's partial bucket and picks yesterday's biggest riser", () => {
+    const D = 86400;
+    const row = (hero_id: number, bucket: number, wins: number) => ({ hero_id, bucket, wins, matches: 1000, matches_per_bucket: 3000 });
+    const rows = [row(1, 0, 500), row(2, 0, 500), row(3, 0, 500), row(1, D, 600), row(2, D, 400), row(3, D, 500), row(2, 2 * D, 999)];
+    const e = dailyEdition(rows, 2 * D)!;
+    expect(e.riser.hero_id).toBe(1);
+    expect(e.faller.hero_id).toBe(2);
+  });
+});
