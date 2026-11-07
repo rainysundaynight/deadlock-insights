@@ -255,7 +255,7 @@ function DossierBackdrop({ history }: { history: MatchHistoryEntry[] }) {
   }, [history]);
   const img = top ? heroes.get(top)?.images.background_image_webp ?? heroes.get(top)?.images.icon_hero_card_webp : undefined;
   return (
-    <div aria-hidden className="pointer-events-none relative -mx-4 h-8 md:-mx-8">
+    <div aria-hidden className="pointer-events-none relative h-8">
       {img && (
         <motion.div initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} className="dossier-backdrop absolute inset-x-0 top-0 h-[320px] bg-cover bg-center" style={{ backgroundImage: `url(${img})` }} />
       )}
