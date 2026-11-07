@@ -410,9 +410,13 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 .team-identity-compact .team-insignia { width: 27px; height: 29px; }
 .team-identity-compact svg { width: 16px; height: 16px; }
 .team-identity-compact .team-wordmark { font-size: 17px; }
-.team-banner { --team-ink: var(--team-amber); border-bottom: 3px double color-mix(in oklab, var(--team-ink) 50%, transparent); padding-bottom: 16px; }
+.team-banner { --team-ink: var(--team-amber); position: relative; border-bottom: 3px double color-mix(in oklab, var(--team-ink) 50%, transparent); padding-bottom: 16px; }
 .team-banner-mother { --team-ink: var(--team-sapphire); border-bottom: 1px solid color-mix(in oklab, var(--team-ink) 55%, transparent); }
-.team-banner-mother::after { content: ""; display: block; width: 40px; margin-top: 12px; border-top: 2px solid var(--team-ink); }
+.team-banner-mother::after { content: ""; position: absolute; right: 20px; bottom: -1px; width: 40px; border-top: 2px solid var(--team-ink); pointer-events: none; }
+.profile-hero-portrait::after { display: none; }
+.profile-hero-portrait .dossier-figure-art { object-position: center; mask-image: linear-gradient(to bottom, black 0%, black 52%, transparent 96%), linear-gradient(to right, transparent, black 14%, black 86%, transparent); mask-composite: intersect; }
+.profile-hero-portrait::before { background: none; }
+.profile-hero-pool > div:last-child > div { width: 40px; }
 .team-table { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .team-table table { min-width: 940px; }
 .team-table thead th:first-child, .team-table tbody td:first-child { position: sticky; left: 0; z-index: 2; background: var(--card); }
