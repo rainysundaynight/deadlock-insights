@@ -262,6 +262,9 @@ function MatchList({ matches: all, accountId, sources }: { matches: MatchHistory
   const [hero, setHero] = useState<number | "all">("all");
   const [res, setRes] = useState<"all" | "win" | "loss">("all");
   const [mode, setMode] = useState<"all" | "ranked" | "normal" | "brawl">("all");
+  const [period, setPeriod] = useState<"all" | "7" | "30" | "90" | "custom">("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const heroes = useHeroMap();
   const gq = useQuery(globalAvgQuery);
   const ga = gq.data ? globalAverages(gq.data) : null;
