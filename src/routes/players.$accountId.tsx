@@ -172,7 +172,6 @@ function PlayerPage() {
           </div>
         </div>
         </div>
-        </div>
         <HeroFigure hero={featuredHero} className="profile-hero-portrait" />
       </div>
 
