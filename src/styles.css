@@ -445,7 +445,8 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
   .team-table thead th:first-child, .team-table tbody td:first-child { max-width: 160px; min-width: 160px; padding: 10px; }
   .team-table tbody td:first-child > div { gap: 6px; }
   .team-table tbody td:first-child a { max-width: 90px; }
-  .team-table tbody td:first-child .game-rank { display: none; }
+  .team-table tbody td:first-child > div { flex-wrap: wrap; }
+  .team-table tbody td:first-child .game-rank { margin-left: 38px; }
   .team-table tbody td:first-child p { max-width: 90px; font-size: 10px; }
   .team-table tbody td:first-child .inline-flex.shrink-0 { width: 32px !important; height: 40px !important; border-radius: 0; }
 }

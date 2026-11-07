@@ -156,7 +156,7 @@ function HeroPage() {
         {builds.isLoading ? <Loading /> : !builds.data?.length ? <Empty>Билдов нет</Empty> : (
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
             {builds.data.map((b) => (
-              <div key={b.hero_build.hero_build_id} className="panel p-4">
+              <div key={b.hero_build.hero_build_id} className="panel min-w-0 p-4">
                 <p className="truncate font-display text-lg">{b.hero_build.name}</p>
                 <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{b.hero_build.description || "Без описания"}</p>
                 <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
