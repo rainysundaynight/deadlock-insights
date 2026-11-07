@@ -23,6 +23,8 @@ import { MatchActions, SpectateButton } from "@/components/ShareCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, Coins, Map, Swords, Crosshair, Package, Lightbulb, UserRound, Newspaper } from "lucide-react";
 import { MatchStory } from "@/components/MatchStory";
+import { TeamIdentity } from "@/components/TeamIdentity";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/matches/$matchId")({
   validateSearch: (s: Record<string, unknown>): { from?: string | undefined } => ({
@@ -175,19 +177,19 @@ function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }:
   const Th = ({ k, children, title }: { k?: SortKey; children: React.ReactNode; title?: string }) => (
     <th className="p-3" title={title}>
       {k ? (
-        <button onClick={() => setSort(k)} className={cn("uppercase tracking-wider hover:text-foreground", sort === k && "text-primary")}>
+        <Button variant="ghost" size="sm" onClick={() => setSort(k)} className={cn("h-auto p-0 text-xs uppercase hover:text-foreground", sort === k && "text-primary")}>
           {children}{sort === k ? " ↓" : ""}
-        </button>
+        </Button>
       ) : children}
     </th>
   );
   return (
     <section className={cn("panel relative overflow-hidden", team === 1 && "mt-5")}>
       <span aria-hidden className={cn("absolute inset-y-0 left-0 w-1", team === 0 ? "bg-amber-team" : "bg-sapphire-team")} />
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border px-5 py-4">
+      <div className={cn("team-banner flex flex-wrap items-end justify-between gap-4 px-5 py-4", team === 1 && "team-banner-mother")}>
         <div>
-          <p className={cn("font-mono text-[10px] uppercase tracking-[0.3em]", won ? "text-win" : "text-muted-foreground")}>{won ? "◆ Победа" : "Поражение"}</p>
-          <h2 className={cn("font-display text-2xl font-black uppercase tracking-wide", team === 0 ? "text-amber-team" : "text-sapphire-team")}>{TEAMS[team]}</h2>
+          <p className={cn("game-status-plate mb-2", won ? "text-win" : "text-loss")}>{won ? "Победа" : "Поражение"}</p>
+          <h2><TeamIdentity team={team} /></h2>
         </div>
         <div className="flex gap-6 text-right">
           {[["Убийства", String(rawPlayers.reduce((s, p) => s + p.kills, 0))], ["Души", fmtK(teamNw)], ["Урон", fmtK(teamDmg)]].map(([l, v]) => (
@@ -195,7 +197,7 @@ function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }:
           ))}
         </div>
       </div>
-      <div className="overflow-x-auto">
+      <div className="team-table overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase tracking-wider text-muted-foreground">
             <tr className="border-b border-border">

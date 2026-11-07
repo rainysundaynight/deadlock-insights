@@ -10,13 +10,14 @@ import { fmtAgo, fmtInt, fmtK, kda, stripHtml, winrate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { BuildEntry } from "./builds";
 import { HeroRankWinrates } from "@/components/RankMeta";
+import { HeroFigure } from "@/components/HeroFigure";
 
 export const Route = createFileRoute("/heroes/$heroId")({
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
-      { title: "Герой Deadlock — статистика, контрпики, предметы" },
+      { title: `Герой ${params.heroId} — The Deadlocked Gazette` },
       { name: "description", content: "Подробная статистика героя Deadlock: способности, контрпики, синергии, лучшие предметы и билды." },
-      { property: "og:title", content: "Герой Deadlock — статистика и билды" },
+      { property: "og:title", content: `Герой ${params.heroId} — The Deadlocked Gazette` },
       { property: "og:description", content: "Способности, контрпики, предметы и билды героя Deadlock." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -79,33 +80,27 @@ function HeroPage() {
 
   return (
     <div className="space-y-12">
-      <section className="relative -mx-4 -mt-10 overflow-hidden px-4 pb-10 pt-16">
-        {hero.images.background_image_webp && (
-          <img src={hero.images.background_image_webp} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
-        <div className="relative flex flex-col gap-8 md:flex-row md:items-end">
-          <img src={hero.images.icon_hero_card_webp ?? hero.images.icon_hero_card} alt={hero.name} className="w-40 rounded-md border border-primary/40 shadow-2xl" />
-          <div className="max-w-2xl">
-            <p className="text-xs uppercase tracking-[0.3em] text-primary">{hero.hero_type ?? "Герой"}</p>
-            <h1 className="font-display text-6xl font-bold uppercase">{hero.name}</h1>
+      <section className="hero-dossier-heading dossier-heading">
+          <div className="dossier-heading-copy">
+            <p className="game-status-plate mb-4 text-primary">{hero.hero_type ?? "Герой"} / Досье № {id}</p>
+            <h1 className="font-masthead font-bold uppercase">{hero.name}</h1>
+            <div className="mt-4 flex flex-wrap gap-2">{(hero.tags ?? []).slice(0, 3).map((tag) => <span key={tag} className="game-status-plate text-primary">{tag}</span>)}</div>
             {hero.description?.role && <p className="mt-2 text-lg text-foreground/90">{stripHtml(hero.description.role)}</p>}
             {hero.description?.playstyle && <p className="mt-2 text-sm text-muted-foreground">{stripHtml(hero.description.playstyle)}</p>}
             <Link to="/leaderboard" search={{ hero: id }} className="mt-4 inline-block text-sm text-primary hover:underline">
               Лучшие игроки на {hero.name} →
             </Link>
-          </div>
-        </div>
-      </section>
-
       {me && (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Stat label="Винрейт (30 дн)" value={`${(winrate(me.wins, me.matches) * 100).toFixed(1)}%`} tone={me.wins / me.matches >= 0.5 ? "win" : "loss"} />
-          <Stat label="Матчей" value={fmtInt(me.matches)} />
-          <Stat label="KDA" value={kda(me.total_kills, me.total_deaths, me.total_assists)} tone="brass" />
-          <Stat label="Урон за матч" value={fmtK(me.total_player_damage / me.matches)} />
+        <div className="hero-dossier-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <Stat variant="game" label="Винрейт · 30 дн" value={`${(winrate(me.wins, me.matches) * 100).toFixed(1)}%`} tone={me.wins / me.matches >= 0.5 ? "win" : "loss"} />
+          <Stat variant="game" label="Матчей" value={fmtInt(me.matches)} />
+          <Stat variant="game" label="KDA" value={kda(me.total_kills, me.total_deaths, me.total_assists)} tone="brass" />
+          <Stat variant="game" label="Урон / матч" value={fmtK(me.total_player_damage / me.matches)} />
         </div>
       )}
+          </div>
+          <HeroFigure hero={hero} />
+      </section>
 
       {signatures.length > 0 && (
         <section>
