@@ -346,8 +346,17 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
   width: 80px;
   height: 110px;
   overflow: hidden;
-  background: radial-gradient(ellipse at 50% 75%, color-mix(in oklab, var(--outcome) 20%, transparent), transparent 75%);
-  border-bottom: 1px solid color-mix(in oklab, var(--outcome) 55%, transparent);
+  border-radius: 6px;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 30%, color-mix(in oklab, var(--outcome) 55%, transparent), transparent 80%),
+    linear-gradient(180deg, color-mix(in oklab, var(--outcome) 38%, var(--background)), color-mix(in oklab, var(--outcome) 12%, var(--background)) 70%, var(--background));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--outcome) 35%, transparent), inset 0 -24px 24px -12px var(--background);
+}
+.match-outcome-level {
+  position: absolute; right: 5px; bottom: 2px; z-index: 1;
+  font-family: var(--font-display); font-size: 22px; font-weight: 800; line-height: 1;
+  color: var(--foreground); font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 0 var(--background), 0 0 8px var(--background), 0 0 2px var(--background);
 }
 .match-outcome-loss { --outcome: var(--loss); }
 .match-outcome-art {

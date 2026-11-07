@@ -46,7 +46,7 @@ export function HeroProgressPanel({ history }: { history: MatchHistoryEntry[] })
           return (
             <div key={r.heroId} className="panel p-4">
               <div className="flex items-center gap-3">
-                <HeroIcon hero={hero} className="h-10 w-10" />
+                <HeroIcon heroId={r.heroId} size={40} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-display">{hero?.name ?? `#${r.heroId}`}</p>
                   <p className="text-[11px] text-muted-foreground">{r.total} игр</p>
