@@ -186,7 +186,7 @@ function TeamTable({ team, won, players: rawPlayers, names, winner, durationS }:
   return (
     <section className={cn("panel relative overflow-hidden", team === 1 && "mt-5")}>
       <span aria-hidden className={cn("absolute inset-y-0 left-0 w-1", team === 0 ? "bg-amber-team" : "bg-sapphire-team")} />
-      <div className={cn("team-banner grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 px-5 py-4", team === 1 && "team-banner-mother")}>
+      <div className={cn("team-banner grid grid-cols-[minmax(0,1fr)] items-end gap-4 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_auto]", team === 1 && "team-banner-mother")}>
         <div className="min-w-0">
           <p className={cn("game-status-plate mb-2", won ? "text-win" : "text-loss")}>{won ? "Победа" : "Поражение"}</p>
           <h2><TeamIdentity team={team} /></h2>
