@@ -224,7 +224,7 @@ function PlayerPage() {
         <TabsContent value="overview" className="mt-4">
           <PlayerInsights history={history.data ?? []} badge={rank.data?.badge} backTo={`/players/${id}`} />
           <PlayerStyle history={history.data ?? []} accountId={id} />
-          <RankHistory history={history.data ?? []} />
+          <RankHistory history={history.data ?? []} backTo={`/players/${id}`} />
         </TabsContent>
         <TabsContent value="matches" className="mt-4">
           <MatchList matches={history.data ?? []} accountId={id} sources={sources} />
