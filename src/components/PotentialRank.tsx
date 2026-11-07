@@ -20,7 +20,8 @@ export function PotentialRank({ accountId, history, compact = false }: { account
       const ranks = await api<{ badge: number | null }[]>("/v1/players/rank", { account_ids: ids.join(",") });
       const badges = ranks.map((r) => r.badge ?? 0);
       const wr = recent.filter((m) => m.match_result === m.player_team).length / recent.length;
-      return { badge: potentialBadge(badges, wr), n: badges.filter((b) => b > 10).length };
+      const shift = Math.max(-3, Math.min(3, Math.round((wr - 0.5) / 0.05)));
+      return { badge: potentialBadge(badges, wr), n: badges.filter((b) => b > 10).length, matches: metas.length, wr, shift };
     },
   });
   if (compact) {
@@ -31,8 +32,11 @@ export function PotentialRank({ accountId, history, compact = false }: { account
           <TooltipTrigger asChild>
             <span className="cursor-help opacity-50 transition-opacity hover:opacity-90" aria-label="Потенциальный ранг"><RankBadge badge={q.data.badge} size={44} showName={false} /></span>
           </TooltipTrigger>
-          <TooltipContent className="max-w-60 text-xs">
-            Потенциальный ранг. Рассчитан по рангам {q.data.n} соперников и союзников из последних {recent.length} игр и винрейту.
+          <TooltipContent className="max-w-72 text-xs">
+            <p className="font-semibold">Потенциальный ранг (оценка)</p>
+            <p className="mt-1">Матчей учтено: {q.data.matches}. Ранговых союзников и соперников: {q.data.n}.</p>
+            <p className="mt-1">Основа — медианный ранг этих игроков. Винрейт {Math.round(q.data.wr * 100)}%: каждые 5% выше или ниже 50% сдвигают оценку на одну ступень (не больше ±3).{" "}
+              {q.data.shift === 0 ? "Сейчас сдвига нет." : `Сейчас: ${q.data.shift > 0 ? "+" : "−"}${Math.abs(q.data.shift)} ${Math.abs(q.data.shift) === 1 ? "ступень" : "ступени"}.`}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
