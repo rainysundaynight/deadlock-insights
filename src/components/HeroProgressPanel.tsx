@@ -16,7 +16,7 @@ function Spark({ data }: { data: number[] }) {
   );
 }
 
-function Delta({ now, prev, pct, digits = 1 }: { now: number; prev?: number; pct?: boolean; digits?: number }) {
+function Delta({ now, prev, pct, digits = 1 }: { now: number; prev?: number | undefined; pct?: boolean; digits?: number }) {
   const fmt = (v: number) => (pct ? `${(v * 100).toFixed(0)}%` : v.toFixed(digits));
   if (prev === undefined) return <span className="tabular">{fmt(now)}</span>;
   const d = now - prev;
