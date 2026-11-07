@@ -1,4 +1,5 @@
 import { PlayerStyle } from "@/components/PlayerStyle";
+import { MatchHeroPose } from "@/components/MatchHeroPose";
 import { GameItem } from "@/components/GameItem";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -337,23 +338,22 @@ function MatchList({ matches: all, accountId, sources }: { matches: MatchHistory
             to="/matches/$matchId"
             params={{ matchId: String(m.match_id) }}
             search={{ from: `/players/${accountId}` }}
-            className="panel panel-hover grid grid-cols-[4px_auto_1fr_auto] items-center gap-4 overflow-hidden p-3 pl-0 lg:grid-cols-[4px_auto_minmax(140px,1fr)_auto_auto_auto_auto_auto]"
+            className="match-history-row panel panel-hover grid grid-cols-[4px_auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1 overflow-hidden p-3 pl-0 lg:grid-cols-[4px_auto_minmax(140px,1fr)_auto_auto_auto_auto_auto]"
           >
-            <span className={cn("h-full", won ? "bg-win" : "bg-loss")} />
-            <div className="relative">
-              <HeroIcon heroId={m.hero_id} size={48} />
-              <span className="absolute -bottom-1 -right-1 rounded-sm border border-border bg-background px-1 font-mono text-[9px]">{m.hero_level}</span>
-            </div>
+            <span className={cn("row-span-2 h-full lg:row-span-1", won ? "bg-win" : "bg-loss")} />
+            <div className="row-span-2 lg:row-span-1"><MatchHeroPose hero={heroes.get(m.hero_id)} won={won} level={m.hero_level} /></div>
             <div className="min-w-0">
               <p className="flex flex-wrap items-center gap-1.5 font-display font-semibold">
                 {heroes.get(m.hero_id)?.name}
-                {badges.map((b) => <span key={b} className="rounded-sm border border-primary/40 bg-primary/10 px-1.5 font-mono text-[9px] font-semibold uppercase text-primary">{b}</span>)}
+                {badges.map((b) => <span key={b} className="game-status-plate text-primary">{b}</span>)}
               </p>
-              <p className={cn("font-mono text-[10px] uppercase", won ? "text-win" : "text-loss")}>
-                {won ? "Победа" : "Поражение"} · <span className="text-muted-foreground">{m.game_mode === 4 ? "Street Brawl" : m.match_mode === 4 ? "Рейтинговый" : "Обычный"} · {fmtAgo(m.start_time)} · {fmtDuration(m.match_duration_s)}</span><SourceTag src={sources[m.match_id]} />
-              </p>
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                <span className={cn("game-status-plate", won ? "text-win" : "text-loss")}>{won ? "Победа" : "Поражение"}</span>
+                <span className="game-status-plate text-muted-foreground">{m.game_mode === 4 ? "Street Brawl" : m.match_mode === 4 ? "Рейтинговый" : "Обычный"}</span>
+              </div>
+              <p className="mt-1.5 font-mono text-[10px] text-muted-foreground">{fmtAgo(m.start_time)} · {fmtDuration(m.match_duration_s)}<SourceTag src={sources[m.match_id]} /></p>
             </div>
-            <div className="tabular text-right">
+            <div className="tabular col-start-3 text-left lg:col-start-auto lg:text-right">
               <p className="font-display text-lg font-bold">
                 {m.player_kills}<span className="text-muted-foreground">/</span><span className="text-loss">{m.player_deaths}</span><span className="text-muted-foreground">/</span>{m.player_assists}
               </p>
