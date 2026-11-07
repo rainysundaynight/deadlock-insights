@@ -13,7 +13,7 @@ describe("heroProgress", () => {
   });
   it("marks improvement when recent games win more than older ones", () => {
     const h = [...Array.from({ length: 10 }, (_, i) => m(i, false)), ...Array.from({ length: 10 }, (_, i) => m(100 + i, true))];
-    const [p] = heroProgress(h);
+    const p = heroProgress(h)[0]!;
     expect(p.recent.winrate).toBe(1);
     expect(p.previous?.winrate).toBe(0);
     expect(p.trend).toBe("up");
