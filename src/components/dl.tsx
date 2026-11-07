@@ -79,13 +79,13 @@ export function RankBadge({ badge, size = 40, showName = true, potential = false
   const roman = ROMAN[b.subrank] ?? "";
   const title = `${potential ? "Потенциальный ранг: ~" : ""}${rank?.name ?? `Tier ${b.tier}`} ${roman}`;
   return (
-    <span className={cn("inline-flex items-center gap-2", potential && "opacity-50")} title={title}>
+    <span className={cn("game-rank inline-flex items-center gap-2", potential && "opacity-70")} title={title}>
       <span className="relative inline-block shrink-0" style={{ width: size, height: size }}>
         {src && <img src={src} alt={rank?.name} style={{ width: size, height: size }} className={cn("object-contain", potential && "grayscale-[40%]")} />}
         {roman && (
           <span
-            className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-sm border bg-background/90 px-1 font-display font-extrabold leading-none tracking-wider shadow"
-            style={{ fontSize: Math.max(8, Math.round(size * 0.26)), color: rank?.color, borderColor: rank?.color ? `${rank.color}80` : undefined, paddingTop: 1, paddingBottom: 1 }}
+            className="game-rank-division absolute -bottom-1 left-1/2 -translate-x-1/2 border bg-background/90 px-1 font-mono font-extrabold leading-none text-primary"
+            style={{ fontSize: Math.max(8, Math.round(size * 0.26)), paddingTop: 1, paddingBottom: 1 }}
           >
             {roman}
           </span>
@@ -93,7 +93,7 @@ export function RankBadge({ badge, size = 40, showName = true, potential = false
         {potential && <span className="absolute -right-1 -top-1 font-display text-[10px] font-bold text-muted-foreground">~</span>}
       </span>
       {showName && (
-        <span className="font-display uppercase tracking-wide" style={{ color: rank?.color }}>
+        <span className="game-rank-name font-mono uppercase text-foreground">
           {potential && "~"}{rank?.name ?? `Tier ${b.tier}`} {roman}
         </span>
       )}

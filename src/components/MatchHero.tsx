@@ -11,6 +11,7 @@ import { fmtDate, fmtDuration, fmtK, GAME_MODES, MATCH_MODES } from "@/lib/forma
 import { gradeTone, gradeVsGlobal } from "@/lib/grade";
 import { globalAverages } from "@/lib/playerStats";
 import { cn } from "@/lib/utils";
+import { TeamIdentity } from "@/components/TeamIdentity";
 
 interface P { account_id: number; team: number; hero_id: number; kills: number; deaths: number; assists: number; net_worth: number; last_hits: number; stats: StatSnap[] }
 interface Props {
@@ -68,22 +69,22 @@ export function MatchHero({ m, players, names }: Props) {
         <div className="flex flex-wrap items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-widest">
           <span className="text-primary">Итоги матча / Дело № {m.match_id}</span>
           <span className="flex flex-wrap gap-2 text-muted-foreground">
-            <span className="border border-border px-2 py-0.5">{fmtDate(m.start_time)}</span>
-            <span className="border border-border px-2 py-0.5">{fmtDuration(m.duration_s)}</span>
-            <span className="border border-primary/50 px-2 py-0.5 text-primary">{GAME_MODES[m.game_mode] ?? m.game_mode} · {MATCH_MODES[m.match_mode] ?? m.match_mode}</span>
+            <span>{fmtDate(m.start_time)}</span>
+            <span>· {fmtDuration(m.duration_s)}</span>
+            <span className="game-status-plate text-primary">{GAME_MODES[m.game_mode] ?? m.game_mode} · {MATCH_MODES[m.match_mode] ?? m.match_mode}</span>
           </span>
         </div>
 
-        <div className="grid items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
+        <div className="match-team-grid grid items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
           {[0, 1].map((t) => (
-            <motion.div key={t} initial={{ opacity: 0, x: t ? 30 : -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className={cn("min-w-0", t === 1 && "md:order-3 md:text-right")}>
-              <p className={cn("font-display text-2xl font-black uppercase tracking-wide sm:text-3xl", TONE[t])}>{NAMES[t]}</p>
-              <div className={cn("mt-1 flex items-center gap-2 font-mono text-[10px] uppercase", t === 1 && "md:justify-end")}>
-                <span className={m.winning_team === t ? "text-win" : "text-muted-foreground"}>{m.winning_team === t ? "◆ Победа" : "Поражение"}</span>
+            <motion.div key={t} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }} className={cn("team-banner min-w-0", t === 1 && "team-banner-mother md:order-3 md:text-right")}>
+              <h2><TeamIdentity team={t} /></h2>
+              <div className={cn("mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase", t === 1 && "md:justify-end")}>
+                <span className={cn("game-status-plate", m.winning_team === t ? "text-win" : "text-loss")}>{m.winning_team === t ? "Победа" : "Поражение"}</span>
                 <span className="text-muted-foreground">· {fmtK(sum(t, (p) => p.net_worth))} душ</span>
-                {(t === 0 ? m.average_badge_team0 : m.average_badge_team1) ? <RankBadge badge={(t === 0 ? m.average_badge_team0 : m.average_badge_team1)!} size={18} /> : null}
+                {(t === 0 ? m.average_badge_team0 : m.average_badge_team1) ? <RankBadge badge={t === 0 ? m.average_badge_team0 : m.average_badge_team1} size={18} /> : null}
               </div>
-              <div className={cn("mt-3 flex flex-wrap gap-1.5", t === 1 && "md:justify-end")}>
+              <div className={cn("team-lineup mt-4 flex flex-wrap gap-1.5", t === 1 && "md:justify-end")}>
                 {team(t).map((p) => {
                   const g = graded.find((x) => x.p === p)?.g;
                   const isMvp = mvp?.p === p;
@@ -98,13 +99,13 @@ export function MatchHero({ m, players, names }: Props) {
               </div>
             </motion.div>
           ))}
-          <div className="text-center md:order-2">
+          <div className="match-team-score text-center md:order-2">
             <div className="flex items-baseline justify-center gap-4 font-display font-black">
               <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={cn("text-6xl sm:text-7xl", TONE[0])}>{sum(0, (p) => p.kills)}</motion.span>
               <span className="text-sm text-muted-foreground">VS</span>
               <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={cn("text-6xl sm:text-7xl", TONE[1])}>{sum(1, (p) => p.kills)}</motion.span>
             </div>
-            <p className={cn("mt-2 inline-block border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.3em]", m.winning_team === 0 ? "border-amber-team/60 text-amber-team" : "border-sapphire-team/60 text-sapphire-team")}>Победа {NAMES[m.winning_team]}</p>
+            <p className={cn("game-status-plate mt-2", m.winning_team === 0 ? "text-amber-team" : "text-sapphire-team")}>Победа {NAMES[m.winning_team]}</p>
           </div>
         </div>
 
@@ -122,7 +123,7 @@ export function MatchHero({ m, players, names }: Props) {
                 <span key={i} title={`${fmtDuration(e.t)} · ${e.kind === "boss" ? "Мид-босс" : "Строение"} · ${NAMES[e.by]}`} className={cn("absolute top-1 -translate-x-1/2", e.kind === "boss" ? "h-3 w-3 rotate-45" : "h-2.5 w-1", BG[e.by] ?? "bg-muted")} style={{ left: `${(e.t / m.duration_s) * 100}%` }} />
               ))}
             </div>
-            <div className="flex gap-4 font-mono text-[9px] uppercase text-muted-foreground"><span>▮ строение</span><span>◆ мид-босс</span><span className="ml-auto">вверх — Hidden King, вниз — Archmother</span></div>
+            <div className="flex flex-wrap gap-3 font-mono text-[9px] uppercase text-muted-foreground"><span>▮ строение</span><span>◆ мид-босс</span><span className="ml-auto">вверх — Hidden King, вниз — Archmother</span></div>
           </div>
           <div className="panel bg-card/80 p-4 backdrop-blur-sm">
             <p className="mb-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">◆ Команды в цифрах</p>

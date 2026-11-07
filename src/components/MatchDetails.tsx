@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { HeroIcon, useHeroMap } from "@/components/dl";
 import { fmtK } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { TeamIdentity } from "@/components/TeamIdentity";
 
 type K = "gold_lane_creep"|"gold_lane_creep_orbs"|"gold_neutral_creep"|"gold_neutral_creep_orbs"|"gold_player"|"gold_player_orbs"|"gold_boss"|"gold_boss_orb"|"gold_treasure"|"shots_hit"|"shots_missed"|"net_worth"|"hero_bullets_hit"|"hero_bullets_hit_crit"|"player_damage_taken"|"player_healing"|"gold_death_loss"|"gold_denied"|"boss_damage"|"weapon_power"|"tech_power";
 type Snap = Partial<Record<K, number>>;
@@ -75,13 +76,13 @@ export function MatchDetails({ players, names, durationS }: { players: P[]; name
           return (
             <section key={t} className="panel relative overflow-hidden">
               <span aria-hidden className={cn("absolute inset-y-0 left-0 w-1", t === 0 ? "bg-amber-team" : "bg-sapphire-team")} />
-              <div className="border-b border-border px-5 py-4">
-                <div className="flex items-baseline justify-between">
-                  <h3 className={cn("font-display text-xl font-black uppercase", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{t === 0 ? "Hidden King" : "Archmother"}</h3>
+              <div className={cn("team-banner px-5 py-4", t === 1 && "team-banner-mother")}>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h3><TeamIdentity team={t} compact /></h3>
                   <span className="tabular font-mono text-xs text-muted-foreground">{fmtK(tTot)} душ из источников</span>
                 </div>
                 <div className="mt-3 flex h-2.5 overflow-hidden bg-muted">
-                  {tSrc.map((v, i) => <motion.div key={i} initial={{ width: 0 }} animate={{ width: `${(v / tTot) * 100}%` }} transition={{ duration: 0.7, delay: i * 0.05 }} title={`${SOURCES[i]?.l}: ${fmtK(v)}`} style={{ background: SOURCES[i]?.c }} />)}
+                  {tSrc.map((v, i) => <div key={i} title={`${SOURCES[i]?.l}: ${fmtK(v)}`} style={{ width: `${(v / tTot) * 100}%`, background: SOURCES[i]?.c }} />)}
                 </div>
               </div>
               <div className="divide-y divide-border/60">

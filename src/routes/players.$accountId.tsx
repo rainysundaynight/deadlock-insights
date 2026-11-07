@@ -1,4 +1,6 @@
 import { PlayerStyle } from "@/components/PlayerStyle";
+import { HeroFigure } from "@/components/HeroFigure";
+import { Button } from "@/components/ui/button";
 import { MatchHeroPose } from "@/components/MatchHeroPose";
 import { GameItem } from "@/components/GameItem";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -119,15 +121,23 @@ function PlayerPage() {
     const a = h.reduce((s, m) => s + m.player_assists, 0);
     return { n: h.length, wins, k, d, a };
   }, [history.data]);
+  const heroes = useHeroMap();
+  const featuredHero = useMemo(() => {
+    const counts = new Map<number, number>();
+    (history.data ?? []).slice(0, 30).forEach((m) => counts.set(m.hero_id, (counts.get(m.hero_id) ?? 0) + 1));
+    const heroId = [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
+    return heroId === undefined ? undefined : heroes.get(heroId);
+  }, [history.data, heroes]);
 
   return (
     <div className="space-y-8">
       <DossierBackdrop history={history.data ?? []} />
-      <div className="player-dossier relative -mt-8 grid gap-6 border-y border-primary/40 py-7 md:grid-cols-[auto_1fr_auto] md:items-center">
+      <div className="player-dossier dossier-heading relative -mt-8 border-y border-primary/40 py-7">
+        <div className="dossier-heading-copy grid gap-6 md:grid-cols-[auto_minmax(0,1fr)] md:items-center">
         {profile?.avatarfull ? (
-          <div className="gazette-frame w-fit p-2"><img src={profile.avatarfull} alt="" className="h-24 w-24 object-cover" /></div>
+          <div className="dossier-avatar gazette-frame w-fit p-2"><img src={profile.avatarfull} alt="" className="h-24 w-24 object-cover" /></div>
         ) : (
-          <div className="h-24 w-24 rounded-md bg-muted" />
+          <div className="dossier-avatar h-24 w-24 bg-muted" />
         )}
         <div className="flex-1">
           <p className="game-status-plate mb-3 text-primary">Архив игроков / Досье № {id}</p>
@@ -139,7 +149,7 @@ function PlayerPage() {
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <FollowButton accountId={id} name={profile?.personaname} />
-            <button onClick={forceRefresh} disabled={refetching} title="Запросить свежую историю напрямую из Steam" className="inline-flex items-center gap-1.5 hover:text-primary disabled:opacity-50"><RefreshCw className={cn("h-3.5 w-3.5", refetching && "animate-spin")} />{refetching ? "Обновляем…" : "Обновить матчи"}</button>
+            <Button variant="ghost" size="sm" onClick={forceRefresh} disabled={refetching} title="Запросить свежую историю напрямую из Steam" className="h-auto p-0 text-muted-foreground hover:text-primary"><RefreshCw className={cn("h-3.5 w-3.5", refetching && "animate-spin")} />{refetching ? "Обновляем…" : "Обновить матчи"}</Button>
             <Link to="/compare" search={{ a: id }} className="inline-flex items-center gap-1.5 hover:text-primary"><GitCompare className="h-3.5 w-3.5" />Сравнить</Link>
             {profile?.profileurl && (
               <a href={profile.profileurl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
@@ -148,9 +158,11 @@ function PlayerPage() {
             )}
           </div>
         </div>
-        <div className="flex flex-col items-start gap-3 border-t border-border pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0"><p className="game-status-plate text-primary">Классификация</p>
+        <div className="dossier-classification flex flex-col items-start gap-3 border-t border-border pt-4 md:col-span-2 md:flex-row md:items-center"><p className="game-status-plate text-primary">Классификация</p>
           {rank.data?.badge ? <RankBadge badge={rank.data.badge} size={64} /> : rank.isLoading ? null : <PotentialRank accountId={id} history={history.data ?? []} />}
         </div>
+        </div>
+        <HeroFigure hero={featuredHero} />
       </div>
 
       {history.isLoading ? (
@@ -243,7 +255,7 @@ function DossierBackdrop({ history }: { history: MatchHistoryEntry[] }) {
   }, [history]);
   const img = top ? heroes.get(top)?.images.background_image_webp ?? heroes.get(top)?.images.icon_hero_card_webp : undefined;
   return (
-    <div aria-hidden className="pointer-events-none relative -mx-4 h-8 md:-mx-8">
+    <div aria-hidden className="pointer-events-none relative h-8">
       {img && (
         <motion.div initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }} className="dossier-backdrop absolute inset-x-0 top-0 h-[320px] bg-cover bg-center" style={{ backgroundImage: `url(${img})` }} />
       )}
