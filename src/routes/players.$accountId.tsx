@@ -24,11 +24,11 @@ import { globalAvgQuery } from "@/components/PlayerInsights";
 import { globalAverages } from "@/lib/playerStats";
 
 export const Route = createFileRoute("/players/$accountId")({
-  head: ({ params }) => ({
+  head: () => ({
     meta: [
-      { title: `Игрок ${params.accountId} — Deadlock Stats` },
+      { title: "Профиль игрока — Deadlock Stats" },
       { name: "description", content: "Профиль игрока Deadlock: ранг, история матчей, герои, тиммейты." },
-      { property: "og:title", content: `Игрок ${params.accountId} — Deadlock Stats` },
+      { property: "og:title", content: "Профиль игрока — Deadlock Stats" },
       { property: "og:description", content: "Ранг, матчи и статистика героев игрока Deadlock." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -45,6 +45,9 @@ function PlayerPage() {
   const id = Number(accountId);
   const profiles = useSteamProfiles([id]);
   const profile = profiles.data?.get(id);
+  useEffect(() => {
+    document.title = `${profile?.personaname || "Профиль игрока"} — Deadlock Stats`;
+  }, [profile?.personaname, id]);
   const rank = useQuery({ queryKey: ["rank", id], queryFn: () => api<RankResp>(`/v1/players/${id}/rank`) });
   const history = useQuery({
     queryKey: ["history", id],
