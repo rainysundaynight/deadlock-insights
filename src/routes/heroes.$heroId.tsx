@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { GameItem } from "@/components/GameItem";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import { Empty, ErrorBox, HeroIcon, Loading, SectionTitle, Stat, WinrateBar, useHeroMap, useItemMap } from "@/components/dl";
 import { api, type HeroAnalytics, type Item } from "@/lib/api";
@@ -13,11 +13,11 @@ import { HeroRankWinrates } from "@/components/RankMeta";
 import { HeroFigure } from "@/components/HeroFigure";
 
 export const Route = createFileRoute("/heroes/$heroId")({
-  head: ({ params }) => ({
+  head: () => ({
     meta: [
-      { title: `Герой ${params.heroId} — The Deadlocked Gazette` },
+      { title: "Герой — Deadlock Stats" },
       { name: "description", content: "Подробная статистика героя Deadlock: способности, контрпики, синергии, лучшие предметы и билды." },
-      { property: "og:title", content: `Герой ${params.heroId} — The Deadlocked Gazette` },
+      { property: "og:title", content: "Герой — Deadlock Stats" },
       { property: "og:description", content: "Способности, контрпики, предметы и билды героя Deadlock." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -37,6 +37,9 @@ function HeroPage() {
   const id = Number(heroId);
   const heroes = useHeroMap();
   const hero = heroes.get(id);
+  useEffect(() => {
+    document.title = `${hero?.name || "Герой"} — Deadlock Stats`;
+  }, [hero?.name, id]);
   const items = useItemMap();
 
   const stats = useQuery({ queryKey: ["hero-stats-30", id], queryFn: () => api<HeroAnalytics[]>("/v1/analytics/hero-stats", { min_unix_timestamp: since() }) });

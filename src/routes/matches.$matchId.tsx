@@ -32,9 +32,9 @@ export const Route = createFileRoute("/matches/$matchId")({
   }),
   head: ({ params }) => ({
     meta: [
-      { title: `Матч ${params.matchId} — Deadlock Stats` },
+      { title: `Hidden King vs Archmother · Матч №${params.matchId} — Deadlock Stats` },
       { name: "description", content: "Полный разбор матча Deadlock: составы, KDA, души, урон и предметы." },
-      { property: "og:title", content: `Матч ${params.matchId} — Deadlock Stats` },
+      { property: "og:title", content: `Hidden King vs Archmother · Матч №${params.matchId} — Deadlock Stats` },
       { property: "og:description", content: "Таблица результатов и предметы игроков матча Deadlock." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
