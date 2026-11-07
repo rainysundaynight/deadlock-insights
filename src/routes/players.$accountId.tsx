@@ -324,6 +324,15 @@ function MatchList({ matches: all, accountId, sources }: { matches: MatchHistory
         {([["all", "Все"], ["win", "Победы"], ["loss", "Поражения"]] as const).map(([k, l]) => <button key={k} className={chip(res === k)} onClick={() => setRes(k)}>{l}</button>)}
         <span className="mx-1 h-5 w-px bg-border" />
         {([["all", "Все режимы"], ["ranked", "Рейтинговый"], ["normal", "Обычный"], ["brawl", "Street Brawl"]] as const).map(([k, l]) => <button key={k} className={chip(mode === k)} onClick={() => setMode(k)}>{l}</button>)}
+        <span className="mx-1 h-5 w-px bg-border" />
+        {([["all", "Всё время"], ["7", "7 дней"], ["30", "30 дней"], ["90", "90 дней"], ["custom", "Период"]] as const).map(([k, l]) => <button key={k} className={chip(period === k)} onClick={() => setPeriod(k)}>{l}</button>)}
+        {period === "custom" && (
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="rounded-md border border-border bg-secondary px-2 py-1 text-xs text-foreground" />
+            —
+            <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="rounded-md border border-border bg-secondary px-2 py-1 text-xs text-foreground" />
+          </span>
+        )}
       </div>
       {!matches.length && <Empty>Нет матчей под фильтр</Empty>}
       {matches.slice(0, limit).map((m) => {
