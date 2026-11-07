@@ -130,7 +130,7 @@ function PlayerPage() {
           <div className="h-24 w-24 rounded-md bg-muted" />
         )}
         <div className="flex-1">
-          <p className="mb-3 font-mono text-[10px] uppercase text-primary">Архив игроков / Досье № {id}</p>
+          <p className="game-status-plate mb-3 text-primary">Архив игроков / Досье № {id}</p>
           <h1 className="break-words font-display text-4xl font-black tracking-tight sm:text-5xl">{profile?.personaname ?? `Игрок #${id}`}</h1>
           <div className="mt-3 flex gap-1" aria-label="Форма за последние матчи">
             {(history.data ?? []).slice(0, 15).reverse().map((m, i) => (
@@ -148,7 +148,7 @@ function PlayerPage() {
             )}
           </div>
         </div>
-        <div className="flex flex-col gap-3 border-t border-border pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0"><p className="font-mono text-[10px] uppercase text-muted-foreground">Классификация</p>
+        <div className="flex flex-col items-start gap-3 border-t border-border pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0"><p className="game-status-plate text-primary">Классификация</p>
           {rank.data?.badge ? <RankBadge badge={rank.data.badge} size={64} /> : rank.isLoading ? null : <PotentialRank accountId={id} history={history.data ?? []} />}
         </div>
       </div>
@@ -158,33 +158,33 @@ function PlayerPage() {
       ) : history.error ? (
         <ErrorBox error={history.error} />
       ) : (
-        <div className="grid grid-cols-2 gap-px bg-border md:grid-cols-4">
-          <Stat label="Матчей" value={fmtInt(summary.n)} />
-          <Stat label="Винрейт" value={`${(winrate(summary.wins, summary.n) * 100).toFixed(1)}%`} tone={summary.wins / Math.max(1, summary.n) >= 0.5 ? "win" : "loss"} sub={`${summary.wins} побед`} />
-          <Stat label="KDA" value={kda(summary.k, summary.d, summary.a)} tone="brass" sub={`${(summary.k / Math.max(1, summary.n)).toFixed(1)} / ${(summary.d / Math.max(1, summary.n)).toFixed(1)} / ${(summary.a / Math.max(1, summary.n)).toFixed(1)}`} />
-          <Stat label="Последний матч" value={fmtAgo(history.data?.[0]?.start_time)} />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <Stat variant="game" label="Матчей" value={fmtInt(summary.n)} />
+          <Stat variant="game" label="Винрейт" value={`${(winrate(summary.wins, summary.n) * 100).toFixed(1)}%`} tone={summary.wins / Math.max(1, summary.n) >= 0.5 ? "win" : "loss"} sub={`${summary.wins} побед`} />
+          <Stat variant="game" label="KDA" value={kda(summary.k, summary.d, summary.a)} tone="brass" sub={`${(summary.k / Math.max(1, summary.n)).toFixed(1)} / ${(summary.d / Math.max(1, summary.n)).toFixed(1)} / ${(summary.a / Math.max(1, summary.n)).toFixed(1)}`} />
+          <Stat variant="game" label="Последний матч" value={fmtAgo(history.data?.[0]?.start_time)} />
         </div>
       )}
 
-      <div className="refresh-ledger grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-4">
+      <div className="refresh-ledger profile-game-ledger grid gap-4 border-y border-border py-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="bg-card px-4 py-3">
-          <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Статус</p>
+          <p className="game-status-plate text-primary">Статус</p>
           <p className="mt-1 flex items-center gap-2 text-sm">
             <span className={cn("h-2 w-2 rounded-full", history.isFetching || refetching ? "animate-pulse bg-primary" : history.isError ? "bg-loss" : "bg-win")} />
             {refetching ? "Запрос в Steam…" : history.isFetching ? "Проверяем архив…" : history.isError ? "Ошибка загрузки" : "История актуальна"}
           </p>
         </div>
         <div className="bg-card px-4 py-3">
-          <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Последняя проверка</p>
+          <p className="game-status-plate text-primary">Последняя проверка</p>
           <p className="tabular mt-1 text-sm">{history.dataUpdatedAt ? `${Math.max(0, Math.round((now - history.dataUpdatedAt) / 60000))} мин назад` : "—"} <span className="text-muted-foreground">· авто каждые 2 мин</span></p>
         </div>
         <div className="bg-card px-4 py-3">
-          <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Ручное обновление из Steam</p>
+          <p className="game-status-plate text-primary">Обновление из Steam</p>
           <p className={cn("tabular mt-1 text-sm", cooldownLeft ? "text-muted-foreground" : "text-win")}>{cooldownLeft ? `через ${Math.ceil(cooldownLeft / 60000)} мин` : "доступно сейчас"}</p>
           <div className="mt-1.5 h-0.5 bg-secondary"><div className="h-full bg-primary transition-all" style={{ width: `${100 - (cooldownLeft / 3600_000) * 100}%` }} /></div>
         </div>
         <div className="bg-card px-4 py-3">
-          <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Последний матч</p>
+          <p className="game-status-plate text-primary">Последний матч</p>
           <p className="mt-1 text-sm">{history.data?.[0] ? fmtAgo(history.data[0].start_time) : "—"} {history.data?.[0] && <SourceTag src={sources[history.data[0].match_id]} />}</p>
         </div>
       </div>
