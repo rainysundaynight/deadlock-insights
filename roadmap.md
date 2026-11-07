@@ -1,4 +1,5 @@
 # Gazette redesign
+- [ ] Fix team header alignment and blend profile hero portrait without a cut-off pedestal; verify desktop/mobile.
 - [x] Unify game plates/rank presentation, compose large profile/hero artwork, differentiate teams and calm table motion; verified real profile/hero/match at 390, 768 and 1280 px, pose hover and economy tabs.
 - [x] Add outcome-based hero poses and game-style plates to profile match history; verify desktop/mobile.
 - [x] Fix mobile home hero visibility and verify all six weekly leaders.

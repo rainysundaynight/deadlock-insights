@@ -162,7 +162,7 @@ function PlayerPage() {
           {rank.data?.badge ? <RankBadge badge={rank.data.badge} size={64} /> : rank.isLoading ? null : <PotentialRank accountId={id} history={history.data ?? []} />}
         </div>
         </div>
-        <HeroFigure hero={featuredHero} />
+        <HeroFigure hero={featuredHero} className="profile-hero-portrait" />
       </div>
 
       {history.isLoading ? (
