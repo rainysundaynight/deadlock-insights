@@ -1,5 +1,5 @@
 # Gazette redesign
-- [ ] Add outcome-based hero poses and game-style plates to profile match history; verify desktop/mobile.
+- [x] Add outcome-based hero poses and game-style plates to profile match history; verify desktop/mobile.
 - [x] Fix mobile home hero visibility and verify all six weekly leaders.
 - [x] Fix sidebar overflow with classic Chrome scrollbars and verify navigation scrolling.
 - [x] Deep redesign: home editorial blocks, hero controls/cards, live sheets, player dossier, completed match scoreboard, shared tabs and visible motion.
