@@ -31,11 +31,25 @@ export function PlayerShareCard({ accountId, name, history, hero }: { accountId:
       const art = hero ? await load(hero.images.hero_card_gloat_webp ?? hero.images.icon_hero_card_webp ?? hero.images.icon_hero_card ?? "") : null;
       if (art) {
         const h = 560, w = (art.width / art.height) * h;
+        const ax = 1165 - w + 40, ay = 70;
         g.save(); g.beginPath(); g.rect(35, 35, 1130, 560); g.clip();
-        g.globalAlpha = 0.95; g.drawImage(art, 1165 - w + 40, 70, w, h);
-        const fade = g.createLinearGradient(1165 - w, 0, 1165 - w + 220, 0);
-        fade.addColorStop(0, v("--background")); fade.addColorStop(1, "transparent");
-        g.globalAlpha = 1; g.fillStyle = fade; g.fillRect(1165 - w, 35, 230, 560);
+        // цветная подложка под героем, как в профиле
+        const glow = g.createRadialGradient(ax + w / 2, ay + h * 0.42, 40, ax + w / 2, ay + h * 0.42, w * 0.85);
+        const hc = hero?.colors?.style_hex ?? v("--primary");
+        glow.addColorStop(0, hc + "66"); glow.addColorStop(0.55, hc + "22"); glow.addColorStop(1, "transparent");
+        g.fillStyle = glow; g.fillRect(ax - 160, 35, w + 200, 560);
+        g.globalAlpha = 0.95; g.drawImage(art, ax, ay, w, h);
+        g.globalAlpha = 1;
+        // мягкие переходы по краям, чтобы не было видно среза карточки
+        const fadeL = g.createLinearGradient(ax, 0, ax + 220, 0);
+        fadeL.addColorStop(0, v("--background")); fadeL.addColorStop(1, "transparent");
+        g.fillStyle = fadeL; g.fillRect(ax, 35, 230, 560);
+        const fadeB = g.createLinearGradient(0, 430, 0, 595);
+        fadeB.addColorStop(0, "transparent"); fadeB.addColorStop(1, v("--background"));
+        g.fillStyle = fadeB; g.fillRect(ax - 160, 430, w + 200, 165);
+        const fadeR = g.createLinearGradient(1135, 0, 1165, 0);
+        fadeR.addColorStop(0, "transparent"); fadeR.addColorStop(1, v("--background"));
+        g.fillStyle = fadeR; g.fillRect(1135, 35, 30, 560);
         g.restore();
       }
 
