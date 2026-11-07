@@ -1,4 +1,5 @@
 # Gazette redesign
+- [ ] Unify game plates/rank presentation, compose large profile/hero artwork, differentiate teams and calm table motion; verify desktop/mobile.
 - [x] Add outcome-based hero poses and game-style plates to profile match history; verify desktop/mobile.
 - [x] Fix mobile home hero visibility and verify all six weekly leaders.
 - [x] Fix sidebar overflow with classic Chrome scrollbars and verify navigation scrolling.
