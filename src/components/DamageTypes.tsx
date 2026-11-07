@@ -10,6 +10,9 @@ import { cn } from "@/lib/utils";
 interface P { account_id: number; team: number; hero_id: number; stats: Snap[] }
 type Names = Map<number, { personaname: string }> | undefined;
 
+const dmg = (p: P) => damageTargets(p.stats.at(-1))[0]!.value;
+const field = (s: Snap | undefined, k: string) => Number((s as Record<string, unknown> | undefined)?.[k] ?? 0);
+
 const TONES = ["bg-primary", "bg-telemetry", "bg-win", "bg-loss"];
 
 function Stack({ parts }: { parts: Part[] }) {
@@ -43,7 +46,7 @@ function Group({ title, parts, raw = fmtK }: { title: string; parts: Part[]; raw
 export function DamageTypes({ players, names }: { players: P[]; names?: Names }) {
   const heroes = useHeroMap();
   const [open, setOpen] = useState<number | null>(null);
-  const rows = [...players].sort((a, b) => a.team - b.team || Number(b.stats.at(-1)?.["player_damage"] ?? 0) - Number(a.stats.at(-1)?.["player_damage"] ?? 0));
+  const rows = [...players].sort((a, b) => a.team - b.team || dmg(b) - dmg(a));
   return (
     <section className="panel p-5">
       <SectionTitle right={<span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">нажмите на игрока</span>}>Типы урона</SectionTitle>
@@ -71,7 +74,7 @@ export function DamageTypes({ players, names }: { players: P[]; names?: Names })
                       <Group title="Входящий урон" parts={defense(s)} />
                     </div>
                     <p className="pb-4 font-mono text-[10px] uppercase text-muted-foreground">
-                      Криты по героям: {critRate(s).toFixed(1)}% · Хедшот-убийств: {Number(s?.["headshot_kills"] ?? 0)} · Урон себе: {fmtK(Number(s?.["self_damage"] ?? 0))}
+                      Криты по героям: {critRate(s).toFixed(1)}% · Хедшот-убийств: {field(s, "headshot_kills")} · Урон себе: {fmtK(field(s, "self_damage"))}
                     </p>
                   </motion.div>
                 )}

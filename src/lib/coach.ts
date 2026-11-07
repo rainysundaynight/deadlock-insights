@@ -2,12 +2,12 @@
 export interface CoachPlayer {
   account_id: number; team: number; hero_id: number;
   kills: number; deaths: number; assists: number; net_worth: number; last_hits: number; denies: number;
-  stats: Partial<Record<string, number | unknown>>[];
+  stats: object[];
 }
 
 export interface CoachNote { id: string; tone: "good" | "bad"; title: string; text: string }
 
-const last = (p: CoachPlayer, k: string) => { const v = p.stats.at(-1)?.[k]; return typeof v === "number" ? v : 0; };
+const last = (p: CoachPlayer, k: string) => { const v = (p.stats.at(-1) as Record<string, unknown> | undefined)?.[k]; return typeof v === "number" ? v : 0; };
 const sum = (ps: CoachPlayer[], f: (p: CoachPlayer) => number) => ps.reduce((s, p) => s + f(p), 0);
 const avg = (ps: CoachPlayer[], f: (p: CoachPlayer) => number) => (ps.length ? sum(ps, f) / ps.length : 0);
 const pct = (v: number) => `${Math.round(v)}%`;

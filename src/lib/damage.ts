@@ -1,9 +1,9 @@
 /** Damage breakdown by type from the final stats snapshot. The match data has no bullet-vs-spirit damage split. */
-export type Snap = Partial<Record<string, number | unknown>>;
+export type Snap = object;
 
 export interface Part { key: string; label: string; value: number; pct: number }
 
-const num = (s: Snap | undefined, k: string) => { const v = s?.[k]; return typeof v === "number" && Number.isFinite(v) ? Math.max(0, v) : 0; };
+const num = (s: Snap | undefined, k: string) => { const v = (s as Record<string, unknown> | undefined)?.[k]; return typeof v === "number" && Number.isFinite(v) ? Math.max(0, v) : 0; };
 
 function parts(s: Snap | undefined, defs: [string, string][]): Part[] {
   const vals = defs.map(([key, label]) => ({ key, label, value: num(s, key) }));

@@ -131,7 +131,7 @@ function MatchPage() {
       {tab === "details" && <MatchDetails players={players} names={profiles.data} durationS={m.duration_s} />}
       {tab === "damage" && <DamageView players={players} names={profiles.data} />}
       {tab === "items" && <ItemsTimeline players={players} names={profiles.data} />}
-      {tab === "tips" && <CoachNotes players={players as never} names={profiles.data} durationS={m.duration_s} winner={m.winning_team} />}
+      {tab === "tips" && <CoachNotes players={players} names={profiles.data} durationS={m.duration_s} winner={m.winning_team} />}
       {(tab === "lanes" || tab === "tips") && <MatchAnalysis view={tab} players={players} durationS={m.duration_s} names={profiles.data} objectives={m.objectives} midBoss={m.mid_boss} winner={m.winning_team} />}
       {tab === "player" && <PlayerDossier players={players} names={profiles.data} durationS={m.duration_s} winner={m.winning_team} />}
       {tab === "lanes" && <div className="my-8"><LaneDuelBoard players={players} names={profiles.data} durationS={m.duration_s} /></div>}
