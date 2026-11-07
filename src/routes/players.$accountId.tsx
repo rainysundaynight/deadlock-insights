@@ -281,6 +281,12 @@ function MatchList({ matches: all, accountId, sources }: { matches: MatchHistory
     if (mode === "brawl" && m.game_mode !== 4) return false;
     if (mode === "ranked" && (m.game_mode === 4 || m.match_mode !== 4)) return false;
     if (mode === "normal" && (m.game_mode === 4 || m.match_mode === 4)) return false;
+    if (period !== "all") {
+      if (period === "custom") {
+        if (dateFrom && m.start_time < new Date(`${dateFrom}T00:00:00`).getTime() / 1000) return false;
+        if (dateTo && m.start_time > new Date(`${dateTo}T23:59:59`).getTime() / 1000) return false;
+      } else if (m.start_time < Date.now() / 1000 - Number(period) * 86400) return false;
+    }
     return true;
   });
   const st = streaks(all);
