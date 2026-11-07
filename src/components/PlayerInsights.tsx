@@ -53,16 +53,16 @@ export function PlayerInsights({ history, badge, backTo }: { history: MatchHisto
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Средние души" value={fmtK(s.nw)} tone="brass" sub="за матч, последние 100" />
-        <Stat label="Средняя длительность" value={fmtDuration(s.dur)} />
-        <Stat label="Лучшая серия" value={`${s.bestStreak} побед`} tone="win" />
-        <Stat label="Текущая серия" value={s.currentStreak > 0 ? `+${s.currentStreak}` : String(s.currentStreak)} tone={s.currentStreak > 0 ? "win" : "loss"} sub={s.currentStreak > 0 ? "побед подряд" : "поражений подряд"} />
+        <Stat variant="game" label="Средние души" value={fmtK(s.nw)} tone="brass" sub="за матч, последние 100" />
+        <Stat variant="game" label="Средняя длительность" value={fmtDuration(s.dur)} />
+        <Stat variant="game" label="Лучшая серия" value={`${s.bestStreak} побед`} tone="win" />
+        <Stat variant="game" label="Текущая серия" value={s.currentStreak > 0 ? `+${s.currentStreak}` : String(s.currentStreak)} tone={s.currentStreak > 0 ? "win" : "loss"} sub={s.currentStreak > 0 ? "побед подряд" : "поражений подряд"} />
       </div>
       {graded.length > 0 && (
-        <section className="panel p-0">
-          <div className="flex items-center justify-between border-b border-border/60 px-5 py-3">
-            <p className="font-display text-lg font-bold">Табель успеваемости</p>
-            <span className={cn("font-mono text-[11px] uppercase tracking-wider", Math.abs(trend) < 2 ? "text-muted-foreground" : trend > 0 ? "text-win" : "text-loss")}>
+        <section className="profile-game-summary border-y border-border">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-4">
+            <p className="game-status-plate text-primary">Табель успеваемости</p>
+            <span className={cn("game-status-plate", Math.abs(trend) < 2 ? "text-muted-foreground" : trend > 0 ? "text-win" : "text-loss")}>
               {Math.abs(trend) < 2 ? "→ стабильная форма" : trend > 0 ? `↑ форма растёт +${trend.toFixed(0)}` : `↓ форма падает ${trend.toFixed(0)}`}
             </span>
           </div>
@@ -71,14 +71,14 @@ export function PlayerInsights({ history, badge, backTo }: { history: MatchHisto
               <GradeSeal score={avgScore} caption={`${avgScore.toFixed(0)} / 100 · 30 матчей`} />
               <div className="grid w-full grid-cols-3 text-center">
                 {[["WR", `${(s30.winrate * 100).toFixed(0)}%`, s30.winrate >= 0.5 ? "text-win" : "text-loss"], ["KDA", kda(s30.k, s30.d, s30.a), "text-primary"], ["Души", fmtK(s30.nw), "text-foreground"]].map(([l, v, c]) => (
-                  <div key={l}><p className={cn("tabular font-display text-lg font-bold", c)}>{v}</p><p className="font-mono text-[9px] uppercase text-muted-foreground">{l}</p></div>
+                  <div key={l}><p className={cn("tabular font-display text-lg font-bold", c)}>{v}</p><p className="game-status-plate mt-1 text-muted-foreground">{l}</p></div>
                 ))}
               </div>
             </div>
             <div className="border-b border-border/60 p-5 lg:border-b-0 lg:border-r">
-              <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Против среднего игрока</p>
+              <p className="game-status-plate mb-3 text-primary">Против среднего игрока</p>
               {g.data && playstyle(s30, globalAverages(g.data)).map((x) => <MetricBar key={x.axis} label={x.axis} v={x.v} />)}
-              <p className="mb-2 mt-5 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Оценки по матчам · новые слева</p>
+              <p className="game-status-plate mb-3 mt-5 text-muted-foreground">Оценки по матчам · новые слева</p>
               <div className="flex flex-wrap gap-1">
                 {graded.map(({ m, grade }) => (
                   <Link key={m.match_id} to="/matches/$matchId" params={{ matchId: String(m.match_id) }} {...(backTo ? { search: { from: backTo } } : {})}

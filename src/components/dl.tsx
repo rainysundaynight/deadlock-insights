@@ -111,11 +111,11 @@ export function lobbyBadge(badges: (number | null | undefined)[]): number | null
   return tier * 10 + sub;
 }
 
-export function Stat({ label, value, sub, tone }: { label: string; value: ReactNode; sub?: ReactNode; tone?: "win" | "loss" | "brass" }) {
+export function Stat({ label, value, sub, tone, variant = "ledger" }: { label: string; value: ReactNode; sub?: ReactNode; tone?: "win" | "loss" | "brass"; variant?: "ledger" | "game" }) {
   const Icon = /винрейт|побед/i.test(label) ? TrendingUp : /kda|убийств/i.test(label) ? Crosshair : /время|последний|длительность/i.test(label) ? Clock3 : Hash;
   return (
-    <div className="stat-ledger group relative min-h-32 overflow-hidden border-b border-border bg-card/40 px-4 py-5">
-      <div className="flex items-center justify-between gap-2"><p className="font-mono text-[10px] font-medium uppercase text-muted-foreground">{label}</p><Icon className="h-4 w-4 text-primary/70 transition-transform group-hover:-translate-y-1" /></div>
+    <div className={cn("stat-ledger group relative min-h-32 overflow-hidden border-b border-border bg-card/40 px-4 py-5", variant === "game" && "profile-game-stat", variant === "game" && (tone === "win" ? "profile-game-win" : tone === "loss" ? "profile-game-loss" : ""))}>
+      <div className="flex items-start justify-between gap-2"><p className={cn("font-mono text-[10px] font-medium uppercase text-muted-foreground", variant === "game" && "game-status-plate text-primary")}>{label}</p><Icon className="h-4 w-4 shrink-0 text-primary/70 transition-transform group-hover:-translate-y-1" /></div>
       <p
         className={cn(
           "tabular mt-4 text-2xl font-semibold sm:text-3xl",

@@ -357,3 +357,20 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 }
 .match-history-row:hover .match-outcome-art { transform: scale(1.03); }
 @media (min-width: 1024px) { .match-outcome-portrait { width: 88px; height: 112px; } }
+
+.profile-game-stat {
+  --stat-accent: var(--primary);
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--stat-accent);
+  background: var(--gradient-card);
+  padding: 16px 14px;
+}
+.profile-game-stat::before { display: none; }
+.profile-game-stat .game-status-plate { color: var(--stat-accent); }
+.profile-game-stat > p { overflow-wrap: anywhere; }
+.profile-game-win { --stat-accent: var(--win); }
+.profile-game-loss { --stat-accent: var(--loss); }
+.profile-game-ledger > div { min-width: 0; background: transparent; border-left: 2px solid var(--border); }
+.profile-game-ledger > div > p:not(:first-child) { margin-top: 12px; }
+.profile-game-summary { background: var(--gradient-card); }
