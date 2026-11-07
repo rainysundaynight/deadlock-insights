@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { RankBadge } from "@/components/dl";
 import { api, type MatchHistoryEntry } from "@/lib/api";
 import { potentialBadge } from "@/lib/potentialRank";
 
 /** Estimated rank for unranked players, from the ranks of people they were matched with. */
-export function PotentialRank({ accountId, history }: { accountId: number; history: MatchHistoryEntry[] }) {
+export function PotentialRank({ accountId, history, compact = false }: { accountId: number; history: MatchHistoryEntry[]; compact?: boolean }) {
   const recent = history.slice(0, 15);
   const key = recent.map((m) => m.match_id).join(",");
   const q = useQuery({
@@ -22,6 +23,21 @@ export function PotentialRank({ accountId, history }: { accountId: number; histo
       return { badge: potentialBadge(badges, wr), n: badges.filter((b) => b > 10).length };
     },
   });
+  if (compact) {
+    if (!q.data?.badge) return null;
+    return (
+      <TooltipProvider delayDuration={100}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="cursor-help opacity-50 transition-opacity hover:opacity-90" aria-label="Потенциальный ранг"><RankBadge badge={q.data.badge} size={44} showName={false} /></span>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-60 text-xs">
+            Потенциальный ранг. Рассчитан по рангам {q.data.n} соперников и союзников из последних {recent.length} игр и винрейту.
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
   if (!recent.length) return <RankBadge badge={null} size={64} />;
   if (q.isLoading) return <p className="text-sm text-muted-foreground">Считаем потенциальный ранг…</p>;
   if (!q.data?.badge) return <RankBadge badge={null} size={64} />;

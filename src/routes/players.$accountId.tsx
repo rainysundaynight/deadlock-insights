@@ -150,7 +150,10 @@ function PlayerPage() {
         )}
         <div className="flex-1">
           <p className="game-status-plate mb-3 text-primary">Архив игроков / Досье № {id}</p>
-          <h1 className="break-words font-display text-4xl font-black tracking-tight sm:text-5xl">{profile?.personaname ?? `Игрок #${id}`}</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="break-words font-display text-4xl font-black tracking-tight sm:text-5xl">{profile?.personaname ?? `Игрок #${id}`}</h1>
+            {rank.data?.badge ? <RankBadge badge={rank.data.badge} size={44} showName={false} /> : rank.isLoading ? null : <PotentialRank accountId={id} history={history.data ?? []} compact />}
+          </div>
           <div className="mt-3 flex gap-1" aria-label="Форма за последние матчи">
             {(history.data ?? []).slice(0, 15).reverse().map((m, i) => (
               <motion.span key={m.match_id} initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: i * 0.03 }} title={m.match_result === m.player_team ? "Победа" : "Поражение"} className={cn("h-4 w-2 origin-bottom", m.match_result === m.player_team ? "bg-win" : "bg-loss/70")} />
@@ -167,9 +170,6 @@ function PlayerPage() {
               </a>
             )}
           </div>
-        </div>
-        <div className="dossier-classification flex flex-col items-start gap-3 border-t border-border pt-4 md:col-span-2 md:flex-row md:items-center"><p className="game-status-plate text-primary">Классификация</p>
-          {rank.data?.badge ? <RankBadge badge={rank.data.badge} size={64} /> : rank.isLoading ? null : <PotentialRank accountId={id} history={history.data ?? []} />}
         </div>
         </div>
         <HeroFigure hero={featuredHero} className="profile-hero-portrait" />
