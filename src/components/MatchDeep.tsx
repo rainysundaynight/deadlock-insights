@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 
 import { HeroIcon, SectionTitle, useHeroMap, useItemMap } from "@/components/dl";
 import type { StatSnap } from "@/lib/analysis";
+import { DamageTypes } from "@/components/DamageTypes";
 import { fmtDuration, fmtK } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -97,6 +98,7 @@ export function DamageView({ players, names }: { players: DeepPlayer[]; names?: 
   const mins = matchMinutes(players);
   return (
     <div className="space-y-5">
+      <DamageTypes players={players} names={names} />
       <div className="grid gap-4 lg:grid-cols-2">
         {METRICS.map((m) => <MetricPanel key={m.key} metric={m} players={players} names={names} mins={mins} />)}
       </div>

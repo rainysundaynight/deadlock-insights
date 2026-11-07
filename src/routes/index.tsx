@@ -7,6 +7,7 @@ import cityArtwork from "@/assets/gazette-city.jpg";
 import { LayoutItem, MagneticButton, RollingNumber } from "@/components/GazetteMotion";
 import { motion, useReducedMotion } from "framer-motion";
 import { PlayerSearch } from "@/components/PlayerSearch";
+import { MorningEdition } from "@/components/MorningEdition";
 import { HeroIcon, SectionTitle, inputClass, useHeroMap } from "@/components/dl";
 import { api, type HeroAnalytics } from "@/lib/api";
 import { fmtInt, fmtK } from "@/lib/format";
@@ -136,6 +137,7 @@ function Index() {
         <div className="min-w-0 flex-1 overflow-hidden"><div className="ticker-track" aria-hidden="true">{[0, 1].map((copy) => <div key={copy} className="flex shrink-0 items-center">{ticker.map((t, i) => <span key={i} className="whitespace-nowrap px-6 py-3 font-mono text-[10px] text-muted-foreground">{t}<span className="ml-6 text-primary">✦</span></span>)}</div>)}</div><span className="sr-only">{ticker.join(". ")}</span></div>
       </div>
 
+      <MorningEdition />
       <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
         <section className="border-t border-primary/40 pt-5">
           <SectionTitle right={<Link to="/tierlist" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary">Тир-лист <ArrowRight className="h-4 w-4" /></Link>}>Мета недели · Oracle+</SectionTitle>

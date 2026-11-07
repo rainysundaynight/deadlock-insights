@@ -12,6 +12,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Empty, ErrorBox, useSteamProfiles, useItemMap, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
 import { FollowButton } from "@/components/FollowButton";
+import { PlayerShareCard } from "@/components/PlayerShareCard";
 import { PotentialRank } from "@/components/PotentialRank";
 import { PlayerItems } from "@/components/PlayerItems";
 import { PlayerInsights } from "@/components/PlayerInsights";
@@ -153,6 +154,7 @@ function PlayerPage() {
           <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             <FollowButton accountId={id} name={profile?.personaname} />
             <Button variant="ghost" size="sm" onClick={forceRefresh} disabled={refetching} title="Запросить свежую историю напрямую из Steam" className="h-auto p-0 text-muted-foreground hover:text-primary"><RefreshCw className={cn("h-3.5 w-3.5", refetching && "animate-spin")} />{refetching ? "Обновляем…" : "Обновить матчи"}</Button>
+            <PlayerShareCard accountId={id} name={profile?.personaname ?? `Игрок #${id}`} history={history.data ?? []} hero={featuredHero} />
             <Link to="/compare" search={{ a: id }} className="inline-flex items-center gap-1.5 hover:text-primary"><GitCompare className="h-3.5 w-3.5" />Сравнить</Link>
             {profile?.profileurl && (
               <a href={profile.profileurl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-primary">

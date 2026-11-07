@@ -20,3 +20,9 @@
 - [x] Map highlight jumps; live win-chance bar
 - [x] Ctrl/Cmd+K global search
 - [ ] Urn tracker, map presence heatmap — match data has no urn/zone info
+# Retention pack
+- [x] Expandable damage types per player (targets, kill types, defense) with value and %
+- [x] Profile «Визитка» PNG share card
+- [x] Match «Разбор тренера» coach notes in Советы tab
+- [x] Home «Утренний выпуск» daily meta
+- [x] Sidebar «Мой стак» with live markers for followed players

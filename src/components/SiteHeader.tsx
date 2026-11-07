@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useRef, useState, type ReactNode } from "react";
 
 import { InkBackground } from "@/components/InkBackground";
+import { MyStack } from "@/components/MyStack";
 import { useRevealCards } from "@/components/RevealCards";
 
 import { FriendNotifier } from "@/components/FriendNotifier";
@@ -53,6 +54,7 @@ const GROUPS = [
 function Nav({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="space-y-5">
+      <MyStack onNavigate={onNavigate} />
       {GROUPS.map((g) => (
         <div key={g.title}>
           <p className="mb-2 border-b border-border px-3 pb-2 font-masthead text-[10px] font-semibold uppercase text-primary">{g.title}</p>

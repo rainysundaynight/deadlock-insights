@@ -28,3 +28,14 @@ export function heroTrends(rows: DayRow[], window = 7, minMatches = 300): HeroTr
       return { hero_id, recentWr, prevWr, delta: recentWr - prevWr, recentPick, prevPick, pickDelta: recentPick - prevPick, matches: a.rm };
     });
 }
+
+/** Daily edition: compares the last completed day against the one before (ignores today's partial bucket). */
+export function dailyEdition(rows: DayRow[], todayStart: number, minMatches = 300) {
+  const done = rows.filter((r) => r.bucket < todayStart);
+  const t = heroTrends(done, 1, minMatches);
+  if (t.length < 3) return null;
+  const riser = [...t].sort((a, b) => b.delta - a.delta)[0]!;
+  const faller = [...t].sort((a, b) => a.delta - b.delta)[0]!;
+  const picked = [...t].sort((a, b) => b.pickDelta - a.pickDelta)[0]!;
+  return { riser, faller, picked };
+}
