@@ -324,3 +324,36 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 .home-hero-lineup .hero-pose-alt,
 .home-hero-lineup .group:hover .hero-pose-alt { transform: none; }
 .home-hero-lineup .group:not(:has(.hero-pose-alt)) .hero-pose-idle { opacity: 1; transform: none; }
+
+/* Match outcomes borrow the game's angled plates without replacing Gazette framing. */
+.game-status-plate {
+  display: inline-block;
+  max-width: 100%;
+  padding: 2px 7px;
+  border: 1px solid currentColor;
+  background: var(--secondary);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  transform: skew(-8deg);
+}
+.match-outcome-portrait {
+  --outcome: var(--win);
+  position: relative;
+  width: 80px;
+  height: 110px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 75%, color-mix(in oklab, var(--outcome) 20%, transparent), transparent 75%);
+  border-bottom: 1px solid color-mix(in oklab, var(--outcome) 55%, transparent);
+}
+.match-outcome-loss { --outcome: var(--loss); }
+.match-outcome-art {
+  width: 100%; height: 100%; object-fit: contain;
+  transition: transform 220ms ease;
+  transform-origin: 50% 85%;
+}
+.match-history-row:hover .match-outcome-art { transform: scale(1.03); }
+@media (min-width: 1024px) { .match-outcome-portrait { width: 88px; height: 112px; } }

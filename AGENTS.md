@@ -18,5 +18,6 @@
 - Hero mastery uses aggregate player hero stats rather than limited recent history, with explicit joint experience/winrate gates from `MASTERY_REQUIREMENTS`; DNA presentation converts ratios to deviations without changing archetype inputs.
 - Theme all pages through global semantic CSS tokens and shared Gazette motion primitives; keep chart history based on real minute-poll samples so the live list never consumes additional spectating connections.
 - Use shared ruled Radix tab rails for section navigation; each block has one motion owner so nested reveal and layout animations never compete.
+- Resolve profile match artwork through matchHeroPose with normal-portrait fallback; outcome poses are present without hover so touch users see the same result.
 - Steam sign-in is Steam OpenID 2.0 via `/api/public/steam/login` → `/api/public/steam/callback` (verifies with Steam, admin-creates a user with a synthetic email, returns a magic-link token_hash that `/auth/steam` exchanges with verifyOtp; popup+postMessage in iframes). Cloud has no native Steam provider.
 - User data (profiles, followed_players, goals) lives in Lovable Cloud with own-row RLS; friend match alerts are client-side polling of `/v1/matches/active` in `FriendNotifier` (only while the site is open).
