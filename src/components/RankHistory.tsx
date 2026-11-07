@@ -28,7 +28,7 @@ export function RankHistory({ history, backTo }: { history: MatchHistoryEntry[];
   );
 }
 
-function Chart({ pts, backTo }: { pts: Pt[]; backTo?: string }) {
+function Chart({ pts, backTo }: { pts: Pt[]; backTo?: string | undefined }) {
   const W = 800, H = 160, P = 12;
   const idx = pts.map((p) => badgeToIdx(p.badge));
   const lo = Math.min(...idx) - 1, hi = Math.max(...idx) + 1;
