@@ -417,7 +417,7 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 .player-dossier .dossier-heading-copy { position: relative; width: 60%; z-index: 2; }
 .player-dossier > .profile-hero-portrait { position: absolute; right: 0; top: 0; bottom: 0; width: 40%; height: auto; z-index: 1; }
 .profile-hero-portrait::after { display: none; }
-.profile-hero-portrait .dossier-figure-art { top: 24px; bottom: auto; height: calc(100% + 70px); object-fit: cover; object-position: center top; mask-image: linear-gradient(to right, transparent, black 20%, black 88%, transparent); }
+.profile-hero-portrait .dossier-figure-art { top: -12px; bottom: auto; height: calc(100% + 100px); object-fit: contain; object-position: center top; mask-image: linear-gradient(to right, transparent, black 12%, black 92%, transparent); }
 .profile-hero-portrait::before { background: none; }
 .profile-hero-pool > div:last-child > div { width: 40px; }
 .team-table { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
