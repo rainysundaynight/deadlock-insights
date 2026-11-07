@@ -11,6 +11,7 @@ import { fmtDuration, fmtK, REGIONS } from "@/lib/format";
 import { useLiveScoreboard, type LiveEvent } from "@/lib/liveStream";
 import { fetchPotentialBadge } from "@/lib/potentialRank";
 import { cn } from "@/lib/utils";
+import { TeamIdentity } from "@/components/TeamIdentity";
 
 const TEAMS = ["Hidden King", "Archmother"];
 interface Roster { account_id: number; team: number; hero_id: number }
@@ -117,12 +118,12 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
     <div className="space-y-4">
       <LiveMap matchId={matchId} players={players} />
       <div className="panel grid items-center gap-4 p-5 md:grid-cols-[1fr_auto_1fr]">
-        <div className="text-amber-team"><p className="text-xs uppercase tracking-wider">{TEAMS[0]}</p><p className="tabular font-display text-3xl font-bold">{fmtK(sum(0, (p) => p.nw))}</p></div>
+        <div className="text-amber-team"><TeamIdentity team={0} compact /><p className="tabular font-display text-3xl font-bold">{fmtK(sum(0, (p) => p.nw))}</p></div>
         <div className="text-center">
           <p className="tabular font-display text-4xl font-extrabold"><span className="text-amber-team">{sum(0, (p) => p.k)}</span> <span className="text-muted-foreground">:</span> <span className="text-sapphire-team">{sum(1, (p) => p.k)}</span></p>
-          <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground"><span className={cn("h-1.5 w-1.5 rounded-full", status === "ended" ? "bg-muted-foreground" : "animate-pulse bg-loss")} />{status === "ended" ? "Трансляция завершена" : "В эфире"} · <span className="tabular">{fmtDuration(gameTime)}</span></p>
+          <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground"><span className={cn("h-1.5 w-1.5 rounded-full", status === "ended" ? "bg-muted-foreground" : "bg-loss")} />{status === "ended" ? "Трансляция завершена" : "В эфире"} · <span className="tabular">{fmtDuration(gameTime)}</span></p>
         </div>
-        <div className="text-right text-sapphire-team"><p className="text-xs uppercase tracking-wider">{TEAMS[1]}</p><p className="tabular font-display text-3xl font-bold">{fmtK(sum(1, (p) => p.nw))}</p></div>
+        <div className="text-right text-sapphire-team"><TeamIdentity team={1} compact /><p className="tabular font-display text-3xl font-bold">{fmtK(sum(1, (p) => p.nw))}</p></div>
       </div>
 
       {(() => {
@@ -220,7 +221,7 @@ export function LiveScoreboard({ matchId, roster = [], ranked = false }: { match
 
       {[0, 1].map((t) => (
         <section key={t} className="panel overflow-x-auto">
-          <h3 className={cn("border-b border-border px-4 py-3 font-display text-sm font-semibold uppercase tracking-wider", t === 0 ? "text-amber-team" : "text-sapphire-team")}>{TEAMS[t]}</h3>
+          <h3 className={cn("team-banner px-4 py-3", t === 1 && "team-banner-mother")}><TeamIdentity team={t} compact /></h3>
           <table className="w-full text-sm">
             <thead className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
               <tr className="border-b border-border"><th className="p-3">Игрок</th><th className="p-3">Ур.</th><th className="p-3">K/D/A</th><th className="p-3">Души</th><th className="p-3">Крипы</th><th className="p-3">Урон</th><th className="p-3">Лечение</th><th className="p-3">По постройкам</th></tr>

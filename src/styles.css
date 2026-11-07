@@ -378,7 +378,7 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 /* Game dossiers: artwork has its own space; only meaningful labels become plates. */
 .game-status-plate { border-color: color-mix(in oklab, currentColor 45%, transparent); border-left: 3px solid currentColor; padding: 3px 8px; }
 .profile-game-stat { border-top: 0; border-right: 0; border-bottom: 1px solid var(--border); background: var(--card); }
-.profile-game-stat > p { font-size: 26px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.profile-game-stat > p:first-of-type { font-size: 26px; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .game-rank-name { font-size: 11px; line-height: 1.4; border-bottom: 1px solid var(--border); padding-block: 3px; }
 .game-rank-division { transform: translateX(-50%) skew(-8deg); border-color: var(--border); }
 .dossier-heading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 30%); gap: 24px; align-items: center; }
@@ -393,7 +393,11 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
 .hero-dossier-heading { padding-block: 24px; border-block: 1px solid var(--border); }
 .hero-dossier-heading h1 { font-size: 56px; overflow-wrap: anywhere; line-height: 1.05; }
 .hero-dossier-heading .dossier-figure { height: 420px; }
-.hero-dossier-stats { margin-top: 28px; }
+.hero-dossier-stats { grid-column: 1 / -1; margin-top: 0; }
+.hero-item-list > div { min-width: 0; }
+.hero-item-list > div > .game-item { flex-shrink: 0; }
+.hero-item-list > div > div:last-child { flex-shrink: 0; }
+.hero-item-list > div > div:last-child > div { display: none; }
 .team-identity { --team-ink: var(--team-amber); display: inline-flex; align-items: center; gap: 12px; color: var(--team-ink); max-width: 100%; }
 .team-mother { --team-ink: var(--team-sapphire); }
 .team-insignia { display: grid; place-items: center; width: 40px; height: 44px; flex-shrink: 0; border: 1px solid color-mix(in oklab, var(--team-ink) 55%, transparent); }
@@ -430,7 +434,7 @@ main table tbody tr:hover { background: color-mix(in oklab, var(--primary) 5%, t
   .hero-dossier-heading .dossier-figure { height: 300px; grid-row: 2; }
   .hero-dossier-heading .hero-dossier-stats { margin-top: 20px; gap: 8px; }
   .profile-game-stat { padding: 12px 10px; min-height: 108px; }
-  .profile-game-stat > p { font-size: 22px; margin-top: 14px; }
+  .profile-game-stat > p:first-of-type { font-size: 22px; margin-top: 14px; }
   .match-team-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 12px; }
   .match-team-score { grid-column: 1 / -1; grid-row: 1; padding-block: 8px 16px; border-bottom: 1px solid var(--border); }
   .match-team-grid .team-wordmark { font-size: 17px; }

@@ -50,19 +50,19 @@ export function HeroRankWinrates({ heroId }: { heroId: number }) {
       <p className="mb-4 text-sm text-muted-foreground">
         Лучше всего побеждает в <span className="font-semibold" style={{ color: info(best.tier).color }}>{info(best.tier).name}</span> — {(best.wr * 100).toFixed(1)}%
       </p>
-      <div className="flex h-48 items-end gap-2">
+      <div className="overflow-x-auto pb-2"><div className="flex h-48 min-w-[480px] items-end gap-2">
         {rows.map((r) => {
           const i = info(r.tier);
           const h = 15 + ((r.wr - lo) / Math.max(0.001, hi - lo)) * 85;
           return (
-            <div key={r.tier} className="flex flex-1 flex-col items-center gap-1" title={`${i.name}: ${(r.wr * 100).toFixed(1)}% · ${fmtInt(r.n)} матчей`}>
+            <div key={r.tier} className="flex h-full flex-1 flex-col items-center justify-end gap-1" title={`${i.name}: ${(r.wr * 100).toFixed(1)}% · ${fmtInt(r.n)} матчей`}>
               <span className={cn("tabular text-xs font-semibold", r.wr >= 0.5 ? "text-win" : "text-loss")}>{(r.wr * 100).toFixed(1)}</span>
               <div className="w-full rounded-t-md" style={{ height: `${h}%`, background: i.color ?? "var(--primary)", opacity: r.tier === best.tier ? 1 : 0.55 }} />
               {i.icon && <img src={i.icon} alt={i.name} className="h-8 w-8 object-contain" />}
             </div>
           );
         })}
-      </div>
+      </div></div>
     </div>
   );
 }

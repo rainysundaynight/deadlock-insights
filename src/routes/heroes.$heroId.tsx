@@ -90,6 +90,8 @@ function HeroPage() {
             <Link to="/leaderboard" search={{ hero: id }} className="mt-4 inline-block text-sm text-primary hover:underline">
               Лучшие игроки на {hero.name} →
             </Link>
+          </div>
+          <HeroFigure hero={hero} />
       {me && (
         <div className="hero-dossier-stats grid grid-cols-2 gap-3 xl:grid-cols-4">
           <Stat variant="game" label="Винрейт · 30 дн" value={`${(winrate(me.wins, me.matches) * 100).toFixed(1)}%`} tone={me.wins / me.matches >= 0.5 ? "win" : "loss"} />
@@ -98,8 +100,6 @@ function HeroPage() {
           <Stat variant="game" label="Урон / матч" value={fmtK(me.total_player_damage / me.matches)} />
         </div>
       )}
-          </div>
-          <HeroFigure hero={hero} />
       </section>
 
       {signatures.length > 0 && (
@@ -136,9 +136,9 @@ function HeroPage() {
       <section>
         <SectionTitle>Предметы с лучшим винрейтом</SectionTitle>
         {itemStats.isLoading ? <Loading /> : itemStats.error ? <ErrorBox error={itemStats.error} /> : (
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="hero-item-list grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {topItems.map((r) => (
-              <div key={r.item_id} className="panel flex items-center gap-3 p-3">
+              <div key={r.item_id} className="panel flex min-w-0 items-center gap-3 p-3">
                 <GameItem item={r.item} size={40} variant="image" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{r.item.name}</p>
