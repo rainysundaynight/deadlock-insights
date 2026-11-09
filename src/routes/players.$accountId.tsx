@@ -14,6 +14,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Empty, ErrorBox, useSteamProfiles, useItemMap, HeroIcon, HeroLink, Loading, RankBadge, Stat, WinrateBar, useHeroMap } from "@/components/dl";
 import { FollowButton } from "@/components/FollowButton";
+import { LiveNow } from "@/components/LiveNow";
 import { PlayerShareCard } from "@/components/PlayerShareCard";
 import { PotentialRank } from "@/components/PotentialRank";
 import { PlayerItems } from "@/components/PlayerItems";
@@ -175,6 +176,8 @@ function PlayerPage() {
         </div>
         <HeroFigure hero={featuredHero} className="profile-hero-portrait" />
       </div>
+
+      <LiveNow accountId={id} />
 
       {history.isLoading ? (
         <Loading />
