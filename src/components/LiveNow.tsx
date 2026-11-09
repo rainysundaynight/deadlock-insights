@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Radio } from "lucide-react";
 
@@ -24,11 +25,25 @@ export function LiveNow({ accountId }: { accountId: number }) {
   const q = useQuery({
     queryKey: ["active"],
     queryFn: () => api<ActiveMatch[]>("/v1/matches/active"),
-    refetchInterval: 60_000,
-    staleTime: 30_000,
+    refetchInterval: 20_000,
+    refetchOnWindowFocus: true,
+    staleTime: 15_000,
   });
   const heroes = useHeroMap();
+  const qc = useQueryClient();
   const match = (q.data ?? []).find((m) => m.players.some((p) => p.account_id === accountId));
+  const prev = useRef<number | null>(null);
+  useEffect(() => {
+    const now = match?.match_id ?? null;
+    // Матч закончился — подтягиваем свежую историю (через минуту ещё раз: API догоняет не сразу).
+    if (prev.current && !now) {
+      qc.invalidateQueries({ queryKey: ["history", accountId] });
+      const t = setTimeout(() => qc.invalidateQueries({ queryKey: ["history", accountId] }), 60_000);
+      prev.current = now;
+      return () => clearTimeout(t);
+    }
+    prev.current = now;
+  }, [match?.match_id, accountId, qc]);
   if (!match) return null;
   const me = match.players.find((p) => p.account_id === accountId)!;
   const hero = heroes.get(me.hero_id);
