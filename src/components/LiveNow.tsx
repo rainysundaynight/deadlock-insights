@@ -43,6 +43,7 @@ export function LiveNow({ accountId }: { accountId: number }) {
       return () => clearTimeout(t);
     }
     prev.current = now;
+    return undefined;
   }, [match?.match_id, accountId, qc]);
   if (!match) return null;
   const me = match.players.find((p) => p.account_id === accountId)!;
