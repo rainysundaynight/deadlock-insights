@@ -21,6 +21,7 @@
 - [x] Ctrl/Cmd+K global search
 - [ ] Urn tracker, map presence heatmap — match data has no urn/zone info
 # Retention pack
+- [x] Add pointer tilt and gold foil to hero cards/tier list and a share-card preview; verified hover, reset, reduced motion, mobile and PNG download.
 - [x] Profile «Визитка» PNG share card
 - [x] Match «Разбор тренера» coach notes in Советы tab
 - [x] Home «Утренний выпуск» daily meta

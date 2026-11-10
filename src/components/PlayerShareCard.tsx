@@ -1,10 +1,13 @@
-import { Share2 } from "lucide-react";
-import { useState } from "react";
+import { Download, Share2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { useHeroMap } from "@/components/dl";
 import type { Hero, MatchHistoryEntry } from "@/lib/api";
 import { fmtK } from "@/lib/format";
+import { CollectibleCard } from "@/components/CollectibleCard";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const load = (src: string) => new Promise<HTMLImageElement | null>((res) => {
   const i = new Image(); i.crossOrigin = "anonymous"; i.onload = () => res(i); i.onerror = () => res(null); i.src = src;
@@ -14,13 +17,30 @@ const load = (src: string) => new Promise<HTMLImageElement | null>((res) => {
 export function PlayerShareCard({ accountId, name, history, hero }: { accountId: number; name: string; history: MatchHistoryEntry[]; hero: Hero | undefined }) {
   const heroes = useHeroMap();
   const [busy, setBusy] = useState(false);
+  const [preview, setPreview] = useState<{ url: string; file: File } | null>(null);
+  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview.url); }, [preview]);
+
+  const save = async () => {
+    if (!preview) return;
+    try {
+      if (navigator.canShare?.({ files: [preview.file] })) {
+        await navigator.share({ files: [preview.file], title: `${name} — досье Deadlock` });
+      } else {
+        const el = document.createElement("a"); el.download = preview.file.name; el.href = preview.url; el.click();
+        toast.success("Визитка сохранена");
+      }
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) toast.error("Не удалось сохранить визитку");
+    }
+  };
 
   const make = async () => {
     if (!history.length) { toast.info("Нет матчей для визитки"); return; }
     setBusy(true);
     try {
       const c = document.createElement("canvas"); c.width = 1200; c.height = 630;
-      const g = c.getContext("2d")!;
+      const g = c.getContext("2d");
+      if (!g) throw new Error("Canvas unavailable");
       const css = getComputedStyle(document.documentElement);
       const v = (n: string) => css.getPropertyValue(n).trim() || "#888";
       const serif = "Georgia, 'Times New Roman', serif";
@@ -90,22 +110,23 @@ export function PlayerShareCard({ accountId, name, history, hero }: { accountId:
       const blob = await new Promise<Blob | null>((r) => c.toBlob(r, "image/png"));
       if (!blob) throw new Error("no blob");
       const file = new File([blob], `dossier-${accountId}.png`, { type: "image/png" });
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: `${name} — досье Deadlock` }).catch(() => {});
-      } else {
-        const url = URL.createObjectURL(blob);
-        const el = document.createElement("a"); el.download = file.name; el.href = url; el.click();
-        setTimeout(() => URL.revokeObjectURL(url), 2000);
-        toast.success("Визитка сохранена");
-      }
+      setPreview({ url: URL.createObjectURL(blob), file });
     } catch {
       toast.error("Не удалось создать визитку");
     } finally { setBusy(false); }
   };
 
   return (
-    <button onClick={make} disabled={busy} className="inline-flex items-center gap-1.5 hover:text-primary disabled:opacity-50">
+    <><Button variant="ghost" size="sm" onClick={make} disabled={busy} className="h-auto p-0 text-inherit hover:bg-transparent hover:text-primary">
       <Share2 className="h-3.5 w-3.5" />{busy ? "Готовим…" : "Визитка"}
-    </button>
+    </Button>
+    <Dialog open={Boolean(preview)} onOpenChange={(open) => { if (!open) setPreview(null); }}>
+      <DialogContent className="w-[calc(100%-2rem)] max-w-4xl gap-5 p-4 sm:p-6">
+        <DialogTitle className="pr-8">Визитка · {name}</DialogTitle>
+        <DialogDescription className="sr-only">Газетное досье игрока</DialogDescription>
+        {preview && <CollectibleCard><img src={preview.url} alt={`Газетная визитка ${name}`} className="block aspect-[1200/630] w-full rounded-sm" /></CollectibleCard>}
+        <div className="flex justify-end"><Button onClick={save}><Download />Сохранить визитку</Button></div>
+      </DialogContent>
+    </Dialog></>
   );
 }
