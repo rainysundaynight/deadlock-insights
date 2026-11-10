@@ -1,4 +1,4 @@
-import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform, type MotionStyle, type MotionValue } from "framer-motion";
 import type { ReactNode, PointerEvent } from "react";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,9 @@ export function CollectibleCard({ children, className }: { children: ReactNode; 
   const foilX = useTransform(x, [-1, 1], ["15%", "85%"]);
   const foilY = useTransform(y, [-1, 1], ["15%", "85%"]);
   const opacity = useSpring(active, spring);
+  const foilStyle: MotionStyle & { "--foil-x": MotionValue<string>; "--foil-y": MotionValue<string> } = {
+    opacity: reduced ? 0 : opacity, "--foil-x": foilX, "--foil-y": foilY,
+  };
   const reset = () => { x.set(0); y.set(0); active.set(0); };
   const move = (e: PointerEvent<HTMLDivElement>) => {
     if (reduced || e.pointerType !== "mouse" || !window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
@@ -26,7 +29,7 @@ export function CollectibleCard({ children, className }: { children: ReactNode; 
   return <div className={cn("collectible-card", className)} onPointerMove={move} onPointerLeave={reset} onPointerCancel={reset} onBlur={reset}>
     <motion.div className="collectible-surface" style={{ rotateX: reduced ? 0 : rotateX, rotateY: reduced ? 0 : rotateY }}>
       {children}
-      <motion.span aria-hidden className="collectible-foil" style={{ opacity: reduced ? 0 : opacity, "--foil-x": foilX, "--foil-y": foilY }} />
+      <motion.span aria-hidden className="collectible-foil" style={foilStyle} />
     </motion.div>
   </div>;
 }
