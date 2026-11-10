@@ -8,6 +8,7 @@ import { fmtInt } from "@/lib/format";
 import { buildTierList, type Tier } from "@/lib/tier";
 import { cn } from "@/lib/utils";
 import { LayoutGroup, motion } from "framer-motion";
+import { CollectibleCard } from "@/components/CollectibleCard";
 
 export const Route = createFileRoute("/tierlist")({
   head: () => ({
@@ -72,7 +73,7 @@ function TierPage() {
                 <div className="flex w-16 shrink-0 items-start justify-center pt-4"><span className={cn("tier-seal grid h-11 w-11 place-items-center text-2xl font-bold", t === "S" && "tier-seal-high")}>{t}</span></div>
                 <div className="flex flex-1 flex-wrap gap-3 p-4">
                   {list.map((r) => { const h = heroes.get(r.hero_id); const idle = h?.images.icon_hero_card_webp ?? h?.images.icon_hero_card; const alt = h?.images.hero_card_gloat_webp ?? h?.images.hero_card_gloat; return (
-                    <motion.div layout layoutId={`tier-hero-${r.hero_id}`} key={r.hero_id} className="relative hover:z-10"><Link to="/heroes/$heroId" params={{ heroId: String(r.hero_id) }} style={{ "--hero": h?.colors?.style_hex ?? "var(--primary)" } as React.CSSProperties} className="tier-card gazette-frame group block w-28 bg-card p-2 text-center sm:w-32 xl:w-36">
+                    <motion.div layout layoutId={`tier-hero-${r.hero_id}`} key={r.hero_id} className="relative hover:z-10"><CollectibleCard><Link to="/heroes/$heroId" params={{ heroId: String(r.hero_id) }} style={{ "--hero": h?.colors?.style_hex ?? "var(--primary)" } as React.CSSProperties} className="tier-card gazette-frame group block w-28 bg-card p-2 text-center sm:w-32 xl:w-36">
                       {idle ? (
                         <div className="relative mx-auto aspect-[3/4] w-full overflow-hidden">
                           <div className="hero-card-bg absolute inset-0" />
@@ -84,7 +85,7 @@ function TierPage() {
                       ) : <HeroIcon heroId={r.hero_id} size={64} className="mx-auto rounded-sm" />}
                       <p className="mt-1.5 line-clamp-2 min-h-[2lh] text-xs font-medium leading-tight sm:text-sm">{heroes.get(r.hero_id)?.name}</p>
                       <p className={cn("tabular text-[11px]", r.winrate >= 0.5 ? "text-win" : "text-loss")}>{(r.winrate * 100).toFixed(1)}%</p>
-                    </Link></motion.div>
+                    </Link></CollectibleCard></motion.div>
                   ); })}
                 </div>
               </div>

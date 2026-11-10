@@ -25,3 +25,4 @@
 - Steam sign-in is Steam OpenID 2.0 via `/api/public/steam/login` → `/api/public/steam/callback` (verifies with Steam, admin-creates a user with a synthetic email, returns a magic-link token_hash that `/auth/steam` exchanges with verifyOtp; popup+postMessage in iframes). Cloud has no native Steam provider.
 - User data (profiles, followed_players, goals) lives in Lovable Cloud with own-row RLS; friend match alerts are client-side polling of `/v1/matches/active` in `FriendNotifier` (only while the site is open).
 - Match coach notes are pure rules in `src/lib/coach.ts` with tests so advice stays deterministic and verifiable.
+- CollectibleCard owns pointer tilt and foil via motion values, separate from list layout; touch/reduced-motion stay static and share-card export uses the untransformed PNG preview.

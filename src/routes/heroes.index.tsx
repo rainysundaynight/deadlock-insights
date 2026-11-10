@@ -10,6 +10,7 @@ import { fmtInt, fmtK, fmtPct, kda, winrate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { HeroRankCompare } from "@/components/RankMeta";
 import { LayoutItem } from "@/components/GazetteMotion";
+import { CollectibleCard } from "@/components/CollectibleCard";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -101,7 +102,7 @@ function HeroesPage() {
           {[...(heroList.data ?? [])].filter((h) => !rows.length || rows.some((r) => r.hero_id === h.id)).sort((a, b) => rows.findIndex((r) => r.hero_id === a.id) - rows.findIndex((r) => r.hero_id === b.id)).map((h) => {
             const s = rows.find((r) => r.hero_id === h.id);
             return (
-              <LayoutItem key={h.id}><Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as CSSProperties} className="panel panel-hover gazette-frame group relative block hover:z-10">
+              <LayoutItem key={h.id} className="relative hover:z-10"><CollectibleCard><Link to="/heroes/$heroId" params={{ heroId: String(h.id) }} style={{ "--hero": h.colors?.style_hex ?? "var(--primary)" } as CSSProperties} className="panel gazette-frame group relative block hover:z-10">
                 <div className="relative aspect-[3/4]">
                   <div className="hero-card-bg absolute inset-0 overflow-hidden" />
                   <span className="absolute right-2 top-2 z-0 font-mono text-[9px] uppercase text-foreground/70">№ {String(h.id).padStart(3, "0")}</span>
@@ -117,7 +118,7 @@ function HeroesPage() {
                 <div className="p-3">
                   {s && <><div className="mt-3 grid grid-cols-2 gap-2"><div><p className={cn("tabular text-xl", s.wr >= 0.5 ? "text-win" : "text-loss")}>{fmtPct(s.wr)}</p><p className="font-mono text-[9px] text-muted-foreground">ПОБЕДЫ</p></div><div className="text-right"><p className="tabular text-lg text-foreground">{fmtPct(s.pr)}</p><p className="font-mono text-[9px] text-muted-foreground">ПИКРЕЙТ</p></div></div><div className="mt-3 flex justify-between border-t border-border pt-3 text-[10px] text-muted-foreground"><span>{fmtInt(s.matches)} игр</span><span>KDA {s.kdaV.toFixed(1)}</span></div></>}
                 </div>
-              </Link></LayoutItem>
+              </Link></CollectibleCard></LayoutItem>
             );
           })}
         </div>
