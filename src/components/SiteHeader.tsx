@@ -1,6 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import {
-  Activity, BarChart3, Calculator, Crown, GitCompare, Hammer, Home, LayoutGrid, Menu, Package, ScrollText, Swords, TrendingUp, Trophy, Tv, Users, X,
+  Activity, BarChart3, Calculator, Crown, GitCompare, Hammer, Home, LayoutGrid, Medal, Menu, Package, ScrollText, Swords, TrendingUp, Trophy, Tv, Users, X,
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useRef, useState, type ReactNode } from "react";
@@ -43,6 +43,7 @@ const GROUPS = [
   {
     title: "Сообщество",
     items: [
+      { to: "/tournaments", label: "Турниры", icon: Medal },
       { to: "/streams", label: "Стримы", icon: Tv },
       { to: "/leaderboard", label: "Лидерборд", icon: Trophy },
       { to: "/ranks", label: "Ранги", icon: BarChart3 },

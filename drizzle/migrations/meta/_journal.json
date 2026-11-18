@@ -8,6 +8,20 @@
       "when": 1793744776841,
       "tag": "0000_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795002931615,
+      "tag": "0001_tournaments",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795002942424,
+      "tag": "0002_hide_invite_codes",
+      "breakpoints": true
     }
   ]
 }

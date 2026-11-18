@@ -29,8 +29,13 @@ import { Route as HeroesIndexRouteImport } from './routes/heroes.index'
 import { Route as HeroesHeroIdRouteImport } from './routes/heroes.$heroId'
 import { Route as MatchesMatchIdRouteImport } from './routes/matches.$matchId'
 import { Route as PlayersAccountIdRouteImport } from './routes/players.$accountId'
+import { Route as TournamentsIndexRouteImport } from './routes/tournaments.index'
+import { Route as TournamentsIdRouteImport } from './routes/tournaments.$id'
+import { Route as TournamentsNewRouteImport } from './routes/tournaments.new'
+import { Route as TournamentsIdJoinRouteImport } from './routes/tournaments.$id_.join'
 import { Route as ApiPublicSteamCallbackRouteImport } from './routes/api/public/steam.callback'
 import { Route as ApiPublicSteamLoginRouteImport } from './routes/api/public/steam.login'
+import { Route as TournamentsIdMatchesMatchIdRouteImport } from './routes/tournaments.$id_.matches.$matchId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -132,6 +137,26 @@ const PlayersAccountIdRoute = PlayersAccountIdRouteImport.update({
   path: '/players/$accountId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TournamentsIndexRoute = TournamentsIndexRouteImport.update({
+  id: '/tournaments/',
+  path: '/tournaments/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TournamentsIdRoute = TournamentsIdRouteImport.update({
+  id: '/tournaments/$id',
+  path: '/tournaments/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TournamentsNewRoute = TournamentsNewRouteImport.update({
+  id: '/tournaments/new',
+  path: '/tournaments/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TournamentsIdJoinRoute = TournamentsIdJoinRouteImport.update({
+  id: '/tournaments/$id_/join',
+  path: '/tournaments/$id/join',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSteamCallbackRoute = ApiPublicSteamCallbackRouteImport.update({
   id: '/api/public/steam/callback',
   path: '/api/public/steam/callback',
@@ -142,6 +167,12 @@ const ApiPublicSteamLoginRoute = ApiPublicSteamLoginRouteImport.update({
   path: '/api/public/steam/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TournamentsIdMatchesMatchIdRoute =
+  TournamentsIdMatchesMatchIdRouteImport.update({
+    id: '/tournaments/$id_/matches/$matchId',
+    path: '/tournaments/$id/matches/$matchId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -163,9 +194,14 @@ export interface FileRoutesByFullPath {
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/players/$accountId': typeof PlayersAccountIdRoute
+  '/tournaments/$id': typeof TournamentsIdRoute
+  '/tournaments/new': typeof TournamentsNewRoute
   '/heroes/': typeof HeroesIndexRoute
+  '/tournaments/': typeof TournamentsIndexRoute
+  '/tournaments/$id/join': typeof TournamentsIdJoinRoute
   '/api/public/steam/callback': typeof ApiPublicSteamCallbackRoute
   '/api/public/steam/login': typeof ApiPublicSteamLoginRoute
+  '/tournaments/$id/matches/$matchId': typeof TournamentsIdMatchesMatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -187,9 +223,14 @@ export interface FileRoutesByTo {
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/players/$accountId': typeof PlayersAccountIdRoute
+  '/tournaments/$id': typeof TournamentsIdRoute
+  '/tournaments/new': typeof TournamentsNewRoute
   '/heroes': typeof HeroesIndexRoute
+  '/tournaments': typeof TournamentsIndexRoute
+  '/tournaments/$id/join': typeof TournamentsIdJoinRoute
   '/api/public/steam/callback': typeof ApiPublicSteamCallbackRoute
   '/api/public/steam/login': typeof ApiPublicSteamLoginRoute
+  '/tournaments/$id/matches/$matchId': typeof TournamentsIdMatchesMatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -212,9 +253,14 @@ export interface FileRoutesById {
   '/heroes/$heroId': typeof HeroesHeroIdRoute
   '/matches/$matchId': typeof MatchesMatchIdRoute
   '/players/$accountId': typeof PlayersAccountIdRoute
+  '/tournaments/$id': typeof TournamentsIdRoute
+  '/tournaments/new': typeof TournamentsNewRoute
   '/heroes/': typeof HeroesIndexRoute
+  '/tournaments/': typeof TournamentsIndexRoute
+  '/tournaments/$id_/join': typeof TournamentsIdJoinRoute
   '/api/public/steam/callback': typeof ApiPublicSteamCallbackRoute
   '/api/public/steam/login': typeof ApiPublicSteamLoginRoute
+  '/tournaments/$id_/matches/$matchId': typeof TournamentsIdMatchesMatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -238,9 +284,14 @@ export interface FileRouteTypes {
     | '/heroes/$heroId'
     | '/matches/$matchId'
     | '/players/$accountId'
+    | '/tournaments/$id'
+    | '/tournaments/new'
     | '/heroes/'
+    | '/tournaments/'
+    | '/tournaments/$id/join'
     | '/api/public/steam/callback'
     | '/api/public/steam/login'
+    | '/tournaments/$id/matches/$matchId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -262,9 +313,14 @@ export interface FileRouteTypes {
     | '/heroes/$heroId'
     | '/matches/$matchId'
     | '/players/$accountId'
+    | '/tournaments/$id'
+    | '/tournaments/new'
     | '/heroes'
+    | '/tournaments'
+    | '/tournaments/$id/join'
     | '/api/public/steam/callback'
     | '/api/public/steam/login'
+    | '/tournaments/$id/matches/$matchId'
   id:
     | '__root__'
     | '/'
@@ -286,9 +342,14 @@ export interface FileRouteTypes {
     | '/heroes/$heroId'
     | '/matches/$matchId'
     | '/players/$accountId'
+    | '/tournaments/$id'
+    | '/tournaments/new'
     | '/heroes/'
+    | '/tournaments/'
+    | '/tournaments/$id_/join'
     | '/api/public/steam/callback'
     | '/api/public/steam/login'
+    | '/tournaments/$id_/matches/$matchId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -311,9 +372,14 @@ export interface RootRouteChildren {
   HeroesHeroIdRoute: typeof HeroesHeroIdRoute
   MatchesMatchIdRoute: typeof MatchesMatchIdRoute
   PlayersAccountIdRoute: typeof PlayersAccountIdRoute
+  TournamentsIdRoute: typeof TournamentsIdRoute
+  TournamentsNewRoute: typeof TournamentsNewRoute
   HeroesIndexRoute: typeof HeroesIndexRoute
+  TournamentsIndexRoute: typeof TournamentsIndexRoute
+  TournamentsIdJoinRoute: typeof TournamentsIdJoinRoute
   ApiPublicSteamCallbackRoute: typeof ApiPublicSteamCallbackRoute
   ApiPublicSteamLoginRoute: typeof ApiPublicSteamLoginRoute
+  TournamentsIdMatchesMatchIdRoute: typeof TournamentsIdMatchesMatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -458,6 +524,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayersAccountIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tournaments/': {
+      id: '/tournaments/'
+      path: '/tournaments'
+      fullPath: '/tournaments/'
+      preLoaderRoute: typeof TournamentsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tournaments/$id': {
+      id: '/tournaments/$id'
+      path: '/tournaments/$id'
+      fullPath: '/tournaments/$id'
+      preLoaderRoute: typeof TournamentsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tournaments/new': {
+      id: '/tournaments/new'
+      path: '/tournaments/new'
+      fullPath: '/tournaments/new'
+      preLoaderRoute: typeof TournamentsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tournaments/$id_/join': {
+      id: '/tournaments/$id_/join'
+      path: '/tournaments/$id/join'
+      fullPath: '/tournaments/$id/join'
+      preLoaderRoute: typeof TournamentsIdJoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/steam/callback': {
       id: '/api/public/steam/callback'
       path: '/api/public/steam/callback'
@@ -470,6 +564,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/steam/login'
       fullPath: '/api/public/steam/login'
       preLoaderRoute: typeof ApiPublicSteamLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tournaments/$id_/matches/$matchId': {
+      id: '/tournaments/$id_/matches/$matchId'
+      path: '/tournaments/$id/matches/$matchId'
+      fullPath: '/tournaments/$id/matches/$matchId'
+      preLoaderRoute: typeof TournamentsIdMatchesMatchIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -495,9 +596,14 @@ const rootRouteChildren: RootRouteChildren = {
   HeroesHeroIdRoute: HeroesHeroIdRoute,
   MatchesMatchIdRoute: MatchesMatchIdRoute,
   PlayersAccountIdRoute: PlayersAccountIdRoute,
+  TournamentsIdRoute: TournamentsIdRoute,
+  TournamentsNewRoute: TournamentsNewRoute,
   HeroesIndexRoute: HeroesIndexRoute,
+  TournamentsIndexRoute: TournamentsIndexRoute,
+  TournamentsIdJoinRoute: TournamentsIdJoinRoute,
   ApiPublicSteamCallbackRoute: ApiPublicSteamCallbackRoute,
   ApiPublicSteamLoginRoute: ApiPublicSteamLoginRoute,
+  TournamentsIdMatchesMatchIdRoute: TournamentsIdMatchesMatchIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
