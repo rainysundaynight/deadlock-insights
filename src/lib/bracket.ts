@@ -40,11 +40,11 @@ function winnersBracket(entrants: string[], bracket: "W" = "W") {
   const rounds: BMatch[][] = [];
   for (let r = 1; r <= k; r++) rounds.push(Array.from({ length: size / 2 ** r }, (_, i) => mk(bracket, r, i)));
   const order = seedOrder(size);
-  rounds[0].forEach((m, i) => {
-    const a = entrants[order[2 * i]] ?? null, b = entrants[order[2 * i + 1]] ?? null;
+  rounds[0]!.forEach((m, i) => {
+    const a = entrants[order[2 * i]!] ?? null, b = entrants[order[2 * i + 1]!] ?? null;
     m.side_a = a; m.side_b = b; m.a_bye = a === null; m.b_bye = b === null;
   });
-  for (let r = 0; r < k - 1; r++) rounds[r].forEach((m, i) => { m.win_to = rounds[r + 1][Math.floor(i / 2)].key; m.win_slot = i % 2; });
+  for (let r = 0; r < k - 1; r++) rounds[r]!.forEach((m, i) => { m.win_to = rounds[r + 1]![Math.floor(i / 2)].key; m.win_slot = i % 2; });
   return { rounds, k, size };
 }
 
@@ -60,15 +60,15 @@ function doubleElim(entrants: string[]): BMatch[] {
   const lbRounds: BMatch[][] = [];
   for (let j = 1; j <= 2 * (k - 1); j++) lbRounds.push(Array.from({ length: size / 2 ** (Math.floor((j + 1) / 2) + 1) }, (_, i) => mk("L", j, i)));
   const gf = mk("GF", 1, 0);
-  wb[0].forEach((m, i) => { m.lose_to = lbRounds[0][Math.floor(i / 2)].key; m.lose_slot = i % 2; });
-  for (let r = 2; r <= k; r++) wb[r - 1].forEach((m, i) => { m.lose_to = lbRounds[2 * (r - 1) - 1][i].key; m.lose_slot = 1; });
-  wb[k - 1][0].win_to = gf.key; wb[k - 1][0].win_slot = 0;
+  wb[0]!.forEach((m, i) => { m.lose_to = lbRounds[0]![Math.floor(i / 2)].key; m.lose_slot = i % 2; });
+  for (let r = 2; r <= k; r++) wb[r - 1]!.forEach((m, i) => { m.lose_to = lbRounds[2 * (r - 1) - 1]![i].key; m.lose_slot = 1; });
+  wb[k - 1]![0].win_to = gf.key; wb[k - 1]![0].win_slot = 0;
   lbRounds.forEach((round, j0) => {
     const j = j0 + 1;
     round.forEach((m, i) => {
       if (j === lbRounds.length) { m.win_to = gf.key; m.win_slot = 1; }
-      else if (j % 2 === 1) { m.win_to = lbRounds[j0 + 1][i].key; m.win_slot = 0; }
-      else { m.win_to = lbRounds[j0 + 1][Math.floor(i / 2)].key; m.win_slot = i % 2; }
+      else if (j % 2 === 1) { m.win_to = lbRounds[j0 + 1]![i].key; m.win_slot = 0; }
+      else { m.win_to = lbRounds[j0 + 1]![Math.floor(i / 2)].key; m.win_slot = i % 2; }
     });
   });
   return resolveByes([...wb.flat(), ...lbRounds.flat(), gf]);
@@ -82,7 +82,7 @@ export function roundRobin(entrants: string[]): BMatch[] {
   for (let r = 0; r < n - 1; r++) {
     let idx = 0;
     for (let i = 0; i < n / 2; i++) {
-      const a = list[i], b = list[n - 1 - i];
+      const a = list[i] ?? null, b = list[n - 1 - i] ?? null;
       if (a && b) { const m = mk("RR", r + 1, idx++); m.side_a = a; m.side_b = b; m.status = "ready"; out.push(m); }
     }
     list.splice(1, 0, list.pop()!);

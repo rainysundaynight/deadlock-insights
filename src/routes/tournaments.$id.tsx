@@ -74,7 +74,7 @@ function InviteRow({ label, url, onCopy }: { label: string; url: string; onCopy:
   return <div className="mb-3 flex flex-wrap items-center gap-2"><span className="w-full font-mono text-[10px] uppercase text-muted-foreground sm:w-56">{label}</span><code className="min-w-0 flex-1 truncate border border-border bg-secondary px-3 py-2 text-xs">{url}</code><button onClick={() => onCopy(url)} className="inline-flex items-center gap-1 border border-primary px-3 py-2 text-xs text-primary"><Copy className="h-3 w-3" />Копировать</button></div>;
 }
 
-function Participants({ d, owner, userId, canEdit, onRemove }: { d: TData; owner: boolean; userId?: string; canEdit: boolean; onRemove: (id: string) => void }) {
+function Participants({ d, owner, userId, canEdit, onRemove }: { d: TData; owner: boolean; userId?: string | undefined; canEdit: boolean; onRemove: (id: string) => void }) {
   const t = d.t!;
   const Row = ({ p }: { p: TData["parts"][number] }) => (
     <li className="flex items-center gap-3 py-1.5 text-sm">

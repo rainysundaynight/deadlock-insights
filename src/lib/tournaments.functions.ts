@@ -164,7 +164,7 @@ export const startMatch = createServerFn({ method: "POST" })
     } else if (t.random_heroes) {
       const pool = await heroPool();
       const [a, b] = sample(pool, 2);
-      await db.from("tournament_matches").update({ hero_a: a, hero_b: t.same_random_hero ? a : b, step_deadline: new Date().toISOString() }).eq("id", m.id);
+      await db.from("tournament_matches").update({ hero_a: a ?? null, hero_b: (t.same_random_hero ? a : b) ?? null, step_deadline: new Date().toISOString() }).eq("id", m.id);
     } else {
       await db.from("tournament_matches").update({ step_deadline: new Date().toISOString() }).eq("id", m.id);
     }
@@ -221,7 +221,7 @@ export const draftMove = createServerFn({ method: "POST" })
     const actions = (acts ?? []) as DraftAction[];
     const err = validateMove(m.draft_step, side!, data.heroId, actions, await heroPool());
     if (err) fail(err);
-    const { error } = await db.from("draft_actions").insert({ match_id: m.id, step: m.draft_step, side: side!, kind: DRAFT_ORDER[m.draft_step].kind, hero_id: data.heroId });
+    const { error } = await db.from("draft_actions").insert({ match_id: m.id, step: m.draft_step, side: side!, kind: DRAFT_ORDER[m.draft_step]!.kind, hero_id: data.heroId });
     if (error) fail("Ход уже сделан");
     await finishStep(m.id, m.draft_step + 1, actions);
     return { ok: true };

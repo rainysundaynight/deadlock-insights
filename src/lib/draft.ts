@@ -30,7 +30,7 @@ export function validateMove(step: number, side: Side, heroId: number, actions: 
 
 /** What happens when time runs out: bans are skipped, picks get a random free hero. */
 export function timeoutAction(step: number, actions: DraftAction[], pool: number[], rand = Math.random): DraftAction {
-  const cur = DRAFT_ORDER[step];
+  const cur = DRAFT_ORDER[step]!;
   if (cur.kind === "ban") return { step, side: cur.side, kind: "ban", hero_id: null };
   const used = usedHeroes(actions);
   const free = pool.filter((h) => !used.has(h));
@@ -44,6 +44,6 @@ export function picksFor(actions: DraftAction[], side: Side) {
 /** Random distinct sample. */
 export function sample<T>(list: T[], n: number, rand = Math.random): T[] {
   const a = [...list];
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j]!, a[i]!]; }
   return a.slice(0, n);
 }

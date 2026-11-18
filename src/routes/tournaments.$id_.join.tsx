@@ -10,7 +10,7 @@ import { FORMAT_LABEL, errMsg, useTournament } from "@/lib/tournaments";
 import { joinTournament } from "@/lib/tournaments.functions";
 
 export const Route = createFileRoute("/tournaments/$id_/join")({
-  validateSearch: (s: Record<string, unknown>) => ({ code: typeof s.code === "string" ? s.code : undefined, team: typeof s.team === "string" ? s.team : undefined }),
+  validateSearch: (s: Record<string, unknown>) => ({ code: typeof s["code"] === "string" ? s["code"] : undefined, team: typeof s["team"] === "string" ? s["team"] : undefined }),
   head: () => ({
     meta: [
       { title: "Приглашение в турнир — Deadlock Stats" },
@@ -39,7 +39,7 @@ function JoinPage() {
   const submit = async () => {
     setBusy(true);
     try {
-      await join({ data: { tournamentId: id, code: code ?? "", teamCode: team, teamName } });
+      await join({ data: { tournamentId: id, code: code ?? "", ...(team ? { teamCode: team } : {}), teamName } });
       toast.success("Вы в турнире!");
       nav({ to: "/tournaments/$id", params: { id } });
     } catch (e) { toast.error(errMsg(e)); } finally { setBusy(false); }

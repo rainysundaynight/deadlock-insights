@@ -110,7 +110,8 @@ function Draft({ d, m, mySide, userId }: { d: TData; m: M; mySide: "a" | "b" | n
   }, [m.id, qc]);
   const left = useCountdown(m.step_deadline);
   useEffect(() => {
-    if (m.status === "draft" && left === 0) { const t = setTimeout(() => tickFn({ data: { matchId: m.id } }).catch(() => {}), 800); return () => clearTimeout(t); }
+    if (m.status !== "draft" || left !== 0) return undefined;
+    const t = setTimeout(() => tickFn({ data: { matchId: m.id } }).catch(() => {}), 800); return () => clearTimeout(t);
   }, [left, m.status, m.id, tickFn]);
   const actions = acts.data ?? [];
   const used = usedHeroes(actions);
